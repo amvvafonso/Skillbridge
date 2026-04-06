@@ -10,31 +10,34 @@ public class Organization
     /// Identifier of the organization (PK)
     /// </summary>
     [Key]
-    public int? OrganizationId { get; set; }
+    public int OrganizationId { get; set; }
     
     /// <summary>
     /// Name of organization
     /// </summary>
     [Required(ErrorMessage = "Organization name is required")]
     [MaxLength(100)]
-    public string? OrganizationName { get; set; }
+    public string OrganizationName { get; set; }
     
     /// <summary>
     /// Address of organization
     /// </summary>
     [MaxLength(200)]
     [Required(ErrorMessage = "Organization address is required")]
-    public string? OrganizationAddress { get; set; }
+    public string OrganizationAddress { get; set; }
     
     /// <summary>
     /// Description of the organization, max 1000 chars 
     /// </summary>
     [MaxLength(1000)]
-    public string? OrganizationDescription { get; set; }
+    public string OrganizationDescription { get; set; }
     
     /// <summary>
     /// Foreign key, link to owner of organization
     /// </summary>
-    [ForeignKey(nameof(User))]
-    public int OrganizationOwner { get; set; }
+    
+    public int Owner { get; set; }
+
+    [ForeignKey(nameof(Owner))]
+    public virtual User? OrganizationOwner { get; set; } = null!;
 }

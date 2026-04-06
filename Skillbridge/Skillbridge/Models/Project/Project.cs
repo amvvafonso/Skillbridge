@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 
 namespace Skillbridge.Models.Project;
 
@@ -9,7 +10,7 @@ public class Project
     /// Identifier of project
     /// </summary>
     [Key]
-    public int ProfileId { get; set; }
+    public int ProjectId { get; set; }
     
     /// <summary>
     /// Name of the project
@@ -44,9 +45,12 @@ public class Project
     /// <summary>
     /// Foreign key, linked to the organization id
     /// </summary>
-    [ForeignKey(nameof(Organization))]
-    public int? Organization { get; set; }
-    
-    
+    public int OrganizationId { get; set; }
+
+    [ForeignKey(nameof(OrganizationId))] 
+    public virtual Organization Organization { get; set; } = null!;
+
+
+
 
 }

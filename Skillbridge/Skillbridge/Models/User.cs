@@ -17,6 +17,7 @@ public class User
     /// Useraname of User, used for login
     /// </summary>
     [Required(ErrorMessage = "User name is required")]
+    [MaxLength(50, ErrorMessage = "User name cannot be longer than 50 characters")]
     public string? Username { get; set; }
     
         
@@ -24,6 +25,7 @@ public class User
     /// Email of the User
     /// </summary>
     [Required(ErrorMessage = "Password is required")]
+    [MaxLength(100)]
     public string? Email { get; set; }
     
     
@@ -31,6 +33,7 @@ public class User
     /// Password of the User
     /// </summary>
     [Required(ErrorMessage = "Password is required")]
+    [DataType(DataType.Password)]
     public string? Password { get; set; }
     
     
