@@ -34,6 +34,7 @@ public class User
     /// </summary>
     [Required(ErrorMessage = "Password is required")]
     [DataType(DataType.Password)]
+    [MaxLength(100, ErrorMessage = "Password cannot be longer than 100 characters")]
     public string? Password { get; set; }
     
     
