@@ -1,7 +1,36 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+ViewData["Title"] = "Home Page";
 }
+<link rel="stylesheet" href="~/css/pages/Home.css" asp-append-version="true">
+<div class="hero-banner bg-dark text-white d-flex align-items-center">
+	<div class="container text-center">
+		<div class="row justify-content-center">
+			<div class="col-md-10">
 
-<div class="container w-100">
-    <img />
+				<h1 class="display-1 fw-bold mb-3 animate-pop-in">
+					<span class="text-primary">Skill</span>Bridge
+				</h1>
+
+				<p class="lead fs-4 mb-5 text-light animate-fade-in-up delay-1">
+					A ponte entre o teu conhecimento e o mundo. Partilha, aprende e evolui com a nossa plataforma.
+				</p>
+
+				<div class="d-grid gap-3 d-sm-flex justify-content-sm-center animate-fade-in-up delay-2">
+					<a class="btn btn-primary btn-lg px-5 gap-3 rounded-pill hover-scale">
+						Começar Agora
+					</a>
+					<a asp-area="" asp-controller="Info" asp-action="HowItWorks" class="btn btn-outline-light btn-lg px-5 rounded-pill hover-scale">
+						Saber Mais
+					</a>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="wave-container">
+		<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320">
+			<path fill="#ffffff" fill-opacity="1" d="M0,224L48,213.3C96,203,192,181,288,181.3C384,181,480,203,576,213.3C672,224,768,224,864,197.3C960,171,1056,117,1152,112C1248,107,1344,149,1392,170.7L1440,192L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z">
+			</path>
+		</svg>
+	</div>
 </div>

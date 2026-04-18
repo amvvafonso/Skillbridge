@@ -1,0 +1,92 @@
+/* --- Estilos Gerais do Banner --- */
+.hero-banner {
+    min-height: 80vh; /* Ocupa 80% da altura do ecrã */
+    position: relative;
+    overflow: hidden;
+    /* Gradiente moderno (Roxo/Azul escuro) */
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    padding-bottom: 100px; /* Espaço para a onda */
+}
+
+/* Cor primária personalizada (ex: um azul vibrante) */
+.text-primary {
+    color: #00d2ff !important;
+}
+
+.btn-primary {
+    background-color: #00d2ff;
+    border-color: #00d2ff;
+    color: #1a1a2e;
+}
+.btn-primary:hover {
+    background-color: #00b8e6;
+    border-color: #00b8e6;
+    color: #1a1a2e;
+}
+
+/* --- Estilo da Onda (Wave) --- */
+.wave-container {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    line-height: 0;
+}
+
+/* --- DEFINIÇÃO DAS ANIMAÇÕES (Keyframes) --- */
+
+/* 1. Animação "Pop In" (Aparecer e crescer ligeiramente) */
+@keyframes popIn {
+    0% {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+    80% {
+        transform: scale(1.05);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* 2. Animação "Fade In Up" (Subir e aparecer) */
+@keyframes fadeInUp {
+    0% {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* --- CLASSES DE ANIMAÇÃO --- */
+.animate-pop-in {
+    animation: popIn 1s ease-out forwards;
+}
+
+.animate-fade-in-up {
+    opacity: 0; /* Começa invisível */
+    animation: fadeInUp 0.8s ease-out forwards;
+}
+
+.delay-1 {
+    animation-delay: 0.5s;
+}
+
+.delay-2 {
+    animation-delay: 1s;
+}
+
+.hover-scale {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.hover-scale:hover {
+    transform: translateY(-5px) scale(1.05);
+    box-shadow: 0 10px 20px rgba(0, 210, 255, 0.3);
+}
+
+
