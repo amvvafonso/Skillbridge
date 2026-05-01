@@ -1,0 +1,44 @@
+﻿@page
+@model RegisterModel
+@{
+}
+
+<h1>@ViewData["Title"]</h1>
+<link rel="stylesheet" href="~/css/areas/Login.css" asp-append-version="true">
+
+<div style="margin-top: 50px;" class="row h-100">
+    <div class="col-md-4 login-div m-auto ">
+        <form id="registerForm" asp-route-returnUrl="@Model.ReturnUrl" method="post" class="form-div">
+            <div>
+            <h2 class="login-header" style="margin-top: 10px">Registe-se</h2>
+            <hr />
+            <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
+            <div class=" mb-3">
+                <label class="login-label" asp-for="Input.Email">Email</label>
+                <input asp-for="Input.Email" class="form-control login-input" autocomplete="username" aria-required="true" placeholder="oseu@email.pt"/>
+                <span asp-validation-for="Input.Email" class="text-danger"></span>
+            </div>
+            <div class=" mb-3">
+                <label class="login-label" asp-for="Input.Password">Password</label>
+                <input asp-for="Input.Password" class="form-control login-input" autocomplete="new-password" aria-required="true" placeholder="Password"/>
+                <span asp-validation-for="Input.Password" class="text-danger"></span>
+            </div>
+            <div class=" mb-3">
+                <label  class="login-label" asp-for="Input.ConfirmPassword">Confirmar Password</label>
+                <input asp-for="Input.ConfirmPassword" class="form-control login-input" autocomplete="new-password" aria-required="true" placeholder="Confirmação de Password"/>
+                <span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
+            </div>
+            </div>
+            <button id="registerSubmit" type="submit" class="w-100 btn btn-lg btn-primary login-button">Registar</button>
+            <div style="margin-top: 10px" class="d-grid justify-content-center">
+                <p class="login-label">
+                    Já tens conta criada? <a asp-page="./Login" asp-route-returnUrl="@Model.ReturnUrl">Faz login</a>
+                </p>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

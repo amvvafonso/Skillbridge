@@ -18,8 +18,9 @@
 <body style="font-family: Inter; background-color: rgb(8, 20, 37)">
 <header>
     <nav class="navbar navbar-div navbar-expand-sm navbar-toggleable-sm navbar-light box-shadow">
-        <div class="container-fluid">
-            <a class="navbar-brand text-white" asp-area="" asp-controller="Home" asp-action="Index">Skillbridge</a>
+        <div class="container-fluid h-100">
+           
+            <a class="navbar-brand text-white h-100" asp-area="" asp-controller="Home" asp-action="Index"> <img class="object-fit-contain h-100" alt="Logo da skillbridge" src="/logo.png"/></a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
                     aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
@@ -51,14 +52,13 @@
     <main role="main">
         <div id="loading-screen">
             <div class="spinner"></div>
-            <p>A carregar...</p>
         </div>
         @RenderBody()
     </main>
 </div>
 
 <footer class="footer text-muted">
-    <div class="container" style="text-align: center">
+    <div class="container" style="text-align: center; color: rgb(217, 228, 252);">
         &copy; 2026 - Skillbridge
     </div>
 </footer>

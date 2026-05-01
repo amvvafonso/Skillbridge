@@ -1,0 +1,54 @@
+﻿@page
+@model LoginModel
+
+@{
+}
+<link rel="stylesheet" href="~/css/areas/Login.css" asp-append-version="true">
+<h1>@ViewData["Title"]</h1>
+<div style="margin-top: 50px;" class="row">
+    <div class="col-md-4 m-auto login-div">
+        <section class="h-100" style="padding-top: 50px">
+            <form id="account" method="post" class="form-div">
+                <div>
+                <h2 class="login-header " style="margin-top: 10px">Bem vindo de volta!</h2>
+                <hr/>
+                <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
+                <div class="mb-3">
+                    <label asp-for="Input.Email" class="form-label login-label">Email</label>
+                    <input asp-for="Input.Email" class="form-control login-input" autocomplete="username" aria-required="true" placeholder="oseu@email.pt"/>
+                    <span asp-validation-for="Input.Email" class="text-danger"></span>
+                </div>
+                <div class="mb-3">
+                    <label asp-for="Input.Password" class="form-label login-label">Password</label>
+                    <input asp-for="Input.Password" class="form-control login-input" autocomplete="current-password" aria-required="true" placeholder="A sua password"/>
+                    <span asp-validation-for="Input.Password" class="text-danger"></span>
+                </div>
+                <div class="checkbox mb-3 login-label d-flex justify-content-between">
+                    <p>
+                        <a id="forgot-password" asp-page="./ForgotPassword">Forgot your password?</a>
+                    </p>
+                    <label asp-for="Input.RememberMe" class="form-label">
+                        <input class="form-check-input" asp-for="Input.RememberMe"/>
+                        @Html.DisplayNameFor(m => m.Input.RememberMe)
+                    </label>
+                </div>
+                </div>
+                <div>
+                    <button id="login-submit" type="submit" class="w-100 btn btn-lg btn-primary login-button">SIGN IN <span style="vertical-align: center" class="material-symbols-outlined">arrow_right_alt</span></button>
+                </div>
+                <div style="margin-top: 10px" class="d-grid justify-content-center">
+                    <p class="login-label">
+                        Não tens conta? <a asp-page="./Register" asp-route-returnUrl="@Model.ReturnUrl">Criar novo utilizador</a>
+                    </p>
+                    @* <p> *@
+                    @*     <a id="resend-confirmation" asp-page="./ResendEmailConfirmation">Resend email confirmation</a> *@
+                    @* </p> *@
+                </div>
+            </form>
+        </section>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
