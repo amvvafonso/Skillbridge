@@ -1,92 +1,64 @@
-/* --- Estilos Gerais do Banner --- */
-.hero-banner {
-    min-height: 80vh; /* Ocupa 80% da altura do ecrã */
+.home-banner-div {
+    width: 90%;
+    height: 70vh;
+    background-size: cover;
+    background-color: #081425;
+    display: grid;
+    grid-template-columns: 50% 50%;
     position: relative;
-    overflow: hidden;
-    /* Gradiente moderno (Roxo/Azul escuro) */
-    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-    padding-bottom: 100px; /* Espaço para a onda */
+    margin: auto;
 }
-
-/* Cor primária personalizada (ex: um azul vibrante) */
-.text-primary {
-    color: #00d2ff !important;
-}
-
-.btn-primary {
-    background-color: #00d2ff;
-    border-color: #00d2ff;
-    color: #1a1a2e;
-}
-.btn-primary:hover {
-    background-color: #00b8e6;
-    border-color: #00b8e6;
-    color: #1a1a2e;
-}
-
-/* --- Estilo da Onda (Wave) --- */
-.wave-container {
+.home-banner-div::before {
+    content: "";
     position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    line-height: 0;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%); 
+    width: 50%;
+    height: 78%;
+    background: radial-gradient(circle at center, rgba(190, 198, 224, 0.08) 0%, transparent 100%);
+    filter: blur(1000px);
+    z-index: 0; 
+    pointer-events: none; 
+}
+.banner-header-div {
+    width: 90%;
+    align-content: center;
+    height: 100%;
+    color: rgb(217, 228, 252);
+    padding: 1rem;
+    text-align: justify;
 }
 
-/* --- DEFINIÇÃO DAS ANIMAÇÕES (Keyframes) --- */
-
-/* 1. Animação "Pop In" (Aparecer e crescer ligeiramente) */
-@keyframes popIn {
-    0% {
-        opacity: 0;
-        transform: scale(0.8);
-    }
-    80% {
-        transform: scale(1.05);
-    }
-    100% {
-        opacity: 1;
-        transform: scale(1);
-    }
+.banner-header-title {
+    font-size: 45px;
+    text-align: left;
 }
 
-/* 2. Animação "Fade In Up" (Subir e aparecer) */
-@keyframes fadeInUp {
-    0% {
-        opacity: 0;
-        transform: translateY(30px);
-    }
-    100% {
-        opacity: 1;
-        transform: translateY(0);
-    }
+.banner-header-text {
+    color: rgb(127, 132, 143);
+    font-size: 17px;
+    line-height: 1.3;
+}
+.blur {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 50%;
 }
 
-/* --- CLASSES DE ANIMAÇÃO --- */
-.animate-pop-in {
-    animation: popIn 1s ease-out forwards;
+.header-button {
+    padding: 10px 40px;
+    background-color: rgb(109, 112, 251);
+    border: none;
+    border-radius: 5px;
+    color: white;
 }
 
-.animate-fade-in-up {
-    opacity: 0; /* Começa invisível */
-    animation: fadeInUp 0.8s ease-out forwards;
+.header-button#about {
+    background-color: rgb(12, 23, 45);
+    border: 1px solid rgba(121, 121, 121, 0.65);
+    color: rgba(121, 121, 121);
+    font-size: 17px;
 }
-
-.delay-1 {
-    animation-delay: 0.5s;
-}
-
-.delay-2 {
-    animation-delay: 1s;
-}
-
-.hover-scale {
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.hover-scale:hover {
-    transform: translateY(-5px) scale(1.05);
-    box-shadow: 0 10px 20px rgba(0, 210, 255, 0.3);
-}
-
 

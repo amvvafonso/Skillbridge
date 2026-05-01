@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "d5dyqb52fW4=",
+  "dgSpecHash": "iv+claY94OQ=",
   "success": true,
   "projectFilePath": "/Users/amvv/Desktop/DW/Skillbridge/Skillbridge/Skillbridge/Skillbridge.csproj",
   "expectedPackageFiles": [
@@ -60,6 +60,8 @@
     "/Users/amvv/.nuget/packages/microsoft.aspnetcore.diagnostics.entityframeworkcore/10.0.4/microsoft.aspnetcore.diagnostics.entityframeworkcore.10.0.4.nupkg.sha512",
     "/Users/amvv/.nuget/packages/microsoft.aspnetcore.identity.entityframeworkcore/10.0.4/microsoft.aspnetcore.identity.entityframeworkcore.10.0.4.nupkg.sha512",
     "/Users/amvv/.nuget/packages/microsoft.aspnetcore.identity.ui/10.0.4/microsoft.aspnetcore.identity.ui.10.0.4.nupkg.sha512",
+    "/Users/amvv/.nuget/packages/microsoft.aspnetcore.mvc.razor.extensions/6.0.0/microsoft.aspnetcore.mvc.razor.extensions.6.0.0.nupkg.sha512",
+    "/Users/amvv/.nuget/packages/microsoft.aspnetcore.mvc.razor.runtimecompilation/10.0.6/microsoft.aspnetcore.mvc.razor.runtimecompilation.10.0.6.nupkg.sha512",
     "/Users/amvv/.nuget/packages/microsoft.aspnetcore.razor.language/6.0.24/microsoft.aspnetcore.razor.language.6.0.24.nupkg.sha512",
     "/Users/amvv/.nuget/packages/microsoft.bcl.asyncinterfaces/8.0.0/microsoft.bcl.asyncinterfaces.8.0.0.nupkg.sha512",
     "/Users/amvv/.nuget/packages/microsoft.bcl.cryptography/9.0.4/microsoft.bcl.cryptography.9.0.4.nupkg.sha512",
@@ -90,7 +92,7 @@
     "/Users/amvv/.nuget/packages/microsoft.entityframeworkcore.sqlite.core/10.0.4/microsoft.entityframeworkcore.sqlite.core.10.0.4.nupkg.sha512",
     "/Users/amvv/.nuget/packages/microsoft.entityframeworkcore.sqlserver/10.0.5/microsoft.entityframeworkcore.sqlserver.10.0.5.nupkg.sha512",
     "/Users/amvv/.nuget/packages/microsoft.entityframeworkcore.tools/10.0.4/microsoft.entityframeworkcore.tools.10.0.4.nupkg.sha512",
-    "/Users/amvv/.nuget/packages/microsoft.extensions.dependencymodel/10.0.4/microsoft.extensions.dependencymodel.10.0.4.nupkg.sha512",
+    "/Users/amvv/.nuget/packages/microsoft.extensions.dependencymodel/10.0.6/microsoft.extensions.dependencymodel.10.0.6.nupkg.sha512",
     "/Users/amvv/.nuget/packages/microsoft.extensions.fileproviders.embedded/10.0.4/microsoft.extensions.fileproviders.embedded.10.0.4.nupkg.sha512",
     "/Users/amvv/.nuget/packages/microsoft.identity.client/4.73.1/microsoft.identity.client.4.73.1.nupkg.sha512",
     "/Users/amvv/.nuget/packages/microsoft.identity.client.extensions.msal/4.73.1/microsoft.identity.client.extensions.msal.4.73.1.nupkg.sha512",
@@ -141,5 +143,30 @@
     "/Users/amvv/.nuget/packages/system.security.cryptography.pkcs/9.0.4/system.security.cryptography.pkcs.9.0.4.nupkg.sha512",
     "/Users/amvv/.nuget/packages/system.security.cryptography.protecteddata/9.0.6/system.security.cryptography.protecteddata.9.0.6.nupkg.sha512"
   ],
-  "logs": []
+  "logs": [
+    {
+      "code": "NU1901",
+      "level": "Warning",
+      "message": "Package 'NuGet.Packaging' 6.12.1 has a known low severity vulnerability, https://github.com/advisories/GHSA-g4vj-cjjj-v7hg",
+      "projectPath": "/Users/amvv/Desktop/DW/Skillbridge/Skillbridge/Skillbridge/Skillbridge.csproj",
+      "warningLevel": 1,
+      "filePath": "/Users/amvv/Desktop/DW/Skillbridge/Skillbridge/Skillbridge/Skillbridge.csproj",
+      "libraryId": "NuGet.Packaging",
+      "targetGraphs": [
+        "net10.0"
+      ]
+    },
+    {
+      "code": "NU1901",
+      "level": "Warning",
+      "message": "Package 'NuGet.Protocol' 6.12.1 has a known low severity vulnerability, https://github.com/advisories/GHSA-g4vj-cjjj-v7hg",
+      "projectPath": "/Users/amvv/Desktop/DW/Skillbridge/Skillbridge/Skillbridge/Skillbridge.csproj",
+      "warningLevel": 1,
+      "filePath": "/Users/amvv/Desktop/DW/Skillbridge/Skillbridge/Skillbridge/Skillbridge.csproj",
+      "libraryId": "NuGet.Protocol",
+      "targetGraphs": [
+        "net10.0"
+      ]
+    }
+  ]
 }

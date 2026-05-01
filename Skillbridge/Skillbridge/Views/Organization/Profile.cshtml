@@ -1,0 +1,18 @@
+@model Skillbridge.ViewModels.ProfileViewModel
+@{
+  Layout = "_Layout";
+  ViewData["Title"] = @Model.Organization.OrganizationName;
+}
+
+
+<div class="profile-header">
+  <div class="banner-container">
+    <img src="@Model.Organization.BannerPath" alt="Banner of organization" class="banner-img" />
+  </div>
+  <div>
+    <div class="logo-container">
+      <img src="@Model.Organization.LogoPath" alt="Logo of organization" class="profile-logo" />
+    </div>
+      <h1 style="text-align: center;">@Model.Organization.OrganizationName</h1>
+  </div>
+</div>
