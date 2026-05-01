@@ -1,7 +1,5 @@
 # O que é Skillbridge
 O **Skillbridge** é uma plataforma focada em **Shadow Work** (trabalho de sombra ou acompanhamento profissional) e colaboração técnica em tempo real. Ele se posiciona como um espaço onde a barreira entre "aprender" e "fazer" é eliminada através da transparência total do fluxo de trabalho.
-```table-of-contents
-```
 # TODO
 - [ ] Atualização dos campos do InputModel e da base de dados para novos atributos e dados
 - [ ] Criação da página das organizações
