@@ -1,0 +1,45 @@
+.login-button {
+    width: 100px;
+    background-color: rgb(79, 70, 229);
+    height: 60px;
+}
+
+.login-header {
+    color: white;
+    text-align: center;
+}
+
+.login-div {
+    background-color: rgb(21, 32, 49);
+    height: 600px;
+    border-top: 1px solid rgb(76, 81, 191);
+}
+
+.login-input {
+    background-color: rgb(4, 14, 31);
+    color: white;
+    padding: 15px;
+    border: none;
+}
+
+.login-input::placeholder {
+    color: rgb(127, 132, 143);
+}
+
+.login-input:focus {
+    background-color: rgb(4, 14, 31);
+    color: white;
+    outline: none;
+}
+
+.login-label {
+    background-color: transparent;
+    color: rgb(127, 132, 143);
+}
+
+.form-div {
+    height: 100%;
+    display: grid;
+    grid-template-columns: 100%;
+    justify-content: space-between;
+}

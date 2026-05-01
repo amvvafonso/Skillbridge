@@ -34,9 +34,20 @@ public class Organization
     public string? OrganizationDescription { get; set; }
     
     /// <summary>
+    /// Path to logo
+    /// </summary>
+    [MaxLength(1000)]
+    public string LogoPath { get; set; } = "/default_logo.png";
+    
+    /// <summary>
+    /// Path to banner
+    /// </summary>
+    [MaxLength(1000)]
+    public string BannerPath { get; set; } = "/default_banner.png";
+    
+    /// <summary>
     /// Foreign key, link to owner of organization
     /// </summary>
-    
     public int Owner { get; set; }
 
     [ForeignKey(nameof(Owner))]
