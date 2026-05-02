@@ -1,26 +1,26 @@
 {
   "format": 1,
   "restore": {
-    "/Users/amvv/Desktop/DW/Skillbridge/Skillbridge/Skillbridge/Skillbridge.csproj": {}
+    "/home/skillz/Desktop/Escola/DW/TrabalhoFinal/Skillbridge/Skillbridge/Skillbridge.csproj": {}
   },
   "projects": {
-    "/Users/amvv/Desktop/DW/Skillbridge/Skillbridge/Skillbridge/Skillbridge.csproj": {
+    "/home/skillz/Desktop/Escola/DW/TrabalhoFinal/Skillbridge/Skillbridge/Skillbridge.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/Users/amvv/Desktop/DW/Skillbridge/Skillbridge/Skillbridge/Skillbridge.csproj",
+        "projectUniqueName": "/home/skillz/Desktop/Escola/DW/TrabalhoFinal/Skillbridge/Skillbridge/Skillbridge.csproj",
         "projectName": "Skillbridge",
-        "projectPath": "/Users/amvv/Desktop/DW/Skillbridge/Skillbridge/Skillbridge/Skillbridge.csproj",
-        "packagesPath": "/Users/amvv/.nuget/packages/",
-        "outputPath": "/Users/amvv/Desktop/DW/Skillbridge/Skillbridge/Skillbridge/obj/",
+        "projectPath": "/home/skillz/Desktop/Escola/DW/TrabalhoFinal/Skillbridge/Skillbridge/Skillbridge.csproj",
+        "packagesPath": "/home/skillz/.nuget/packages/",
+        "outputPath": "/home/skillz/Desktop/Escola/DW/TrabalhoFinal/Skillbridge/Skillbridge/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "/Users/amvv/.nuget/NuGet/NuGet.Config"
+          "/home/skillz/.nuget/NuGet/NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net10.0"
         ],
         "sources": {
-          "/usr/local/share/dotnet/library-packs": {},
+          "/usr/lib/dotnet/library-packs": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
@@ -39,7 +39,7 @@
           "auditLevel": "low",
           "auditMode": "all"
         },
-        "SdkAnalysisLevel": "10.0.200"
+        "SdkAnalysisLevel": "10.0.100"
       },
       "frameworks": {
         "net10.0": {
@@ -101,7 +101,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/10.0.201/PortableRuntimeIdentifierGraph.json",
+          "runtimeIdentifierGraphPath": "/usr/lib/dotnet/sdk/10.0.107/PortableRuntimeIdentifierGraph.json",
           "packagesToPrune": {
             "Microsoft.AspNetCore": "(,10.0.32767]",
             "Microsoft.AspNetCore.Antiforgery": "(,10.0.32767]",
