@@ -1,23 +1,23 @@
-﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
-using Microsoft.CodeAnalysis;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Skillbridge.Models;
-using Project = Skillbridge.Models.Project.Project;
+// Supondo que a sua classe User esteja neste namespace
+using Skillbridge.Models.Client;
+using Skillbridge.Models.Project;
 
 namespace Skillbridge.Data;
 
-public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : IdentityDbContext(options)
+// 1. Altere de IdentityDbContext para IdentityDbContext<User>
+public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) 
+    : IdentityDbContext<User>(options) 
 {
-
     public DbSet<Organization> Organizations { get; set; }
-    public DbSet<User> User {get; set;}
     public DbSet<Project> Project { get; set; }
 
-    
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
-        
         
         foreach (var entity in builder.Model.GetEntityTypes())
         {
