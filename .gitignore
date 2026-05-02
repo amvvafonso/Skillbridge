@@ -1,0 +1,22 @@
+[Aa]pp_Data/
+[Bb]in/
+[Oo]bj/
+[Oo]ut/
+.vs/
+.idea/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Ficheiros do Rider
+.rider/
+*.idea/
+
+# Base de dados SQLite local
+*.db
+*.db-shm
+*.db-wal
+
+# Ficheiros de segredos 
+appsettings.Development.json
