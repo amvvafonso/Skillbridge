@@ -1,7 +1,10 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.EntityFrameworkCore;
+using Skillbridge.Models.Client;
 
 namespace Skillbridge.Models;
 
@@ -48,8 +51,8 @@ public class Organization
     /// <summary>
     /// Foreign key, link to owner of organization
     /// </summary>
-    public int Owner { get; set; }
-
+    public string Owner { get; set; }
+    
     [ForeignKey(nameof(Owner))]
     public virtual User? OrganizationOwner { get; set; } = null!;
 }
