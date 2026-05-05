@@ -9,7 +9,7 @@ public class File
     /// Identifier of the file
     /// </summary>
     [Key]
-    private int FileId { get; set; }
+    public int FileId { get; set; }
 
     /// <summary>
     /// Manages if file is locked
@@ -55,11 +55,25 @@ public class File
     /// <summary>
     /// Parent folder
     /// </summary>
-    public int Parent { get; set; }
+    public int? Parent { get; set; }
 
+    // ############################################################
+    // Relacionamentos 1-N
+    // ############################################################
+    
     /// <summary>
     /// Foreign key of parent folder
     /// </summary>
     [ForeignKey(nameof(Parent))]
     public virtual File? ParentId { get; set; }
+    
+    /// <summary>
+    /// Foreign key of Project
+    /// </summary>
+    public int ProjectId { get; set; }
+    [ForeignKey(nameof(ProjectId))]
+    public virtual Project? Project { get; set; }
+    
+    
+    
 }
