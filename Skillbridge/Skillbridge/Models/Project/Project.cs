@@ -51,6 +51,13 @@ public class Project
     public virtual Organization Organization { get; set; } = null!;
 
 
-
-
+    // ############################################################
+    // Relacionamentos M-N
+    // ############################################################
+    public ICollection<UserProjectAccess> UserProjectAccessList { get; set; } = []; 
+    
+    // ############################################################
+    // Relacionamentos 1-N
+    // ############################################################
+    public ICollection<File> FileList { get; set; } = [];
 }

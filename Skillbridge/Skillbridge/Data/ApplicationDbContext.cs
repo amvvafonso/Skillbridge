@@ -5,6 +5,7 @@ using Skillbridge.Models;
 // Supondo que a sua classe User esteja neste namespace
 using Skillbridge.Models.Client;
 using Skillbridge.Models.Project;
+using File = Skillbridge.Models.Project.File;
 
 namespace Skillbridge.Data;
 
@@ -14,6 +15,8 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 {
     public DbSet<Organization> Organizations { get; set; }
     public DbSet<Project> Project { get; set; }
+    public DbSet<File> Files { get; set; }
+    public DbSet<UserProjectAccess> UserProjectAccesses { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
