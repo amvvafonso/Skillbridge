@@ -17,7 +17,10 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<Project> Project { get; set; }
     public DbSet<File> Files { get; set; }
     public DbSet<UserProjectAccess> UserProjectAccesses { get; set; }
-
+    public DbSet<ChatMessage> ChatMessages { get; set; }
+    public DbSet<Session> Sessions { get; set; }
+    public DbSet<SessionAccess> SessionAccesses { get; set; }
+    
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);

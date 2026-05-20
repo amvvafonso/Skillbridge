@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
+using Microsoft.EntityFrameworkCore;
 using Skillbridge.Models.Client;
 
 namespace Skillbridge.Models.Project;
@@ -11,12 +12,11 @@ public class UserProjectAccess
     /// </summary>
     [Key]
     public int AccessId { get; set; }
-    
+
     /// <summary>
     /// Role for Project
     /// </summary>
-    [Required]
-    public Role ProjectRole { get; set; }
+    public Role ProjectRole { get; set; } = Role.Unknown;
     
     // ############################################################
     // Relacionamentos M-N
@@ -33,9 +33,9 @@ public class UserProjectAccess
     /// <summary>
     /// FK for Project
     /// </summary>
-    [Required]
     public int ProjectId { get; set; }
     [ForeignKey(nameof(ProjectId))]
+    [DeleteBehavior(DeleteBehavior.Restrict)]
     public virtual Project? Project { get; set; }
     
 }
