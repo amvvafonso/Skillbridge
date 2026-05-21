@@ -1,0 +1,12 @@
+@page
+@model Skillbridge.Areas.Client.Pages.IndexModel
+
+@{
+    ViewData["title"] = $"Dashboard do {Model.CurrentUser?.Name}";
+    Layout = "_Layout";
+}
+
+<div class="container mt-4 text-white">
+    <h1>Bem vindo, @Model.CurrentUser?.Name!</h1>
+    <p>Atualmente existem @Model.Sessions.Count sessoẽs registadas na base de dados.</p>
+</div>

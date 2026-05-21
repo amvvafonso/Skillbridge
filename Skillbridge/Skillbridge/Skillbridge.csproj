@@ -28,4 +28,8 @@
       <Folder Include="Views\Project\" />
     </ItemGroup>
 
+    <ItemGroup>
+      <_ContentIncludedByDefault Remove="Areas\Client\Views\Client\Index.cshtml" />
+    </ItemGroup>
+
 </Project>
