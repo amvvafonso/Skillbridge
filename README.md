@@ -14,6 +14,8 @@ O **Skillbridge** é uma plataforma focada em **Shadow Work** (trabalho de sombr
 - [ ] Relacionar ficheiros de código com ficheiros markdown para comentários
 - [ ] Chat na sessão
 - [ ] Interpretação de ficheiro para associação markdown
+- [ ] Notificações
+- [ ] Toast support
 
 # Help
 
