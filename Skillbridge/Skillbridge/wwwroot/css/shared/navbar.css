@@ -2,3 +2,53 @@
     transition: 0.5s;
     text-decoration: underline;
 }
+
+.notification {
+    padding: 5px;
+    cursor: pointer;
+}
+.notification:hover {
+    transition: 0.5s;
+}
+
+.text-color {
+    color: rgb(142, 157, 177)
+}
+
+.notification-bk::after {
+    background-color: rgb(17, 28, 45);
+}
+
+.notification-bk:hover {
+    background-color: rgb(17, 28, 45) !important;
+    color: white;
+}
+
+.notification-button {
+    padding: 3px 5px;
+    border-radius: 5px;
+    border: none;
+    background-color: var(--primary);
+    color: white;
+}
+
+.toast-div {
+    padding: 10px 20px; 
+    background-color: white;
+    position: absolute;
+    top: 5%; 
+    left: 50%;
+    transform: translate(-50%, -50%);
+
+    height: auto;
+
+    min-width: 250px;
+
+    display: flex;
+    justify-content: center;
+    align-items: center; 
+    
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    border-radius: 6px;
+    z-index: 9999;
+}

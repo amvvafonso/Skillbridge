@@ -1,0 +1,41 @@
+.session-div {
+    width: 100%;
+    border: 1px solid;
+    display: grid;
+    grid-template-columns: 5% 70% 20%;
+    gap: 10px;
+    border-radius: 10px;
+    align-items: center;
+    justify-content: space-evenly;
+    padding: 10px;
+}
+
+.join-button {
+    background-color: rgb(99, 102, 241);
+    border: none;
+    padding: 10px 20px;
+    border-radius: 10px;
+}
+
+.session-title {
+    color: rgb(216, 227, 251);
+    font-size: 20px;
+    margin: 0;
+}
+
+.session-tag {
+    margin: 0;
+    color: rgb(198, 198, 205);
+}
+
+.session-status {
+    background-color: rgba(255, 0, 0, 0.2);
+    width: 50px;
+    height: 40px;
+    border-radius: 100%;
+}
+
+.session-status#active {
+    background-color: green;
+}
+

@@ -26,7 +26,8 @@ namespace Skillbridge.Areas.Client.Controllers
             IndexViewModel model = new IndexViewModel
             {
                 User = user,
-                Session = sessions
+                Session = sessions,
+                SessionCount = sessions.Count
             };
             
             return View(model);

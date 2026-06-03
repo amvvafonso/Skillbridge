@@ -3,11 +3,41 @@
 @using Skillbridge.Models.Project
 
 @{
-    ViewData["title"] = "Dashboard do";
-    Layout = "_Layout";
-}   
+  ViewData["title"] = "Dashboard do" + Model.User.Name;
+  Layout = "_Layout";
+}
 
+<head>
+  <link rel="stylesheet" href="css/areas/Client.css" />
+</head>
 
 <body>
 
+  <div class="w-100 align-content-center" style="min-height: 100px">
+    <h1 class="text-center text-white">Bem vindo de volta, @Model.User.Name</h1>
+    <h3>Voce tem @Model.SessionCount ativas</h3>
+  </div>
+  <div class="d-grid gap-5" style="grid-template-columns: 60% 40%">
+    <div>
+      <h2 class="text-white">Sessões de Trabalho Ativas</h2>
+
+      <div class="d-flex gap-3 flex-column">
+        @foreach (Session session in Model.Session)
+        {
+          <div class="session-div">
+            <div id="@(session.Active ? "" : "active")" class="session-status w-100">              
+            </div>
+            <div class="w-100">
+              <p class="session-title">@session.Title</p>
+              <p class="session-tag">Programado para @session.StartsAt</p>
+            </div>
+            <button class="join-button">Entrar</button>
+          </div>
+        }
+      </div>
+    </div>
+    <div class="w-100">
+      <h2 class="text-white">As suas organizações</h2>
+    </div>
+  </div>
 </body>

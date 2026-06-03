@@ -45,7 +45,7 @@ public class Project
     /// <summary>
     /// Foreign key, linked to the organization id
     /// </summary>
-    public int OrganizationId { get; set; }
+    public string OrganizationId { get; set; }
 
     [ForeignKey(nameof(OrganizationId))] 
     public virtual Organization Organization { get; set; } = null!;

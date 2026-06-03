@@ -20,6 +20,8 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<ChatMessage> ChatMessages { get; set; }
     public DbSet<Session> Sessions { get; set; }
     public DbSet<SessionAccess> SessionAccesses { get; set; }
+    public DbSet<OrganizationMember> OrganizationMembers { get; set; }
+    public DbSet<Notification> Notifications { get; set; }
     
     protected override void OnModelCreating(ModelBuilder builder)
     {

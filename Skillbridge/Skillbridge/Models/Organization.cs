@@ -14,7 +14,7 @@ public class Organization
     /// Identifier of the organization (PK)
     /// </summary>
     [Key]
-    public int OrganizationId { get; set; }
+    public string OrganizationId { get; set; }
     
     /// <summary>
     /// Name of organization
