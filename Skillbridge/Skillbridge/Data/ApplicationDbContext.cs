@@ -9,7 +9,6 @@ using File = Skillbridge.Models.Project.File;
 
 namespace Skillbridge.Data;
 
-// 1. Altere de IdentityDbContext para IdentityDbContext<User>
 public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) 
     : IdentityDbContext<User>(options) 
 {

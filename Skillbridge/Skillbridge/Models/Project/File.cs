@@ -56,7 +56,12 @@ public class File
     /// Parent folder
     /// </summary>
     public int? Parent { get; set; }
-
+    
+    /// <summary>
+    /// Content of the file
+    /// </summary>
+    public string? Content { get; set; }
+    
     // ############################################################
     // Relacionamentos 1-N
     // ############################################################
