@@ -1,0 +1,457 @@
+/* ========================================
+   Skillbridge - Client Dashboard
+   ======================================== */
+
+.dashboard-container {
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 0 1.5rem;
+}
+
+/* Empty state */
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 50vh;
+    text-align: center;
+}
+
+.empty-text {
+    color: rgb(100, 115, 140);
+    font-size: 15px;
+    margin-top: 0.5rem;
+}
+
+/* Dashboard grid layout */
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+}
+
+/* Section container */
+.dashboard-section {
+    background: rgba(16, 33, 60, 0.5);
+    border: 1px solid rgba(56, 70, 95, 0.4);
+    border-radius: 12px;
+    padding: 1.25rem;
+}
+
+/* Section header */
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid rgba(56, 70, 95, 0.4);
+}
+
+.section-title {
+    color: rgb(217, 228, 252);
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.section-title i {
+    font-size: 18px;
+    color: var(--primary);
+}
+
+.section-badge {
+    background: rgba(110, 113, 251, 0.15);
+    color: var(--primary);
+    font-size: 12px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 20px;
+}
+
+/* Sessions list */
+.sessions-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.session-card {
+    display: grid;
+    grid-template-columns: 6px 1fr auto;
+    gap: 0.75rem;
+    background: rgba(8, 20, 37, 0.6);
+    border: 1px solid rgba(56, 70, 95, 0.3);
+    border-radius: 10px;
+    padding: 1rem;
+    transition: all 0.2s ease;
+}
+
+.session-card:hover {
+    border-color: rgba(110, 113, 251, 0.4);
+    background: rgba(16, 33, 60, 0.4);
+    transform: translateY(-1px);
+}
+
+.session-active {
+    border-left: none;
+    border-color: rgba(52, 211, 153, 0.3);
+}
+
+.session-active:hover {
+    border-color: rgba(52, 211, 153, 0.5);
+}
+
+.session-locked {
+    opacity: 0.6;
+}
+
+/* Status bar (left indicator) */
+.session-status-bar {
+    width: 6px;
+    border-radius: 3px;
+    align-self: stretch;
+}
+
+.status-active {
+    background: rgb(52, 211, 153);
+    box-shadow: 0 0 8px rgba(52, 211, 153, 0.4);
+}
+
+.status-inactive {
+    background: rgb(100, 115, 140);
+}
+
+.status-locked {
+    background: rgb(239, 68, 68);
+    box-shadow: 0 0 8px rgba(239, 68, 68, 0.3);
+}
+
+/* Session info */
+.session-info {
+    min-width: 0;
+}
+
+.session-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.session-title {
+    color: rgb(217, 228, 252);
+    font-size: 15px;
+    font-weight: 600;
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Badges */
+.badge-active {
+    background: rgba(52, 211, 153, 0.15);
+    color: rgb(52, 211, 153);
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 6px;
+    white-space: nowrap;
+}
+
+.badge-inactive {
+    background: rgba(100, 115, 140, 0.15);
+    color: rgb(100, 115, 140);
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 6px;
+    white-space: nowrap;
+}
+
+.badge-locked {
+    background: rgba(239, 68, 68, 0.15);
+    color: rgb(239, 68, 68);
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 6px;
+    white-space: nowrap;
+}
+
+.session-description {
+    color: rgb(142, 157, 177);
+    font-size: 13px;
+    margin: 0.25rem 0 0.5rem;
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.session-meta {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.meta-item {
+    color: rgb(100, 115, 140);
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.meta-item i {
+    font-size: 13px;
+}
+
+/* Session action button */
+.session-action {
+    display: flex;
+    align-items: center;
+}
+
+.btn-join {
+    background: var(--primary);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.btn-join:hover {
+    background: rgb(90, 93, 230);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(110, 113, 251, 0.3);
+}
+
+.btn-disabled {
+    background: rgba(56, 70, 95, 0.3);
+    color: rgb(100, 115, 140);
+    border: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: not-allowed;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+}
+
+/* Organizations list */
+.org-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.org-card {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+}
+
+.org-card:hover {
+    background: rgba(16, 33, 60, 0.6);
+    border-color: rgba(56, 70, 95, 0.4);
+}
+
+.org-logo-wrapper {
+    width: 42px;
+    height: 42px;
+    border-radius: 8px;
+    overflow: hidden;
+    flex-shrink: 0;
+    background: rgba(8, 20, 37, 0.8);
+}
+
+.org-logo {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.org-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.org-name {
+    color: rgb(217, 228, 252);
+    font-size: 14px;
+    font-weight: 600;
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.org-address {
+    color: rgb(100, 115, 140);
+    font-size: 12px;
+    margin: 2px 0 0;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.org-address i {
+    font-size: 12px;
+}
+
+.org-arrow {
+    color: rgb(100, 115, 140);
+    font-size: 16px;
+    transition: all 0.2s ease;
+}
+
+.org-card:hover .org-arrow {
+    color: var(--primary);
+    transform: translateX(2px);
+}
+
+/* Projects list */
+.project-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.project-card {
+    display: flex;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    background: rgba(8, 20, 37, 0.4);
+    border: 1px solid rgba(56, 70, 95, 0.3);
+    border-radius: 8px;
+    transition: all 0.2s ease;
+}
+
+.project-card:hover {
+    border-color: rgba(110, 113, 251, 0.3);
+    background: rgba(16, 33, 60, 0.3);
+}
+
+.project-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    background: rgba(110, 113, 251, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.project-icon i {
+    font-size: 18px;
+    color: var(--primary);
+}
+
+.project-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.project-name {
+    color: rgb(217, 228, 252);
+    font-size: 14px;
+    font-weight: 600;
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.project-desc {
+    color: rgb(142, 157, 177);
+    font-size: 12px;
+    margin: 2px 0 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.project-org {
+    color: rgb(100, 115, 140);
+    font-size: 11px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.project-org i.bi-building {
+    font-size: 12px;
+}
+
+.project-vis {
+    margin-left: auto;
+}
+
+.project-vis i {
+    font-size: 12px;
+}
+
+.project-vis.public i {
+    color: rgb(52, 211, 153);
+}
+
+.project-vis.private i {
+    color: rgb(251, 191, 36);
+}
+
+/* Empty section */
+.empty-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1rem;
+    text-align: center;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .session-card {
+        grid-template-columns: 6px 1fr;
+    }
+
+    .session-action {
+        grid-column: span 2;
+        padding-left: 0;
+    }
+
+    .section-title {
+        font-size: 14px;
+    }
+}

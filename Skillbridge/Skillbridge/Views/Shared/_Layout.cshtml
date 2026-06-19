@@ -1,4 +1,5 @@
-﻿<!DOCTYPE html>
+﻿@using Skillbridge.Utilities
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8"/>
@@ -57,6 +58,35 @@
 </header>
 <div >
     <main role="main">
+        <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1100">
+            @if (TempData["ToastMessage"] != null)
+            {
+                // Define a cor de fundo com base no tipo (success, danger, etc.)
+                var bgClass = TempData["ToastType"]?.ToString() == "danger" ? "bg-danger text-white" : 
+                    TempData["ToastType"]?.ToString() == "warning" ? "bg-warning text-dark" : "bg-success text-white";
+
+                <div id="globalToast" class="toast align-items-center @bgClass border-0 shadow" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="4000">
+                    <div class="d-flex">
+                        <div class="toast-body">
+                            <strong>@TempData["ToastTitle"]</strong><br />
+                            @TempData["ToastMessage"]
+                        </div>
+                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                    </div>
+                </div>
+            }
+        </div>
+
+        @if (TempData["ToastMessage"] != null)
+        {
+            <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            var toastEl = document.getElementById('globalToast');
+            var toast = new bootstrap.Toast(toastEl);
+            toast.show();
+        });
+    </script>
+        }
         <div id="loading-screen">
             <div class="spinner"></div>
         </div>

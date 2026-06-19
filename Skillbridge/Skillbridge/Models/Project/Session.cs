@@ -9,14 +9,29 @@ public class Session
     /// ID of session
     /// </summary>
     [Key]
-    public string? id { get; set; }
+    public string? Id { get; set; }
+    
+    /// <summary>
+    /// Determines if session is active and people can join
+    /// </summary>
+    public bool Active { get; set; }
+    
+    /// <summary>
+    /// Date of creation
+    /// </summary>
+    public DateTime CreatedAt { get; set; }
+    
+    /// <summary>
+    /// Datetime of when it starts
+    /// </summary>
+    public DateTime StartsAt { get; set; }
     
     /// <summary>
     /// Title of session
     /// </summary>
     [Required]
     [MaxLength(50)]
-    public string? title { get; set; }
+    public string? Title { get; set; }
     
     /// <summary>
     /// Determines if session is public or closed
@@ -27,7 +42,7 @@ public class Session
     /// <summary>
     /// Determines if the session is locked, no operation is permited and chat is closed
     /// </summary>
-    public bool locked { get; set; }
+    public bool Locked { get; set; }
     
     /// <summary>
     /// Small description of session, max 200
