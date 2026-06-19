@@ -1,0 +1,39 @@
+@page
+@model Skillbridge.Areas.Client.Pages.CodeEditorModel
+
+@{
+    ViewData["title"] = "CodeEditor";
+    Layout = "_Layout";
+    
+}
+
+<div>
+    <div id="editor" style="height: 100vh">
+       
+    </div>
+</div>
+
+@section Scripts
+{
+    @* --- Loader do Monaco Editor via CDN --- *@
+    <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.52.0/min/vs/loader.js"></script>
+    <script>
+        //Configura o caminho base dos modulos do Monaco
+        require.config({paths: {'vs' : 'https://cdn.jsdelivr.net/npm/monaco-editor@0.52.0/min/vs/'}});
+        //Inicializa o editor apos carregar o modulo principal
+        require(['vs/editor/editor.main'], function() {
+            monaco.editor.create(
+                //Elemento HTML onde o editor vai ser renderizado
+                document.getElementById('editor'),
+            {
+                //Tema
+                theme: 'vs-dark',
+                //Conteudo do ficheiro serializado de forma a evitar problemas com aspas, caracteres especiais, etc...
+                value: @Json.Serialize(Model.CurrentFile.Content),
+                //Linguagem 
+                //TODO fazer um map que vai buscar a linguagem a partir da extensao do ficheiro
+                language: 'csharp'
+            });
+        });
+    </script>
+}

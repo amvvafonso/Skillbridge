@@ -22,8 +22,7 @@ namespace Skillbridge.Areas.Client.Pages
             _userManager = userManager;
         }
         
-        public User CurrentUser { get; set; }
-        public string Test {get; set;}
+        public User CurrentUser { get; set; } 
         public List<Session> Sessions { get; set; }
 
         public async Task<IActionResult> OnGetAsync()
