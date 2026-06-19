@@ -1,42 +1,56 @@
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
-using Skillbridge.Data;
-using Skillbridge.Models.Project;
-using Skillbridge.Models.Client;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Skillbridge.Areas.Client.Models;
+using Skillbridge.Data;
+using Skillbridge.Models;
+using Skillbridge.Models.Client;
 
-
-namespace Skillbridge.Areas.Client.Pages 
+namespace Skillbridge.Areas.Client.Controllers
 {
+    [Area("Client")]
     [Authorize]
-    public class IndexModel : PageModel
+    public class IndexModel(ApplicationDbContext context, UserManager<User> userManager) : Controller
     {
-        private readonly ApplicationDbContext _context;
-        private readonly UserManager<User> _userManager;
-        
-        // Injeçao das dependencias do construtor
-        public IndexModel(ApplicationDbContext context, UserManager<User> userManager)
+        public async Task<IActionResult> Index()
         {
-            _context = context;
-            _userManager = userManager;
-        }
-        
-        public User CurrentUser { get; set; } 
-        public List<Session> Sessions { get; set; }
+            var user = await userManager.GetUserAsync(User);
 
-        public async Task<IActionResult> OnGetAsync()
-        {
-            CurrentUser = await _userManager.GetUserAsync(User);
-            Sessions = _context.Sessions.ToList();
+            if (user == null)
+                return RedirectToAction("Index", "Home");
 
-            if (CurrentUser != null)
+            var userSessions = context.Sessions
+                .Include(s => s.file)
+                .OrderByDescending(s => s.CreatedAt)
+                .ToList();
+
+            var userOrganizations = context.OrganizationMembers
+                .Where(om => om.User == user.Id)
+                .Select(om => om.IdOrganization)
+                .ToList();
+
+            var userProjects = context.UserProjectAccesses
+                .Where(upa => upa.UserId == user.Id)
+                .Select(upa => upa.Project)
+                .ToList();
+
+            var activeSessions = userSessions.Count(s => s.Active);
+            var totalProjects = userProjects.Count;
+            var totalOrgs = userOrganizations.Count;
+
+            var model = new IndexViewModel
             {
-                var nome = CurrentUser.Name;
-            }
-            
-            return Page();
+                User = user,
+                Sessions = userSessions,
+                ActiveSessions = activeSessions,
+                TotalProjects = totalProjects,
+                TotalOrganizations = totalOrgs,
+                Organizations = userOrganizations,
+                Projects = userProjects
+            };
+
+            return View(model);
         }
     }
 }
-
