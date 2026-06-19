@@ -29,4 +29,14 @@ public class S3Api
         
         return await reader.ReadToEndAsync();
     }
+
+    public async Task EditarFicheiroAsync(string bucket, string key, string editar)
+    {
+        await _s3client.PutObjectAsync(new PutObjectRequest
+        {
+            BucketName = bucket,
+            Key = key,
+            ContentBody = editar
+        });
+    }
 }
