@@ -32,7 +32,6 @@ namespace Skillbridge.Areas.Client.Controllers
 
             var userProjects = context.UserProjectAccesses
                 .Where(upa => upa.UserId == user.Id)
-                .Include(p => p.Project)
                 .Select(upa => upa.Project)
                 .ToList();
 
