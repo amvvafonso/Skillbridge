@@ -280,6 +280,35 @@ namespace Skillbridge.Migrations
                     b.ToTable("Organizations");
                 });
 
+            modelBuilder.Entity("Skillbridge.Models.Project.ChatMessage", b =>
+                {
+                    b.Property<string>("ChatMessageId")
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("ChatMessageText")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("SessionId")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("ChatMessageId");
+
+                    b.HasIndex("SessionId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("ChatMessages");
+                });
+
             modelBuilder.Entity("Skillbridge.Models.Project.File", b =>
                 {
                     b.Property<int>("FileId")
@@ -287,6 +316,9 @@ namespace Skillbridge.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("FileId"));
+
+                    b.Property<string>("Content")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("FileType")
                         .IsRequired()
@@ -365,6 +397,59 @@ namespace Skillbridge.Migrations
                     b.HasIndex("OrganizationId");
 
                     b.ToTable("Project");
+                });
+
+            modelBuilder.Entity("Skillbridge.Models.Project.Session", b =>
+                {
+                    b.Property<string>("id")
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int>("fileId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("isPublic")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("locked")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("title")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("id");
+
+                    b.HasIndex("fileId");
+
+                    b.ToTable("Sessions");
+                });
+
+            modelBuilder.Entity("Skillbridge.Models.Project.SessionAccess", b =>
+                {
+                    b.Property<string>("SessionAccessId")
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("Role")
+                        .HasColumnType("int");
+
+                    b.Property<string>("SessionId")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("SessionAccessId");
+
+                    b.HasIndex("SessionId");
+
+                    b.ToTable("SessionAccesses");
                 });
 
             modelBuilder.Entity("Skillbridge.Models.Project.UserProjectAccess", b =>
@@ -457,6 +542,25 @@ namespace Skillbridge.Migrations
                     b.Navigation("OrganizationOwner");
                 });
 
+            modelBuilder.Entity("Skillbridge.Models.Project.ChatMessage", b =>
+                {
+                    b.HasOne("Skillbridge.Models.Project.Session", "Session")
+                        .WithMany()
+                        .HasForeignKey("SessionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Skillbridge.Models.Client.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Session");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("Skillbridge.Models.Project.File", b =>
                 {
                     b.HasOne("Skillbridge.Models.Project.File", "ParentId")
@@ -485,12 +589,34 @@ namespace Skillbridge.Migrations
                     b.Navigation("Organization");
                 });
 
+            modelBuilder.Entity("Skillbridge.Models.Project.Session", b =>
+                {
+                    b.HasOne("Skillbridge.Models.Project.File", "file")
+                        .WithMany()
+                        .HasForeignKey("fileId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("file");
+                });
+
+            modelBuilder.Entity("Skillbridge.Models.Project.SessionAccess", b =>
+                {
+                    b.HasOne("Skillbridge.Models.Project.Session", "Session")
+                        .WithMany()
+                        .HasForeignKey("SessionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Session");
+                });
+
             modelBuilder.Entity("Skillbridge.Models.Project.UserProjectAccess", b =>
                 {
                     b.HasOne("Skillbridge.Models.Project.Project", "Project")
                         .WithMany("UserProjectAccessList")
                         .HasForeignKey("ProjectId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("Skillbridge.Models.Client.User", "User")
