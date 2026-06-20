@@ -18,25 +18,98 @@ public class S3Api
     }
     public async Task<string> ObterFicheiroAsync(string bucket, string key)
     {
-        var request = new GetObjectRequest
+        try
         {
-            BucketName = bucket,
-            Key = key
-        };
+            var request = new GetObjectRequest
+            {
+                BucketName = bucket,
+                Key = key
+            };
 
-        using GetObjectResponse response = await _s3client.GetObjectAsync(request);
-        using StreamReader reader = new StreamReader(response.ResponseStream);
-        
-        return await reader.ReadToEndAsync();
+            using GetObjectResponse response = await _s3client.GetObjectAsync(request);
+            using StreamReader reader = new StreamReader(response.ResponseStream);
+
+            return await reader.ReadToEndAsync();
+        }
+        catch (AmazonS3Exception e)
+        {
+            Console.WriteLine($"[ERROR][ObterFicheiroAsync] {e.Message}");
+            return null;
+        }
     }
 
-    public async Task EditarFicheiroAsync(string bucket, string key, string editar)
+    public async Task<bool> EditarFicheiroAsync(string bucket, string key, string editar)
     {
-        await _s3client.PutObjectAsync(new PutObjectRequest
+        try
         {
-            BucketName = bucket,
-            Key = key,
-            ContentBody = editar
-        });
+            var request = await _s3client.PutObjectAsync(new PutObjectRequest
+            {
+                BucketName = bucket,
+                Key = key,
+                ContentBody = editar
+            });
+            
+            return request.HttpStatusCode == System.Net.HttpStatusCode.OK;
+        }
+        catch (AmazonS3Exception e)
+        {
+            Console.WriteLine($"[ERROR][EditarFicheiroAsync] {e.Message}");
+            return false;
+        }
+    }
+
+    public async Task<bool> CriarBucketAsync(string bucket, string key) {
+        try
+        {
+            var request = new PutBucketRequest
+            {
+                BucketName = bucket,
+                UseClientRegion = true,
+                ObjectLockEnabledForBucket =  true,
+            };
+            
+            var response = await _s3client.PutBucketAsync(request);
+
+            return response.HttpStatusCode == System.Net.HttpStatusCode.OK;
+        }
+        catch (AmazonS3Exception e)
+        {
+            Console.WriteLine($"[ERROR][CriarBucketAsync] {e.Message}");
+            return false;
+        }
+    }
+
+    public async Task<bool> EliminarFicheiroAsync(string bucket, string key)
+    {
+        try
+        {
+            var request = new DeleteObjectRequest
+            {
+                BucketName = bucket,
+                Key = key
+            };
+            var response = await _s3client.DeleteObjectAsync(request);
+            
+            return response.HttpStatusCode == System.Net.HttpStatusCode.OK;
+        }
+        catch (AmazonS3Exception e)
+        {
+            Console.WriteLine($"[ERROR][EliminarFicheiroAsync] {e.Message}");
+            return false;
+        }
+    }
+    
+    public async Task<bool> EliminarBucketAsync(string bucket, string key)
+    {
+        try
+        {
+            var request = await _s3client.DeleteBucketAsync(bucket);
+            return request.HttpStatusCode == System.Net.HttpStatusCode.OK;
+        }
+        catch (AmazonS3Exception e)
+        {
+            Console.WriteLine($"[ERROR][EliminarBucketAsync] {e.Message}");
+            return false;
+        }
     }
 }
