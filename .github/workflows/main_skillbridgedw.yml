@@ -6,10 +6,10 @@ on:
       - main
 
 env:
-  AZURE_WEBAPP_NAME: skillbridge-app    # nome da tua Web App no Azure
+  AZURE_WEBAPP_NAME: skillbridge-app   # nome da tua Web App no Azure
   AZURE_WEBAPP_PACKAGE_PATH: './Skillbridge/published'
   DOTNET_VERSION: '8.0.x'
-  PROJECT_PATH: 'Skillbridge/Skillbridge.csproj'   # <-- caminho correto para o csproj
+  PROJECT_PATH: 'Skillbridge/Skillbridge/Skillbridge.csproj'   # <-- caminho correto para o csproj
 
 jobs:
   build:
