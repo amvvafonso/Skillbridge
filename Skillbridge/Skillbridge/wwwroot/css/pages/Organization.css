@@ -12,6 +12,7 @@
   color: rgb(217, 228, 252);
   margin-bottom: 40px;
   letter-spacing: -0.5px;
+  animation: slide-up 1s;
 }
 
 .search-bar-wrapper {
@@ -19,6 +20,7 @@
   max-width: 680px;
   margin-bottom: 48px;
   position: relative;
+  animation: slide-up 1s;
 }
 
 .search-input {
@@ -82,6 +84,7 @@
   cursor: pointer;
 }
 
+
 .org-result-card:hover {
   border-color: rgb(80, 140, 255);
   transform: translateY(-2px);
@@ -143,4 +146,47 @@
 .no-results p {
   font-size: 1rem;
   margin: 0;
+}
+
+/* Animations */
+
+@keyframes slide-up {
+  from {transform: translateY(200%);}
+  to {transform: translateY(0);}
+}
+
+
+@keyframes slide-down {
+  from {transform: translateY(-50%);}
+  to {transform: translateY(0);}
+}
+
+
+@keyframes fade-in {
+  from {opacity: 0;}
+  to {opacity: 1;}
+}
+
+.spinner {
+  width: 50px;
+  height: 50px;
+  border: 5px solid rgba(255, 255, 255, 0.5);
+  border-top: 5px solid var(--primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  align-self: center;
+}
+
+
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }

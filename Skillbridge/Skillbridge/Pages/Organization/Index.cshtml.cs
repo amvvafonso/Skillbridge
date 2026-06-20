@@ -6,25 +6,38 @@ using Skillbridge.Utilities;
 
 namespace Skillbridge.Pages.Organization;
 
-public class 
-    IndexModel(ApplicationDbContext context) : PageModel
+public class IndexModel(ApplicationDbContext context) : PageModel
 {
     public ICollection<Skillbridge.Models.Organization> Organizations { get; set; } = [];
 
     [BindProperty(SupportsGet = true)]
     public string? Q { get; set; }
+
     public int Count { get; set; }
-    
+
     public void OnGet()
+    {
+        Search();
+    }
+
+    public PartialViewResult OnGetSearch()
+    {
+        Search();
+        return Partial("_OrganizationResults", this);
+    }
+
+    private void Search()
     {
         var todas = context.Organizations.ToList(); // traz tudo para memória
         Count = todas.Count;
+
         if (string.IsNullOrWhiteSpace(Q))
         {
             Organizations = todas;
+            Count = todas.Count;
             return;
         }
-        
+
         Organizations = todas
             .Where(o =>
                 Levenshtein.Contem(o.OrganizationName, Q) ||
@@ -32,9 +45,7 @@ public class
                 (o.OrganizationDescription != null && Levenshtein.Contem(o.OrganizationDescription, Q))
             )
             .ToList();
-    }
 
-// Verifica se alguma "palavra" do texto está próxima da pesquisa, ou se a pesquisa aparece literalmente
-    
-    
+        Count = Organizations.Count;
+    }
 }

@@ -1,50 +1,62 @@
 @page
 @model Skillbridge.Pages.Organization.IndexModel
 @{
-  ViewData["Title"] = "Organizações";
-  Layout = "_Layout";
+    ViewData["Title"] = "Organizações";
+    Layout = "_Layout";
 }
 <link rel="stylesheet" href="~/css/pages/Organization.css" asp-append-version="true" />
 
 <div class="org-search-page">
-  <h1 class="search-title">Explorar Organizações</h1>
-
-  <form method="get" class="search-bar-wrapper">
-    <i class="bi bi-search search-icon"></i>
-    <input
-      type="text"
-      name="q"
-      value="@ViewBag.Query"
-      class="search-input"
-      placeholder="Pesquisar por nome ou localização..."
-      autofocus
-    />
-  </form>
-  
-  @if (Model != null && Model.Count > 0)
-  {
-    <div class="results-count">@Model.Count organizaç@((Model.Count > 1) ? "ões" : "ão") encontrada@(Model.Count > 1 ? "s" : "")</div>
-
-    <div class="org-grid">
-      @foreach (var org in Model.Organizations)
-      {
-        <a asp-page="/Organization/Profile" asp-route-id="@org.OrganizationId" class="org-result-card">
-          <img src="@org.LogoPath" alt="@org.OrganizationName" class="org-result-logo" />
-          <h3 class="org-result-name">@org.OrganizationName</h3>
-          <p class="org-result-desc">@org.OrganizationDescription</p>
-          <p class="org-result-address">
-            <i class="bi bi-geo-alt"></i>
-            @org.OrganizationAddress
-          </p>
-        </a>
-      }
+    <h1 class="search-title">Explorar Organizações</h1>
+    <form method="get" id="searchForm" class="search-bar-wrapper">
+        <i class="bi bi-search search-icon"></i>
+        <input
+            type="text"
+            name="q"
+            id="searchInput"
+            value="@Model.Q"
+            class="search-input"
+            placeholder="Pesquisar por nome ou localização..."
+            autofocus
+        />
+    </form>
+    <div style="animation: ease-in 2s;" id="resultsContainer">
+        @await Html.PartialAsync("_OrganizationResults", Model)
     </div>
-  }
-  else if (ViewBag.Query != null)
-  {
-    <div class="no-results">
-      <i class="bi bi-search"></i>
-      <p>Nenhuma organização encontrada para "<strong>@ViewBag.Query</strong>"</p>
-    </div>
-  }
 </div>
+
+<script>
+    const input = document.getElementById('searchInput');
+    const resultsContainer = document.getElementById('resultsContainer');
+    let debounceTimeout;
+
+
+    // evita reload no Enter
+    document.getElementById('searchForm').addEventListener('submit', (e) => {
+        resultsContainer.innerHTML = '    <div style="display: flex; flex-direction: column; text-align: center; color: white">\n' +
+            '            <p style="color: rgba(255, 255, 255, 0.5)">A Procurar...</p>\n' +
+            '           <div class="spinner"></div>\n' +
+            '        </div>';
+        e.preventDefault();
+        doSearch(input.value);
+    });
+
+    async function doSearch(q) {
+        const url = `/Organization?q=${encodeURIComponent(q)}&handler=Search`;
+        const res = await fetch(url, {
+            headers: { 'X-Requested-With': 'fetch' }
+        });
+
+        if (!res.ok) return;
+
+        const html = await res.text();
+        setTimeout(() => {
+            resultsContainer.innerHTML = html;
+        }, [250])
+
+
+        // atualiza a URL sem recarregar (opcional, bom para refresh/share)
+        const newUrl = q ? `?q=${encodeURIComponent(q)}` : window.location.pathname;
+        history.replaceState(null, '', newUrl);
+    }
+</script>
