@@ -1,0 +1,165 @@
+@page "{id}"
+@model Skillbridge.Pages.Organization.ProfileModel
+@{
+    ViewData["Title"] = Model.Organization?.OrganizationName;
+    Layout = "_Layout";
+}
+<link rel="stylesheet" href="~/css/pages/OrganizationProfile.css" asp-append-version="true" />
+
+@if (Model.Organization != null)
+{
+    <div class="org-profile">
+
+        <!-- Banner -->
+        <img src="@Model.Organization.BannerPath" alt="Banner" class="org-banner" />
+
+        <!-- Header of organization -->
+        <div class="org-header">
+            <img src="@Model.Organization.LogoPath" alt="@Model.Organization.OrganizationName" class="org-logo"/>
+            <div class="org-header-info">
+                <h1 class="org-name">@Model.Organization.OrganizationName</h1>
+                <p class="org-address">
+                    <i class="bi bi-geo-alt"></i>
+                    @Model.Organization.OrganizationAddress
+                </p>
+                @if (!string.IsNullOrEmpty(Model.Organization.OrganizationOwner?.Name))
+                {
+                    <span class="org-owner-badge">
+                        <i class="bi bi-person-fill-gear"></i>
+                        Fundador: @Model.Organization.OrganizationOwner.Name
+                    </span>
+                }
+            </div>
+        </div>
+
+        <!-- Two Column Layout -->
+        <div class="org-main">
+
+            <!-- Left Column is About + Projects -->
+            <div>
+                <!-- About -->
+                <div class="org-card">
+                    <h2 class="org-card-title">
+                        <i class="bi bi-info-circle"></i> Sobre
+                    </h2>
+                    @if (!string.IsNullOrEmpty(Model.Organization.OrganizationDescription))
+                    {
+                        <p class="org-description">@Model.Organization.OrganizationDescription</p>
+                    }
+                    else
+                    {
+                        <p class="org-empty">Sem descrição disponível.</p>
+                    }
+                </div>
+
+                <!-- Publications -->
+                <div class="org-card" style="margin-top: 24px;">
+                    <h2 class="org-card-title">
+                        <i class="bi bi-megaphone"></i> Publicações
+                    </h2>
+                    @if (Model.Posts != null && Model.Posts.Count > 0)
+                    {
+                        <div class="pub-list">
+                            @foreach (var post in Model.Posts)
+                            {
+                                <div class="pub-post">
+                                    <div class="pub-post-header">
+                                        <h3 class="pub-post-title">@post.Title</h3>
+                                        <span class="pub-post-date">
+                                            <i class="bi bi-calendar3"></i>
+                                            @post.Created.ToString("dd/MM/yyyy")
+                                        </span>
+                                    </div>
+                                    <p class="pub-post-content">@post.Content</p>
+                                    @if (!string.IsNullOrEmpty(post.AuthorName))
+                                    {
+                                        <div class="pub-post-author">
+                                            <i class="bi bi-person"></i>
+                                            Publicado por @post.AuthorName
+                                        </div>
+                                    }
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="pub-placeholder">
+                            <i class="bi bi-newspaper"></i>
+                            <p>Em breve — anúncios e publicações da organização aparecerão aqui.</p>
+                        </div>
+                    }
+                </div>
+
+                <!-- Projects -->
+                <div class="org-card" style="margin-top: 24px;">
+                    <h2 class="org-card-title">
+                        <i class="bi bi-code-square"></i> Projetos
+                        @if (Model.Projects.Count > 0)
+                        {
+                            <span class="project-badge public" style="margin-left: auto;">@Model.Projects.Count</span>
+                        }
+                    </h2>
+                    @if (Model.Projects.Count > 0)
+                    {
+                        <div class="projects-grid">
+                            @foreach (var project in Model.Projects)
+                            {
+                                <a asp-page="/Project/Index" asp-route-id="@project.Id" class="project-card">
+                                    <h3 class="project-name">@project.Name</h3>
+                                    <p class="project-desc">@project.Description</p>
+                                    <span class="project-badge @(project.IsPublic ? "public" : "private")">
+                                        <i class="bi bi-@(project.IsPublic ? "globe2" : "lock")"></i> @(project.IsPublic ? "Público" : "Privado")
+                                    </span>
+                                </a>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="org-empty">Esta organização ainda não tem projetos.</p>
+                    }
+                </div>
+            </div>
+
+            <!-- Right Column is nembers of organization -->
+            <div>
+                <div class="org-card">
+                    <h2 class="org-card-title">
+                        <i class="bi bi-people"></i> Membros
+                        @if (Model.Members.Count > 0)
+                        {
+                            <span class="project-badge public" style="margin-left: auto;">@Model.Members.Count</span>
+                        }
+                    </h2>
+                    @if (Model.Members.Count > 0)
+                    {
+                        <div class="members-list">
+                            @foreach (var member in Model.Members)
+                            {
+                                <div class="member-row">
+                                    <div class="member-avatar">
+                                        @(member.Name?.Length > 0 ? member.Name[0].ToString().ToUpper() : "?")
+                                    </div>
+                                    <div>
+                                        <p class="member-name">@member.Name</p>
+                                        <p class="member-email">@member.Email</p>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="org-empty">Ainda não há membros.</p>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Back -->
+        <a asp-page="Index" class="org-back">
+            <i class="bi bi-arrow-left"></i> Voltar às organizações
+        </a>
+    </div>
+}

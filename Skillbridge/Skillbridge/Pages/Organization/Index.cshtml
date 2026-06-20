@@ -1,0 +1,50 @@
+@page
+@model Skillbridge.Pages.Organization.IndexModel
+@{
+  ViewData["Title"] = "Organizações";
+  Layout = "_Layout";
+}
+<link rel="stylesheet" href="~/css/pages/Organization.css" asp-append-version="true" />
+
+<div class="org-search-page">
+  <h1 class="search-title">Explorar Organizações</h1>
+
+  <form method="get" class="search-bar-wrapper">
+    <i class="bi bi-search search-icon"></i>
+    <input
+      type="text"
+      name="q"
+      value="@ViewBag.Query"
+      class="search-input"
+      placeholder="Pesquisar por nome ou localização..."
+      autofocus
+    />
+  </form>
+  
+  @if (Model != null && Model.Count > 0)
+  {
+    <div class="results-count">@Model.Count organizaç@((Model.Count > 1) ? "ões" : "ão") encontrada@(Model.Count > 1 ? "s" : "")</div>
+
+    <div class="org-grid">
+      @foreach (var org in Model.Organizations)
+      {
+        <a asp-page="/Organization/Profile" asp-route-id="@org.OrganizationId" class="org-result-card">
+          <img src="@org.LogoPath" alt="@org.OrganizationName" class="org-result-logo" />
+          <h3 class="org-result-name">@org.OrganizationName</h3>
+          <p class="org-result-desc">@org.OrganizationDescription</p>
+          <p class="org-result-address">
+            <i class="bi bi-geo-alt"></i>
+            @org.OrganizationAddress
+          </p>
+        </a>
+      }
+    </div>
+  }
+  else if (ViewBag.Query != null)
+  {
+    <div class="no-results">
+      <i class="bi bi-search"></i>
+      <p>Nenhuma organização encontrada para "<strong>@ViewBag.Query</strong>"</p>
+    </div>
+  }
+</div>
