@@ -6,7 +6,8 @@ using Skillbridge.Utilities;
 
 namespace Skillbridge.Pages.Organization;
 
-public class IndexModel(ApplicationDbContext context) : PageModel
+public class 
+    IndexModel(ApplicationDbContext context) : PageModel
 {
     public ICollection<Skillbridge.Models.Organization> Organizations { get; set; } = [];
 
