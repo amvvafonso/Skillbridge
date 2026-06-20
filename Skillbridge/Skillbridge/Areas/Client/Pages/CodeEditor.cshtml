@@ -8,21 +8,27 @@
 }
 
 <div>
+    <button id="saveBtn" onclick="saveContent()">Guardar</button>
     <div id="editor" style="height: 100vh">
-       
+
     </div>
 </div>
 
 @section Scripts
 {
+    @*Gera um campo hidden com um token de segurança para proteger o POST contra ataques CSRF (Cross-Site Request Forgery) *@
+    @Html.AntiForgeryToken()
     @* --- Loader do Monaco Editor via CDN --- *@
     <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.52.0/min/vs/loader.js"></script>
     <script>
+        //Para o editor se tornar acessivel fora do require
+        var editor; 
+        
         //Configura o caminho base dos modulos do Monaco
         require.config({paths: {'vs' : 'https://cdn.jsdelivr.net/npm/monaco-editor@0.52.0/min/vs/'}});
         //Inicializa o editor apos carregar o modulo principal
         require(['vs/editor/editor.main'], function() {
-            monaco.editor.create(
+            editor = monaco.editor.create(
                 //Elemento HTML onde o editor vai ser renderizado
                 document.getElementById('editor'),
             {
@@ -31,9 +37,33 @@
                 //Conteudo do ficheiro serializado de forma a evitar problemas com aspas, caracteres especiais, etc...
                 value: @Json.Serialize(Model.CurrentFile.Content),
                 //Linguagem 
-                //TODO fazer um map que vai buscar a linguagem a partir da extensao do ficheiro
+                //TODO fazer um map que vai buscar a linguagem a partir da extensão do ficheiro
                 language: 'csharp'
             });
         });
+        
+        //Envia o conteudo atual do editor para o servidor via POST
+        function saveContent() {
+            fetch('?handler=Save', {
+                method: 'POST',
+                headers: {
+                    //Indica que o corpo do pedido esta em JSON
+                    'Content-Type': 'application/json',
+                    // Token de segurança lido do campo hidden gerado pelo AntiForgeryToken
+                    'RequestVerificationToken' :
+                    document.querySelector('input[name="__RequestVerificationToken"]').value
+                },
+                //Converte o objeto JS para JSON para enviar o corpo do pedido
+                body: JSON.stringify({
+                    //Id do ficheiro atual
+                    fileId: @Model.CurrentFile.FileId,
+                    //Conteudo atual do editor
+                    content: editor.getValue(),
+                })
+            }).then(response => {
+                //Mostra alerta de sucesso se o servidor devolver 200 OK
+                if (response.ok) alert ('Guardado');
+            });
+        }
     </script>
 }
