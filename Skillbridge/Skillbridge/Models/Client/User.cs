@@ -1,5 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using Skillbridge.Data;
 using Skillbridge.Models.Project;
 
 namespace Skillbridge.Models.Client;
@@ -16,4 +18,10 @@ public class User : IdentityUser
     // Relacionamentos M-N
     // ############################################################
     public ICollection<UserProjectAccess>  UserProjectAccessList { get; set; } = []; 
+    
+    
+    public static async Task<bool> UserExists(ApplicationDbContext context, string memberEmail)
+    {
+        return await context.Users.AnyAsync(u => u.Email == memberEmail);
+    }
 }

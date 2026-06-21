@@ -21,7 +21,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<SessionAccess> SessionAccesses { get; set; }
     public DbSet<OrganizationMember> OrganizationMembers { get; set; }
     public DbSet<Notification> Notifications { get; set; }
-    
+    public DbSet<Post> Posts { get; set; }
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);

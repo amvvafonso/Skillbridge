@@ -6,6 +6,7 @@ public enum Role
 {
     Mentor,
     Apprentice,
-    Owner,
-    Unknown
+    Unknown,
+    Manager,
+    Owner
 }

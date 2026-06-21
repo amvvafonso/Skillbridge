@@ -1,0 +1,62 @@
+@page
+@model Skillbridge.Pages.Organization.IndexModel
+@{
+    ViewData["Title"] = "Organizações";
+    Layout = "_Layout";
+}
+<link rel="stylesheet" href="~/css/pages/Organization.css" asp-append-version="true" />
+
+<div class="org-search-page">
+    <h1 class="search-title">Explorar Organizações</h1>
+    <form method="get" id="searchForm" class="search-bar-wrapper">
+        <i class="bi bi-search search-icon"></i>
+        <input
+            type="text"
+            name="q"
+            id="searchInput"
+            value="@Model.Q"
+            class="search-input"
+            placeholder="Pesquisar por nome ou localização..."
+            autofocus
+        />
+    </form>
+    <div style="animation: ease-in 2s;" id="resultsContainer">
+        @await Html.PartialAsync("_OrganizationResults", Model)
+    </div>
+</div>
+
+<script>
+    const input = document.getElementById('searchInput');
+    const resultsContainer = document.getElementById('resultsContainer');
+    let debounceTimeout;
+
+
+    // evita reload no Enter
+    document.getElementById('searchForm').addEventListener('submit', (e) => {
+        resultsContainer.innerHTML = '    <div style="display: flex; flex-direction: column; text-align: center; color: white">\n' +
+            '            <p style="color: rgba(255, 255, 255, 0.5)">A Procurar...</p>\n' +
+            '           <div class="spinner"></div>\n' +
+            '        </div>';
+        e.preventDefault();
+        doSearch(input.value);
+    });
+
+    async function doSearch(q) {
+        const url = `/Organization?q=${encodeURIComponent(q)}&handler=Search`;
+        const res = await fetch(url, {
+            headers: { 'X-Requested-With': 'fetch' }
+        });
+
+        if (!res.ok) return;
+
+        const html = await res.text();
+        setTimeout(() => {
+            resultsContainer.innerHTML = html;
+        }, [250])
+
+
+        // atualiza a URL sem recarregar (opcional, bom para refresh/share)
+        const newUrl = q ? `?q=${encodeURIComponent(q)}` : window.location.pathname;
+        history.replaceState(null, '', newUrl);
+    }
+</script>

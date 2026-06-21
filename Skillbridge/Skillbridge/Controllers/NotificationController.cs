@@ -48,7 +48,7 @@ public class NotificationController : Controller
                     if (!alreadyMember)
                     {
                         // Inserts into db the organization/member relation
-                        await _context.OrganizationMembers.AddAsync(new OrganizationMember(Guid.NewGuid().ToString(),param, userId));
+                        await _context.OrganizationMembers.AddAsync(new OrganizationMember(Guid.NewGuid().ToString(),param, userId, Role.Apprentice));
                     }
                     
                     // Updates notification
