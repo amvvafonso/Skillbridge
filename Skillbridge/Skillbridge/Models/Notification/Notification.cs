@@ -6,6 +6,22 @@ namespace Skillbridge.Models;
 
 public class Notification
 {
+    private Notification() { }
+    public Notification(NotificationParam param, string userId, NotificationType type)
+    {
+        NotificationId = Guid.NewGuid().ToString();
+        Param = param.Param;
+        UserId = userId;
+        Type = type;
+        Date = DateTime.Now;
+        Hidden = false;
+        if (type == NotificationType.OrganizationInvite)
+        {
+            Title = "Convite";
+            Body = param.Other.TryGetValue("message", out var msg) ? msg : string.Empty;
+        }
+    }
+
     /// <summary>
     /// Id of notification
     /// </summary>
@@ -23,7 +39,7 @@ public class Notification
     public string Body { get; set; }
     
     /// <summary>
-    /// Param of invite, most of the times it will be organizationId
+    /// Param of invite, most of the time it will be organizationId
     /// </summary>
     public string Param { get; set; }
     

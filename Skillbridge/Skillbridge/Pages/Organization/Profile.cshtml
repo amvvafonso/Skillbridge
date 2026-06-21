@@ -1,4 +1,5 @@
 @page "{id}"
+@using Skillbridge.Models.Client
 @model Skillbridge.Pages.Organization.ProfileModel
 @{
     ViewData["Title"] = Model.Organization?.OrganizationName;
@@ -142,12 +143,67 @@
                                         @(member.Name?.Length > 0 ? member.Name[0].ToString().ToUpper() : "?")
                                     </div>
                                     <div>
-                                        <p class="member-name">@member.Name</p>
+                                        <p class="member-name">@member.Name <span class="member-role">@member.Role</span></p>
                                         <p class="member-email">@member.Email</p>
                                     </div>
                                 </div>
                             }
                         </div>
+                        <form id="form-add-member" method="post" class="add-member-form">
+                            <div class="add-member-input-wrap">
+                                <i class="bi bi-envelope"></i>
+                                <input asp-for="MemberEmail" placeholder="Email do membro" />
+                            </div>
+                            <button id="btn-add" type="submit" asp-page-handler="AddMember" class="add-member-btn">
+                                <i class="bi bi-person-plus"></i> Adicionar
+                            </button>
+                        </form>
+                        <script>
+                        document.getElementById('form-add-member').addEventListener('submit', async (e) => {
+                            e.preventDefault();
+    
+                            const formData = new FormData(e.target);
+    
+                            const response = await fetch(window.location.pathname + '?handler=AddMember', {
+                                method: 'POST',
+                                body: formData
+                            });
+    
+                            const data = await response.json();
+                            mostrarToast(data.success ? "Informação" : "Erro", data.message, data.success ? "success" : "danger");
+    
+                            if (data.success) {
+                                e.target.reset(); // limpa o input do email
+                            }
+                        });
+    
+                        function mostrarToast(titulo, mensagem, tipo) {
+                            const toastEl = document.createElement('div');
+                            toastEl.className = `toast align-items-center text-bg-${tipo} border-0`;
+                            toastEl.setAttribute('role', 'alert');
+                            toastEl.innerHTML = `
+                                <div class="d-flex">
+                                    <div class="toast-body"><strong>${titulo}:</strong> ${mensagem}</div>
+                                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                                </div>
+                            `;
+    
+                            let container = document.getElementById('toast-container');
+                            if (!container) {
+                                container = document.createElement('div');
+                                container.id = 'toast-container';
+                                container.className = 'toast-container position-fixed bottom-0 end-0 p-3';
+                                document.body.appendChild(container);
+                            }
+    
+                            container.appendChild(toastEl);
+                            const toast = new bootstrap.Toast(toastEl, { delay: 4000 });
+                            toast.show();
+    
+                            toastEl.addEventListener('hidden.bs.toast', () => toastEl.remove());
+                        }
+                        </script>
+                        
                     }
                     else
                     {
@@ -156,7 +212,6 @@
                 </div>
             </div>
         </div>
-
         <!-- Back -->
         <a asp-page="Index" class="org-back">
             <i class="bi bi-arrow-left"></i> Voltar às organizações

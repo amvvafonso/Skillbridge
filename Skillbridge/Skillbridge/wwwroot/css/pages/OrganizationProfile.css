@@ -174,7 +174,12 @@
   color: rgb(217, 228, 252);
   margin: 0;
 }
-
+.member-role {
+  font-size: 0.6rem;
+  background: var(--primary);
+  padding: 2px 4px;
+  border-radius: 10px;
+}
 .member-email {
   font-size: 0.78rem;
   color: rgb(90, 112, 148);
@@ -335,6 +340,75 @@
   font-size: 0.88rem;
   margin: 0;
   line-height: 1.5;
+}
+
+/* -------- Add Member Form -------- */
+.add-member-form {
+  display: flex;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.add-member-input-wrap {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(8, 20, 37, 0.7);
+  border: 1px solid rgba(30, 48, 78, 0.8);
+  border-radius: 10px;
+  padding: 0 14px;
+  transition: border-color 0.2s;
+}
+
+.add-member-input-wrap:focus-within {
+  border-color: rgb(80, 140, 255);
+}
+
+.add-member-input-wrap i {
+  color: rgb(90, 112, 148);
+  font-size: 0.9rem;
+  flex-shrink: 0;
+}
+
+.add-member-input-wrap input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: rgb(217, 228, 252);
+  font-size: 0.88rem;
+  padding: 10px 0;
+}
+
+.add-member-input-wrap input::placeholder {
+  color: rgb(90, 112, 148);
+}
+
+.add-member-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgb(80, 140, 255);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 18px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.15s;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.add-member-btn:hover {
+  background: rgb(56, 116, 240);
+  transform: translateY(-1px);
+}
+
+.add-member-btn:active {
+  transform: translateY(0);
 }
 
 /* -------- Empty State -------- */

@@ -6,7 +6,7 @@ namespace Skillbridge.Utilities
     public static class ToastHelper
     {
         // Método estático que você vai chamar no seu código
-        public static void ShowToast(ITempDataDictionary tempData, string title, string message, string type = "success")
+        public static void ShowToast(ITempDataDictionary tempData, string title, string message, string type)
         {
             tempData["ToastTitle"] = title;
             tempData["ToastMessage"] = message;

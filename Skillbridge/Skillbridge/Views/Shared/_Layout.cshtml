@@ -58,7 +58,7 @@
 </header>
 <div >
     <main role="main">
-        <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1100">
+        <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1100">
             @if (TempData["ToastMessage"] != null)
             {
                 // Define a cor de fundo com base no tipo (success, danger, etc.)
@@ -93,7 +93,32 @@
         @RenderBody()
     </main>
 </div>
+<div class="modal fade" id="meuModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
 
+            <div class="modal-header">
+                <h5 class="modal-title">Confirmação</h5>
+            </div>
+
+            <div class="modal-body">
+                Deseja continuar?
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn btn-secondary"
+                        data-bs-dismiss="modal">
+                    Cancelar
+                </button>
+
+                <button class="btn btn-primary">
+                    Confirmar
+                </button>
+            </div>
+
+        </div>
+    </div>
+</div>
 <footer class="footer text-muted">
     <div class="container" style="text-align: center; color: rgb(217, 228, 252);">
         &copy; 2026 - Skillbridge
@@ -117,3 +142,5 @@
         }, 100);
     });
 </script>
+
+
