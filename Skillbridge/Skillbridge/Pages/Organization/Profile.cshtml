@@ -57,19 +57,54 @@
                 <div class="org-card" style="margin-top: 24px;">
                     <h2 class="org-card-title">
                         <i class="bi bi-megaphone"></i> Publicações
+                        @if (Model.UserPerm is Role.Owner or Role.Manager)
+                        {
+                            <button type="button" class="pub-add-btn" id="btn-toggle-post" title="Nova publicação">
+                                <i class="bi bi-plus-lg"></i>
+                            </button>
+                        }
                     </h2>
+
+                    <!-- Create Post Form (hidden by default) -->
+                    @if (Model.UserPerm is Role.Owner or Role.Manager)
+                    {
+                        <form id="form-create-post" method="post" class="create-post-form" style="display:none;">
+                            <div class="create-post-inner">
+                                <input type="text" asp-for="NewPostTitle" placeholder="Título" class="create-post-title" maxlength="100" />
+                                <textarea asp-for="NewPostContent" placeholder="Escreve a publicação…" class="create-post-content" maxlength="500" rows="4"></textarea>
+                                <div class="create-post-footer">
+                                    <span class="char-count"><span id="char-current">0</span> / 500</span>
+                                    <div class="create-post-actions">
+                                        <button type="button" class="create-post-cancel" id="btn-cancel-post">Cancelar</button>
+                                        <button type="submit" class="create-post-submit" id="btn-submit-post">
+                                            <i class="bi bi-send-fill"></i> Publicar
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    }
+
                     @if (Model.Posts != null && Model.Posts.Count > 0)
                     {
                         <div class="pub-list">
                             @foreach (var post in Model.Posts)
                             {
-                                <div class="pub-post">
+                                <div class="pub-post" data-post-id="@post.Id">
                                     <div class="pub-post-header">
                                         <h3 class="pub-post-title">@post.Title</h3>
-                                        <span class="pub-post-date">
-                                            <i class="bi bi-calendar3"></i>
-                                            @post.Created.ToString("dd/MM/yyyy")
-                                        </span>
+                                        <div class="pub-post-meta">
+                                            <span class="pub-post-date">
+                                                <i class="bi bi-calendar3"></i>
+                                                @post.Created.ToString("dd/MM/yyyy")
+                                            </span>
+                                            @if (Model.UserPerm is Role.Owner or Role.Manager)
+                                            {
+                                                <button type="button" class="pub-delete-btn" data-post-id="@post.Id" title="Remover publicação">
+                                                    <i class="bi bi-trash3"></i>
+                                                </button>
+                                            }
+                                        </div>
                                     </div>
                                     <p class="pub-post-content">@post.Content</p>
                                     @if (!string.IsNullOrEmpty(post.AuthorName))
@@ -149,27 +184,33 @@
                                 </div>
                             }
                         </div>
-                        <form id="form-add-member" method="post" class="add-member-form">
-                            <div class="add-member-input-wrap">
-                                <i class="bi bi-envelope"></i>
-                                <input asp-for="MemberEmail" placeholder="Email do membro" />
-                            </div>
-                            <button id="btn-add" type="submit" asp-page-handler="AddMember" class="add-member-btn">
-                                <i class="bi bi-person-plus"></i> Adicionar
-                            </button>
-                        </form>
+                        @if (Model.UserPerm == Role.Manager || Model.UserPerm == Role.Owner)
+                        {
+                            <form id="form-add-member" method="post" class="add-member-form">
+                                <div class="add-member-input-wrap">
+                                    <i class="bi bi-envelope"></i>
+                                    <input asp-for="MemberEmail" placeholder="Email do membro" />
+                                </div>
+                                <button id="btn-add" type="submit" asp-page-handler="AddMember" class="add-member-btn">
+                                    <i class="bi bi-person-plus"></i> Adicionar
+                                </button>
+                            </form>
+                        }
                         <script>
                         document.getElementById('form-add-member').addEventListener('submit', async (e) => {
                             e.preventDefault();
-    
+                            // Gets formdata
                             const formData = new FormData(e.target);
-    
+                            
+                            // Sends to the API, runs OnPostAddMemberAsync
                             const response = await fetch(window.location.pathname + '?handler=AddMember', {
                                 method: 'POST',
                                 body: formData
                             });
-    
+                            
+                            // Gets the response
                             const data = await response.json();
+                            // Shows the response on the toast
                             mostrarToast(data.success ? "Informação" : "Erro", data.message, data.success ? "success" : "danger");
     
                             if (data.success) {
@@ -178,6 +219,7 @@
                         });
     
                         function mostrarToast(titulo, mensagem, tipo) {
+                            // Creates the toast
                             const toastEl = document.createElement('div');
                             toastEl.className = `toast align-items-center text-bg-${tipo} border-0`;
                             toastEl.setAttribute('role', 'alert');
@@ -216,5 +258,89 @@
         <a asp-page="Index" class="org-back">
             <i class="bi bi-arrow-left"></i> Voltar às organizações
         </a>
+
+        <!-- Create Post AJAX -->
+        <script>
+        (function() {
+            // Gets the many elements
+            const form = document.getElementById('form-create-post');
+            const btnToggle = document.getElementById('btn-toggle-post');
+            const btnCancel = document.getElementById('btn-cancel-post');
+            const textarea = document.querySelector('.create-post-content');
+            const charCurrent = document.getElementById('char-current');
+            
+            // Verifies that the elements exist
+            if (btnToggle && form) {
+            function toggleForm() {
+                const isHidden = form.style.display === 'none';
+                form.style.display = isHidden ? 'block' : 'none';
+                if (isHidden) textarea.focus();
+            }
+            
+            // Add the event to the buttons
+            btnToggle.addEventListener('click', toggleForm);
+            btnCancel.addEventListener('click', toggleForm);
+
+            // Character counter
+            textarea.addEventListener('input', () => {
+                charCurrent.textContent = textarea.value.length;
+            });
+
+            // AJAX submit
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const formData = new FormData(form);
+                const response = await fetch(window.location.pathname + '?handler=CreatePost', {
+                    method: 'POST',
+                    body: formData
+                });
+                // API response
+                const data = await response.json();
+                // Shows toast
+                mostrarToast(data.success ? "Sucesso" : "Erro", data.message, data.success ? "success" : "danger");
+                if (data.success) {
+                    setTimeout(() => location.reload(), 800);
+                }
+            });
+        }
+
+            // Delete post handlers
+            document.querySelectorAll('.pub-delete-btn').forEach(btn => {
+                btn.addEventListener('click', async () => {
+                    //gets the postId from the post
+                    const postId = btn.dataset.postId;
+                        
+                    //confirms the action
+                    if (!confirm('Tens a certeza que queres remover esta publicação?')) return;
+                    
+                    // Query the anti forgery token, required by ASP.NET for security
+                    const token = document.querySelector(
+                        'input[name="__RequestVerificationToken"]'
+                    ).value;
+                    
+                    try {
+                        // Sends the post to the api
+                        const response = await fetch(`${window.location.pathname}?handler=DeletePost&postId=${encodeURIComponent(postId)}`, {
+                            method: 'POST',
+                            headers: {
+                                'RequestVerificationToken': token
+                            }
+                        });
+                        // Response
+                        const data = await response.json();
+                        // Shows result
+                        mostrarToast(data.success ? "Sucesso" : "Erro", data.message, data.success ? "success" : "danger");
+                        if (data.success) {
+                            // looks for the closest element with the class and removes it
+                            const postEl = btn.closest('.pub-post');
+                            if (postEl) postEl.remove();
+                        }
+                    } catch (err) {
+                        mostrarToast("Erro", "Falha ao remover a publicação.", "danger");
+                    }
+                });
+            });
+        })();
+        </script>
     </div>
 }

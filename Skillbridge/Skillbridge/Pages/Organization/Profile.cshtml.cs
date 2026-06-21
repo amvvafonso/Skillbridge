@@ -62,12 +62,14 @@ public class ProfileModel(ApplicationDbContext context) : PageModel
         
         // Announcements by the organization, limited by POST_LIMIT
         Posts = context.Posts
+            .OrderByDescending(p => p.Created)
             .Where(p => p.Organization == Organization.OrganizationId)
             .Take(POST_LIMIT)
             .Join(context.Users,
                 p => p.AuthorID,
                 u => u.Id,
                 (p, u) => new PostInfo(p.PostId, p.Title, p.Content, p.Created, u.Name ?? string.Empty))
+            .OrderBy(p => p.Created)
             .ToList();
         
         // Fetch authenticade user id to compare to db
@@ -99,6 +101,67 @@ public class ProfileModel(ApplicationDbContext context) : PageModel
 
     [BindProperty]
     public string? MemberEmail { get; set; }
+
+    [BindProperty]
+    public string? NewPostTitle { get; set; }
+
+    [BindProperty]
+    public string? NewPostContent { get; set; }
+
+    public async Task<IActionResult> OnPostCreatePostAsync(string id)
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(NewPostTitle) || string.IsNullOrEmpty(NewPostContent))
+                return new JsonResult(new { success = false, message = "Preenche o título e o conteúdo!" });
+
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+                return new JsonResult(new { success = false, message = "Precisas de estar autenticado." });
+
+            context.Posts.Add(new Post
+            {
+                PostId = Guid.NewGuid().ToString(),
+                Title = NewPostTitle,
+                Content = NewPostContent,
+                Created = DateTime.UtcNow,
+                AuthorID = userId,
+                Organization = id,
+                Visible = true
+            });
+
+            await context.SaveChangesAsync();
+            return new JsonResult(new { success = true, message = "Publicação criada com sucesso!" });
+        }
+        catch (Exception ex)
+        {
+            return new JsonResult(new { success = false, message = ex.Message });
+        }
+    }
+
+    public async Task<IActionResult> OnPostDeletePostAsync([FromQuery] string postId)
+    {
+        try
+        {
+            // Verifies that the posts exists
+            var post = await context.Posts.FindAsync(postId);
+            
+            if (post == null)
+                return new JsonResult(new { success = false, message = "Publicação não encontrada." });
+            
+            // Removes it from db
+            context.Posts.Remove(post);
+            // Saves changes
+            await context.SaveChangesAsync();
+            // Returns json for the toast
+            return new JsonResult(new { success = true, message = "Publicação removida!" });
+        }
+        catch (Exception ex)
+        {
+            return new JsonResult(new { success = false, message = ex.Message });
+        }
+    }
+    
     public async Task<IActionResult> OnPostAddMemberAsync(string Id)
     {
         try
