@@ -8,9 +8,13 @@
 }
 
 <div>
-    <button id="saveBtn" onclick="saveContent()">Guardar</button>
+    @* Só mostra o botão se puder editar *@
+    @if (Model.CanEdit)
+    {
+        <button id="saveBtn" onclick="saveContent()">Guardar</button>
+    }
     <div id="editor" style="height: 100vh">
-
+        
     </div>
 </div>
 
@@ -38,14 +42,21 @@
                 value: @Json.Serialize(Model.CurrentFile.Content),
                 //Linguagem 
                 //TODO fazer um map que vai buscar a linguagem a partir da extensão do ficheiro
-                language: 'csharp'
+                language: 'csharp',
+                //Bloqueia a edição se o utilizador for Viewer
+                readOnly: @Json.Serialize(!Model.CanEdit)
             });
         });
         
         //Envia o conteudo atual do editor para o servidor via POST
         function saveContent() {
-            fetch('?handler=Save', {
+            
+            //Constroi o URL mantendo o sessionId atual da página
+            const sessionId = '@Model.CurrentSession.Id';
+            
+            fetch(`?handler=Save&sessionId=${sessionId}`, {
                 method: 'POST',
+                credentials: 'include',
                 headers: {
                     //Indica que o corpo do pedido esta em JSON
                     'Content-Type': 'application/json',
@@ -55,14 +66,20 @@
                 },
                 //Converte o objeto JS para JSON para enviar o corpo do pedido
                 body: JSON.stringify({
-                    //Id do ficheiro atual
-                    fileId: @Model.CurrentFile.FileId,
                     //Conteudo atual do editor
                     content: editor.getValue(),
+                    //Sessão atual
+                    // sessionId: '@*@Model.CurrentSession.Id*@'
                 })
             }).then(response => {
                 //Mostra alerta de sucesso se o servidor devolver 200 OK
-                if (response.ok) alert ('Guardado');
+                if (response.ok) {
+                    alert('Guardado');
+                } else if (response.status === 403) {
+                    alert('Não tens permissão para guardar');
+                } else {
+                    alert('Ocorreu um erro ao guardar');
+                }
             });
         }
     </script>

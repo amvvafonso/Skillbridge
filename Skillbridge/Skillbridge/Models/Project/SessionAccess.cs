@@ -29,4 +29,11 @@ public class SessionAccess
     public Role Role { get; set; } = Role.Unknown;
 
 
+    /// <summary>
+    /// Forgein Key to User
+    /// </summary>
+    public string UserId { get; set; }
+    [ForeignKey(nameof(UserId))]
+    [DeleteBehavior(DeleteBehavior.Restrict)]
+    public virtual User User { get; set; }
 }
