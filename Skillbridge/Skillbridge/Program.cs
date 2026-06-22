@@ -19,6 +19,11 @@ builder.Services.AddControllersWithViews();
 
 builder.Services.AddSignalR();
 
+//Aceita o token CSRF via header HTTP
+builder.Services.AddAntiforgery(options => {
+    options.HeaderName = "RequestVerificationToken";
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
