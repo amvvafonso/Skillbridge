@@ -407,6 +407,7 @@
   color: rgb(217, 228, 252);
   font-size: 0.88rem;
   padding: 10px 0;
+  width: 100%
 }
 
 .add-member-input-wrap input::placeholder {

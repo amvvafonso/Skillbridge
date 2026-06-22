@@ -2,18 +2,21 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Skillbridge.Data;
+using Skillbridge.Hubs;
 using Skillbridge.Models;
 using Skillbridge.Models.Client;
 using Skillbridge.Utilities;
 
 namespace Skillbridge.Pages.Organization;
 
-public class ProfileModel(ApplicationDbContext context) : PageModel
+public class ProfileModel(ApplicationDbContext context, IHubContext<NotificationHub> notificationHub) : PageModel
 {
     //Limit of posts visible
     private readonly int POST_LIMIT = 3;
+    private readonly IHubContext<NotificationHub> notificationHub = notificationHub;
     
     // DB table vars
     public Models.Organization? Organization { get; set; }
@@ -55,10 +58,25 @@ public class ProfileModel(ApplicationDbContext context) : PageModel
                 .ToList();
         
         // Projets that are owned by the organization that are public
-        Projects = context.Project
-            .Where(p => p.OrganizationId == id && p.Public)
-            .Select(p => new ProjectInfo(p.ProjectId, p.ProjectName ?? string.Empty, p.ProjectDescription ?? string.Empty, p.Public))
-            .ToList();
+        // Switches between what to show in the project section
+        switch (UserPerm)
+        {
+            case Role.Manager or Role.Owner:
+                //Shows all of them
+                Projects = context.Project
+                    .Where(p => p.OrganizationId == id)
+                    .Select(p => new ProjectInfo(p.ProjectId, p.ProjectName ?? string.Empty, p.ProjectDescription ?? string.Empty, p.Public))
+                    .ToList();
+                break;
+            default:
+                //Only shows the public ones
+                Projects = context.Project
+                    .Where(p => p.OrganizationId == id && p.Public)
+                    .Select(p => new ProjectInfo(p.ProjectId, p.ProjectName ?? string.Empty, p.ProjectDescription ?? string.Empty, p.Public))
+                    .ToList();
+                    break;
+        }
+
         
         // Announcements by the organization, limited by POST_LIMIT
         Posts = context.Posts
@@ -69,7 +87,6 @@ public class ProfileModel(ApplicationDbContext context) : PageModel
                 p => p.AuthorID,
                 u => u.Id,
                 (p, u) => new PostInfo(p.PostId, p.Title, p.Content, p.Created, u.Name ?? string.Empty))
-            .OrderBy(p => p.Created)
             .ToList();
         
         // Fetch authenticade user id to compare to db
@@ -172,7 +189,7 @@ public class ProfileModel(ApplicationDbContext context) : PageModel
                 return new JsonResult(new { success = false, message = "Por favor, indique um email para convidar!" });
             }
         
-            // Verifies that there is a organization selected
+            // Verifies that there is an organization selected
             Organization = await context.Organizations
                 .FirstOrDefaultAsync(o => o.OrganizationId == Id);
 
@@ -204,10 +221,13 @@ public class ProfileModel(ApplicationDbContext context) : PageModel
                 np.Param = Id;
                 // 'Other' is a redundancy to deal with specific cases 
                 np.Other = new Dictionary<string, string>{{"message", $"Foste convidado para a organização {Organization?.OrganizationName}"}};
-                
+
                 // Creates the notification in the DB
                 context.Notifications.Add(new Notification(np, userExists.Id, NotificationType.OrganizationInvite));
                 await context.SaveChangesAsync();
+                
+                // Sends notification for the user invited
+                notificationHub.Clients.User(userExists.Id).SendAsync("ReceiveNotification", $"Foste convidado para a organização {Organization?.OrganizationName}");
                 //Toast
                 return new JsonResult(new { success = true, message = "Convite enviado com sucesso!" });
             }
