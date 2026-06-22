@@ -107,6 +107,7 @@
    ───────────────────────────────────── */
 
 .mobile-overlay {
+    display: none;
     position: fixed;
     inset: 0;
     background: rgba(0, 0, 0, 0.6);
@@ -128,6 +129,7 @@
    ───────────────────────────────────── */
 
 .mobile-menu {
+    display: none;
     position: fixed;
     top: 0;
     right: 0;
@@ -364,39 +366,6 @@
 }
 
 /* ─────────────────────────────────────
-   Desktop nav: visible by default on desktop
-   ───────────────────────────────────── */
-
-.desktop-nav {
-    display: flex;
-    align-items: center;
-    flex: 1;
-    justify-content: center;
-}
-
-.desktop-nav > ul {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
-
-.desktop-nav .navbar-nav {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-/* Auth partial nav inside desktop-nav */
-.desktop-nav > ul + ul {
-    display: flex;
-    align-items: center;
-    margin-left: auto;
-}
-
-/* ─────────────────────────────────────
    Responsive: mobile layout
    ───────────────────────────────────── */
 
@@ -405,28 +374,21 @@
         display: flex;
     }
 
-    /* Hide the Bootstrap collapse trigger on mobile */
+    .mobile-menu {
+        display: block;
+    }
+
+    .mobile-overlay {
+        display: block;
+    }
+
+    /* Hide Bootstrap toggler (replaced by custom hamburger) */
     .navbar-toggler {
         display: none !important;
     }
 
-    /* Hide desktop nav entirely on mobile */
-    .desktop-nav {
-        display: none !important;
-    }
-}
-
-/* Hide mobile menu on desktop */
-@media (min-width: 768px) {
-    .mobile-menu {
-        display: none;
-    }
-
-    .mobile-overlay {
-        display: none;
-    }
-
-    .mobile-menu-toggle {
+    /* Hide Bootstrap collapse on mobile (replaced by custom drawer) */
+    .navbar-collapse {
         display: none !important;
     }
 }
