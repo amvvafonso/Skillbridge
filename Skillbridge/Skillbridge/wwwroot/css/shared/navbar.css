@@ -366,20 +366,47 @@
 }
 
 /* ─────────────────────────────────────
-   Responsive: mobile layout
+   Responsive: Desktop-first approach
+   Mobile elements hidden by default above,
+   shown only on small screens.
    ───────────────────────────────────── */
 
-@media (max-width: 767.98px) {
+/* ── Desktop (≥768px): hide mobile elements ── */
+@media (min-width: 768px) {
     .mobile-menu-toggle {
-        display: flex;
+        display: none !important;
     }
-
     .mobile-menu {
-        display: block;
+        display: none !important;
+    }
+    .mobile-overlay {
+        display: none !important;
+    }
+    /* Ensure Bootstrap navbar is always visible on desktop */
+    .navbar-collapse {
+        display: flex !important;
+    }
+    .navbar-toggler {
+        display: none !important;
+    }
+}
+
+/* ── Mobile (<768px): show custom hamburger + drawer, hide Bootstrap nav ── */
+@media (max-width: 767.98px) {
+    /* Show custom hamburger */
+    .mobile-menu-toggle {
+        display: flex !important;
+        margin-left: auto;
     }
 
+    /* Show mobile drawer (positioned off-screen by default via transform) */
+    .mobile-menu {
+        display: block !important;
+    }
+
+    /* Show overlay (hidden via opacity/visibility, shown by .open class) */
     .mobile-overlay {
-        display: block;
+        display: block !important;
     }
 
     /* Hide Bootstrap toggler (replaced by custom hamburger) */
@@ -390,5 +417,13 @@
     /* Hide Bootstrap collapse on mobile (replaced by custom drawer) */
     .navbar-collapse {
         display: none !important;
+    }
+
+    /* Ensure navbar brand + hamburger align correctly */
+    .navbar > .container-fluid,
+    .navbar > .container {
+        display: flex !important;
+        flex-wrap: nowrap !important;
+        align-items: center !important;
     }
 }

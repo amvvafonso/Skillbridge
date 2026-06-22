@@ -1,0 +1,23 @@
+@{
+    Layout = "/Views/Shared/_Layout.cshtml";
+    ViewData["title"] = "";
+}
+<html>
+<head>
+<link rel="stylesheet" href="css/site.css"/>
+<link rel="stylesheet" href="css/shared/navbar.css"/>
+</head>
+<div class="identity-page">
+    <div class="identity-layout">
+        <div class="identity-sidebar">
+            <partial name="_ManageNav" />
+        </div>
+
+        <div class="identity-content">
+            @RenderBody()
+            @RenderSection("Scripts", required: false)
+        </div>
+    </div>
+</div>
+
+</html>
