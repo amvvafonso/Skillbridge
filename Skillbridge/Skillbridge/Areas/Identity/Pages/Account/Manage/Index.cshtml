@@ -1,0 +1,43 @@
+@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Perfil";
+    ViewData["ActivePage"] = ManageNavPages.Index;
+}
+
+<h3 class="identity-title"><i class="bi bi-person-circle"></i> @ViewData["Title"]</h3>
+<partial name="_StatusMessage" for="StatusMessage" />
+
+<div class="identity-card">
+    <div class="identity-card-header">
+        <h4 class="identity-card-title"><i class="bi bi-pencil-square"></i> Dados do perfil</h4>
+        <p class="identity-card-desc">Atualize as suas informações pessoais.</p>
+    </div>
+
+    <form id="profile-form" method="post">
+        <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
+
+        <div class="identity-field">
+            <div class="form-floating mb-3">
+                <input asp-for="Username" class="form-control" placeholder="Username" disabled />
+                <label asp-for="Username" class="form-label"></label>
+            </div>
+        </div>
+
+        <div class="identity-field">
+            <div class="form-floating mb-3">
+                <input asp-for="Input.PhoneNumber" class="form-control" placeholder="Número de telemóvel"/>
+                <label asp-for="Input.PhoneNumber" class="form-label"></label>
+                <span asp-validation-for="Input.PhoneNumber" class="text-danger"></span>
+            </div>
+        </div>
+
+        <button id="update-profile-button" type="submit" class="identity-btn identity-btn-primary identity-btn-block">
+            <i class="bi bi-check-lg"></i> Guardar alterações
+        </button>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

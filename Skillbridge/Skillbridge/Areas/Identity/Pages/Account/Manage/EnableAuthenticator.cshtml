@@ -1,0 +1,74 @@
+@page
+@model EnableAuthenticatorModel
+@{
+    ViewData["Title"] = "Configurar aplicação autenticador";
+    ViewData["ActivePage"] = ManageNavPages.TwoFactorAuthentication;
+}
+
+<h3 class="identity-title"><i class="bi bi-phone"></i> @ViewData["Title"]</h3>
+<partial name="_StatusMessage" for="StatusMessage" />
+
+<div class="identity-card">
+    <div class="identity-card-header">
+        <h4 class="identity-card-title"><i class="bi bi-qr-code"></i> Ativar 2FA</h4>
+        <p class="identity-card-desc">Siga os passos abaixo para configurar a sua aplicação autenticador.</p>
+    </div>
+
+    <ol class="identity-steps">
+        <li class="identity-step">
+            <div class="identity-step-header">
+                <span class="identity-step-number">1</span>
+                <h5 class="identity-step-title"><i class="bi bi-download"></i> Descargar aplicação</h5>
+            </div>
+            <p class="identity-step-desc">
+                Descarregue uma aplicação autenticador como o Microsoft Authenticator para
+                <a href="https://go.microsoft.com/fwlink/?Linkid=825072" class="identity-link">Android</a> e
+                <a href="https://go.microsoft.com/fwlink/?Linkid=825073" class="identity-link">iOS</a> ou
+                o Google Authenticator para
+                <a href="https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2&amp;hl=en" class="identity-link">Android</a> e
+                <a href="https://itunes.apple.com/us/app/google-authenticator/id388497605?mt=8" class="identity-link">iOS</a>.
+            </p>
+        </li>
+
+        <li class="identity-step">
+            <div class="identity-step-header">
+                <span class="identity-step-number">2</span>
+                <h5 class="identity-step-title"><i class="bi bi-qr-code-scan"></i> Escanear QR Code</h5>
+            </div>
+            <p class="identity-step-desc">Escanee o QR Code ou introduza esta chave <kbd class="identity-key">@Model.SharedKey</kbd> na sua aplicação autenticador. Espaços e maiúsculas/minúsculas não importam.</p>
+            <div class="identity-qr-wrapper">
+                <div id="qrCode"></div>
+                <div id="qrCodeData" data-url="@Model.AuthenticatorUri"></div>
+            </div>
+            <div class="identity-info-box identity-info-box-warning">
+                <i class="bi bi-info-circle"></i> Aprenda como <a href="https://go.microsoft.com/fwlink/?Linkid=852423" class="identity-link">ativar a geração de QR codes</a>.
+            </div>
+        </li>
+
+        <li class="identity-step">
+            <div class="identity-step-header">
+                <span class="identity-step-number">3</span>
+                <h5 class="identity-step-title"><i class="bi bi-check-circle"></i> Verificar código</h5>
+            </div>
+            <p class="identity-step-desc">Depois de escanear o QR code ou introduzir a chave, a sua aplicação irá gerar um código único. Introduza o código abaixo.</p>
+
+            <form id="send-code" method="post">
+                <div class="identity-field">
+                    <div class="form-floating mb-3">
+                        <input asp-for="Input.Code" class="form-control" autocomplete="off" placeholder="Código de verificação"/>
+                        <label asp-for="Input.Code" class="form-label">Código de verificação</label>
+                        <span asp-validation-for="Input.Code" class="text-danger"></span>
+                    </div>
+                </div>
+                <button type="submit" class="identity-btn identity-btn-primary identity-btn-block">
+                    <i class="bi bi-check-lg"></i> Verificar
+                </button>
+                <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
+            </form>
+        </li>
+    </ol>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

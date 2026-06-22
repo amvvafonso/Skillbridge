@@ -1,0 +1,103 @@
+@page
+@using Microsoft.AspNetCore.Http.Features
+@model TwoFactorAuthenticationModel
+@{
+    ViewData["Title"] = "Autenticação de 2 fatores (2FA)";
+    ViewData["ActivePage"] = ManageNavPages.TwoFactorAuthentication;
+}
+
+<h3 class="identity-title"><i class="bi bi-shield-lock"></i> @ViewData["Title"]</h3>
+<partial name="_StatusMessage" for="StatusMessage" />
+
+<div class="identity-card">
+    <div class="identity-card-header">
+        <h4 class="identity-card-title"><i class="bi bi-shield-check"></i> Segurança adicional</h4>
+        <p class="identity-card-desc">Adicione uma camada extra de segurança à sua conta.</p>
+    </div>
+
+    @{
+        var consentFeature = HttpContext.Features.Get<ITrackingConsentFeature>();
+        @if (consentFeature?.CanTrack ?? true)
+        {
+            @if (Model.Is2faEnabled)
+            {
+                if (Model.RecoveryCodesLeft == 0)
+                {
+                    <div class="identity-info-box identity-info-box-danger">
+                        <strong><i class="bi bi-exclamation-triangle-fill"></i> Sem códigos de recuperação.</strong>
+                        <p class="mb-0 mt-1">Deve <a asp-page="./GenerateRecoveryCodes" class="identity-link">gerar novos códigos</a> para poder fazer login com código de recuperação.</p>
+                    </div>
+                }
+                else if (Model.RecoveryCodesLeft == 1)
+                {
+                    <div class="identity-info-box identity-info-box-danger">
+                        <strong><i class="bi bi-exclamation-triangle-fill"></i> Resta 1 código de recuperação.</strong>
+                        <p class="mb-0 mt-1">Pode <a asp-page="./GenerateRecoveryCodes" class="identity-link">gerar novos códigos</a>.</p>
+                    </div>
+                }
+                else if (Model.RecoveryCodesLeft <= 3)
+                {
+                    <div class="identity-info-box identity-info-box-warning">
+                        <strong><i class="bi bi-exclamation-triangle-fill"></i> Restam @Model.RecoveryCodesLeft códigos de recuperação.</strong>
+                        <p class="mb-0 mt-1">Recomendamos <a asp-page="./GenerateRecoveryCodes" class="identity-link">gerar novos códigos</a>.</p>
+                    </div>
+                }
+
+                <div class="identity-2fa-section">
+                    <h4><i class="bi bi-browser-chrome"></i> Navegador atual</h4>
+                    @if (Model.IsMachineRemembered)
+                    {
+                        <form method="post" style="display: inline-block">
+                            <button type="submit" class="identity-btn identity-btn-secondary identity-btn-sm">
+                                <i class="bi bi-trash"></i> Esquecer este navegador
+                            </button>
+                        </form>
+                    }
+                </div>
+
+                <div class="identity-2fa-actions">
+                    <a asp-page="./Disable2fa" class="identity-btn identity-btn-danger">
+                        <i class="bi bi-shield-x"></i> Desativar 2FA
+                    </a>
+                    <a asp-page="./GenerateRecoveryCodes" class="identity-btn identity-btn-secondary">
+                        <i class="bi bi-arrow-clockwise"></i> Redefinir códigos
+                    </a>
+                </div>
+            }
+
+            <hr class="identity-divider" />
+
+            <div class="identity-2fa-section">
+                <h4><i class="bi bi-phone"></i> Aplicação autenticador</h4>
+                @if (!Model.HasAuthenticator)
+                {
+                    <a id="enable-authenticator" asp-page="./EnableAuthenticator" class="identity-btn identity-btn-primary">
+                        <i class="bi bi-plus-circle"></i> Adicionar aplicação autenticador
+                    </a>
+                }
+                else
+                {
+                    <div class="identity-2fa-actions">
+                        <a id="enable-authenticator" asp-page="./EnableAuthenticator" class="identity-btn identity-btn-secondary">
+                            <i class="bi bi-gear"></i> Configurar autenticador
+                        </a>
+                        <a id="reset-authenticator" asp-page="./ResetAuthenticator" class="identity-btn identity-btn-secondary">
+                            <i class="bi bi-arrow-clockwise"></i> Redefinir autenticador
+                        </a>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="identity-info-box identity-info-box-danger">
+                <strong><i class="bi bi-exclamation-triangle-fill"></i> Política de privacidade não aceite.</strong>
+                <p class="mb-0 mt-1">Deve aceitar a política antes de ativar a autenticação de 2 fatores.</p>
+            </div>
+        }
+    }
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
