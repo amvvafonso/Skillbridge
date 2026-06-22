@@ -1,56 +1,74 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using Skillbridge.Areas.Client.Models;
 using Skillbridge.Data;
 using Skillbridge.Models;
 using Skillbridge.Models.Client;
 
-namespace Skillbridge.Areas.Client.Controllers
+
+namespace Skillbridge.Areas.Client.Pages
 {
-    [Area("Client")]
+
     [Authorize]
-    public class IndexModel(ApplicationDbContext context, UserManager<User> userManager) : Controller
+    public class IndexModel(ApplicationDbContext context, UserManager<User> userManager) : PageModel
     {
-        public async Task<IActionResult> Index()
+        
+        //Propriedade que vai ser usada pelo @model no .cshtml
+        public IndexViewModel DashboardModel { get; set; } = default!;
+        
+        //
+        public async Task<IActionResult> OnGetAsync()
         {
+            //Vai buscar o user
             var user = await userManager.GetUserAsync(User);
 
+            
+            //Se o user não estiver autenticado redireciona para Home
             if (user == null)
-                return RedirectToAction("Index", "Home");
+                return RedirectToPage("/Index");
 
-            var userSessions = context.Sessions
-                .Include(s => s.file)
+            //Vai buscar todas as sessões com o ficheiro associado, ordenadas por data
+            var userSessions = await context.SessionAccesses
+                //So as sessões do user autenticado
+                .Where(sa => sa.UserId == user.Id)
+                //Inclui a sessão de cada acesso
+                .Include(sa => sa.Session)
+                //Inlcui o ficheiro de cada sessão
+                .ThenInclude(s => s.file)
+                //Vai buscar o objeto Session
+                .Select(sa => sa.Session)
+                //Ordena da mais recente para a mais antiga
                 .OrderByDescending(s => s.CreatedAt)
-                .ToList();
+                .ToListAsync();
 
-            var userOrganizations = context.OrganizationMembers
+            //Vai buscar as organizações a que o user pertence
+            var userOrganizations = await context.OrganizationMembers
                 .Where(om => om.User == user.Id)
                 .Select(om => om.IdOrganization)
-                .ToList();
+                .ToListAsync();
 
-            var userProjects = context.UserProjectAccesses
+            //Vai buscar os projetos atribuidos ao utilizador
+            var userProjects = await context.UserProjectAccesses
                 .Where(upa => upa.UserId == user.Id)
                 .Select(upa => upa.Project)
-                .ToList();
+                .ToListAsync();
 
-            var activeSessions = userSessions.Count(s => s.Active);
-            var totalProjects = userProjects.Count;
-            var totalOrgs = userOrganizations.Count;
-
-            var model = new IndexViewModel
+            //Preenche o ViewModel com os dados recolhidos
+            DashboardModel = new IndexViewModel
             {
                 User = user,
                 Sessions = userSessions,
-                ActiveSessions = activeSessions,
-                TotalProjects = totalProjects,
-                TotalOrganizations = totalOrgs,
+                ActiveSessions = userSessions.Count(s => s.Active),
+                TotalProjects = userProjects.Count,
+                TotalOrganizations = userOrganizations.Count,
                 Organizations = userOrganizations,
                 Projects = userProjects
             };
-
-            return View(model);
+            
+            return Page();
         }
     }
 }
