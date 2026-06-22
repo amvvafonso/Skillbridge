@@ -1,15 +1,15 @@
-@using Skillbridge.Models.Project
-@model Skillbridge.Areas.Client.Models.IndexViewModel
+@page
+@model Skillbridge.Areas.Client.Pages.IndexModel
 
 @{
   ViewData["Title"] = "Dashboard";
-  Layout = "_Layout";
+  Layout = "/Views/Shared/_Layout.cshtml";
 }
 
 <link rel="stylesheet" href="~/css/areas/Client.css" asp-append-version="true" />
 
 <div class="dashboard-container">
-  @if (Model.Sessions == null || Model.Sessions.Count == 0 && Model.Organizations == null || Model.Organizations.Count == 0)
+  @if ((Model.DashboardModel.Sessions == null || Model.DashboardModel.Sessions.Count == 0) && (Model.DashboardModel.Organizations == null || Model.DashboardModel.Organizations.Count == 0))
   {
     <div class="empty-state">
       <i class="bi bi-inbox" style="font-size: 64px; color: rgb(56, 70, 95);"></i>
@@ -21,7 +21,7 @@
   {
     <div class="dashboard-grid">
 
-      @if (Model.Sessions != null && Model.Sessions.Count > 0)
+      @if ((Model.DashboardModel.Sessions != null) && (Model.DashboardModel.Sessions.Count > 0))
       {
         <div class="dashboard-section" style="grid-row: span 2;">
           <div class="section-header">
@@ -29,11 +29,11 @@
               <i class="bi bi-play-circle"></i>
               Sessões de Trabalho
             </h2>
-            <span class="section-badge">@Model.Sessions.Count</span>
+            <span class="section-badge">@Model.DashboardModel.Sessions.Count</span>
           </div>
 
           <div class="sessions-list">
-            @foreach (var session in Model.Sessions)
+            @foreach (var session in Model.DashboardModel.Sessions)
             {
               <div class="session-card @(session.Active ? "session-active" : "") @(session.Locked ? "session-locked" : "")">
                 <div class="session-status-bar @(session.Active ? "status-active" : session.Locked ? "status-locked" : "status-inactive")"></div>
@@ -82,10 +82,13 @@
                 <div class="session-action">
                   @if (session.Active && !session.Locked)
                   {
-                    <button class="btn-join">
+                    <a asp-area="Client"
+                       asp-page="/CodeEditor"
+                       asp-route-sessionId="@session.Id"
+                       class="btn-join">
                       <i class="bi bi-arrow-right-circle"></i>
                       Entrar
-                    </button>
+                    </a>
                   }
                   else
                   {
@@ -95,7 +98,7 @@
                     </button>
                   }
                 </div>
-              </div>
+                </div>
             }
           </div>
         </div>
@@ -107,16 +110,16 @@
             <i class="bi bi-building"></i>
             Organizações
           </h2>
-          @if (Model.Organizations != null && Model.Organizations.Count > 0)
+          @if ((Model.DashboardModel.Organizations != null) && (Model.DashboardModel.Organizations.Count > 0))
           {
-            <span class="section-badge">@Model.Organizations.Count</span>
+            <span class="section-badge">@Model.DashboardModel.Organizations.Count</span>
           }
         </div>
 
-        @if (Model.Organizations != null && Model.Organizations.Count > 0)
+        @if ((Model.DashboardModel.Organizations != null) && (Model.DashboardModel.Organizations.Count > 0))
         {
           <div class="org-list">
-            @foreach (var org in Model.Organizations)
+            @foreach (var org in Model.DashboardModel.Organizations)
             {
               <a asp-controller="Organization" asp-action="Profile" asp-route-id="@org.OrganizationId" class="org-card">
                 <div class="org-logo-wrapper">
@@ -149,16 +152,16 @@
             <i class="bi bi-repository"></i>
             Projetos
           </h2>
-          @if (Model.Projects != null && Model.Projects.Count > 0)
+          @if ((Model.DashboardModel.Projects != null) && (Model.DashboardModel.Projects.Count > 0))
           {
-            <span class="section-badge">@Model.Projects.Count</span>
+            <span class="section-badge">@Model.DashboardModel.Projects.Count</span>
           }
         </div>
 
-        @if (Model.Projects != null && Model.Projects.Count > 0)
+        @if ((Model.DashboardModel.Projects != null) && (Model.DashboardModel.Projects.Count > 0))
         {
           <div class="project-list">
-            @foreach (var project in Model.Projects)
+            @foreach (var project in Model.DashboardModel.Projects)
             {
               <div class="project-card">
                 <div class="project-icon">

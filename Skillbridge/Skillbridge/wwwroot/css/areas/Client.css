@@ -219,27 +219,41 @@
     align-items: center;
 }
 
-.btn-join {
-    background: var(--primary);
-    color: white;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 8px;
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-    display: flex;
+.session-action > a.btn-join,
+.session-action > a.btn-join:link,
+.session-action > a.btn-join:visited,
+.session-action > a.btn-join:hover,
+.session-action > a.btn-join:active,
+.session-action > a.btn-join:focus,
+.session-action > a.btn-join:focus-visible {
+    display: inline-flex;
     align-items: center;
-    gap: 6px;
-    transition: all 0.2s ease;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.65rem 1rem;
+    border-radius: 8px;
+    background: #0d6efd;
+    color: #fff !important;
+    text-decoration: none !important;
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+    line-height: 1;
     white-space: nowrap;
 }
 
-.btn-join:hover {
-    background: rgb(90, 93, 230);
+.session-action > a.btn-join:hover,
+.session-action > a.btn-join:active {
+    background: #0b5ed7;
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(110, 113, 251, 0.3);
 }
+
+.session-action > a.btn-join i {
+    color: inherit !important;
+    text-decoration: none !important;
+    pointer-events: none;
+}
+
 
 .btn-disabled {
     background: rgba(56, 70, 95, 0.3);
