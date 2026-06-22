@@ -89,3 +89,10 @@ button.accept-policy {
 .link {
   color: rgb(142, 157, 177) !important;
 }
+
+@media (max-width: 600px){
+  .navbar-collapse {
+    z-index: 1;
+    background-color: var(--primary);
+  }
+}
