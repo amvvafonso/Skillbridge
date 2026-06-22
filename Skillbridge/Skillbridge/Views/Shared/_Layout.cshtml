@@ -26,25 +26,22 @@
 </head>
 <body style="font-family: Inter; background-color: rgb(8, 20, 37)">
 <header>
-    <nav class="navbar navbar-div navbar-light box-shadow">
+    <nav class="navbar navbar-div navbar-expand-sm navbar-toggleable-sm navbar-light box-shadow">
         <div class="container-fluid h-100">
 
             <a class="navbar-brand text-white h-100" asp-area="" asp-controller="Home" asp-action="Index"> <img class="object-fit-contain h-100" alt="Logo da skillbridge" src="/logo.png"/></a>
-
-            <!-- Animated Hamburger Button (mobile only) -->
-            <button class="mobile-menu-toggle" type="button" aria-label="Toggle navigation" aria-expanded="false">
-                <span class="hamburger-line"></span>
-                <span class="hamburger-line"></span>
-                <span class="hamburger-line"></span>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+                    aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
             </button>
-
-            <!-- Desktop nav (hidden on mobile via CSS only) -->
-            <div class="desktop-nav">
+            <div class="navbar-collapse collapse d-sm-inline-flex justify-content-center text-center">
                 <ul class="navbar-nav flex-grow-1 justify-content-center">
                     <li class="nav-item">
                         <a style="color: rgb(142, 157, 177)" class="nav-link btn-hover" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
                     </li>
-                    <li><a style="color: rgb(142, 157, 177)" class="nav-link btn-hover" href="/Organization">Organizações</a></li>
+                    <li><a style="color: rgb(142, 157, 177)" class="nav-link btn-hover" href="/Organization">Organizações</a>
+
+                    </li>
                     <li class="nav-item">
                         <a style="color: rgb(142, 157, 177)" class="nav-link btn-hover" asp-area="" asp-controller="Info" asp-action="HowItWorks">Como funciona</a>
                     </li>
@@ -59,124 +56,7 @@
             </div>
         </div>
     </nav>
-
-    <!-- Mobile Overlay Menu -->
-    <div class="mobile-overlay" id="mobileOverlay"></div>
-    <div class="mobile-menu" id="mobileMenu">
-        <div class="mobile-menu-inner">
-            <!-- Nav Links with icons -->
-            <ul class="mobile-nav-list">
-                <li class="mobile-nav-item">
-                    <a asp-area="" asp-controller="Home" asp-action="Index" class="mobile-link">
-                        <i class="bi bi-house-door"></i>
-                        <span>Home</span>
-                    </a>
-                </li>
-                <li class="mobile-nav-item">
-                    <a href="/Organization" class="mobile-link">
-                        <i class="bi bi-buildings"></i>
-                        <span>Organizações</span>
-                    </a>
-                </li>
-                <li class="mobile-nav-item">
-                    <a asp-area="" asp-controller="Info" asp-action="HowItWorks" class="mobile-link">
-                        <i class="bi bi-lightbulb"></i>
-                        <span>Como funciona</span>
-                    </a>
-                </li>
-                @if (User.Identity.IsAuthenticated)
-                {
-                <li class="mobile-nav-item">
-                    <a asp-area="" asp-controller="Client" asp-action="Index" class="mobile-link">
-                        <i class="bi bi-person-circle"></i>
-                        <span>Área pessoal</span>
-                    </a>
-                </li>
-                }
-            </ul>
-
-            <!-- Auth section -->
-            <partial name="_LoginPartial" />
-            @if (User.Identity.IsAuthenticated)
-            {
-            <div class="mobile-auth-section">
-                <div class="mobile-user-info">
-                    <div class="mobile-user-avatar">
-                        <i class="bi bi-person-fill"></i>
-                    </div>
-                    <div class="mobile-user-details">
-                        <a asp-area="Identity" asp-page="/Account/Manage/Index" class="mobile-user-name" title="Manage">Olá @(User.Identity.Name ?? "Utilizador")!</a>
-                        <span class="mobile-user-status">Utilizador Logado</span>
-                    </div>
-                </div>
-                <form asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
-                    <button type="submit" class="mobile-logout-btn">
-                        <i class="bi bi-box-arrow-right"></i>
-                        <span>Logout</span>
-                    </button>
-                </form>
-            </div>
-            }
-            else
-            {
-            <div class="mobile-auth-section">
-                <a asp-area="Identity" asp-page="/Account/Login" class="mobile-auth-btn mobile-auth-btn-primary">
-                    <i class="bi bi-box-arrow-in-right"></i>
-                    Entrar
-                </a>
-                <a asp-area="Identity" asp-page="/Account/Register" class="mobile-auth-btn mobile-auth-btn-secondary">
-                    <i class="bi bi-pencil-square"></i>
-                    Registar
-                </a>
-            </div>
-            }
-        </div>
-    </div>
 </header>
-
-<!-- Mobile Menu JS -->
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const toggle = document.querySelector('.mobile-menu-toggle');
-        const menu = document.getElementById('mobileMenu');
-        const overlay = document.getElementById('mobileOverlay');
-        const body = document.body;
-
-        function openMobileMenu() {
-            menu.classList.add('open');
-            overlay.classList.add('open');
-            toggle.classList.add('active');
-            toggle.setAttribute('aria-expanded', 'true');
-            body.style.overflow = 'hidden';
-        }
-
-        function closeMobileMenu() {
-            menu.classList.remove('open');
-            overlay.classList.remove('open');
-            toggle.classList.remove('active');
-            toggle.setAttribute('aria-expanded', 'false');
-            body.style.overflow = '';
-        }
-
-        toggle.addEventListener('click', function() {
-            const isOpen = menu.classList.contains('open');
-            if (isOpen) closeMobileMenu();
-            else openMobileMenu();
-        });
-
-        overlay.addEventListener('click', closeMobileMenu);
-
-        // Close on Escape key
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape' && menu.classList.contains('open')) closeMobileMenu();
-        });
-
-        // Close on nav link click
-        document.querySelectorAll('.mobile-link').forEach(function(link) {
-            link.addEventListener('click', closeMobileMenu);
-        });
-    });
-</script>
 <div>
     <main role="main">
         <div id="toast-container" class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1100">
