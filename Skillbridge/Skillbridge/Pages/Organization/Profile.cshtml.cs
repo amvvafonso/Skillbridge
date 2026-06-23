@@ -81,7 +81,7 @@ public class ProfileModel(ApplicationDbContext context, IHubContext<Notification
         // Announcements by the organization, limited by POST_LIMIT
         Posts = context.Posts
             .OrderByDescending(p => p.Created)
-            .Where(p => p.Organization == Organization.OrganizationId)
+            .Where(p => p.OrganizationId == Organization.OrganizationId)
             .Take(POST_LIMIT)
             .Join(context.Users,
                 p => p.AuthorID,
@@ -143,7 +143,7 @@ public class ProfileModel(ApplicationDbContext context, IHubContext<Notification
                 Content = NewPostContent,
                 Created = DateTime.UtcNow,
                 AuthorID = userId,
-                Organization = id,
+                OrganizationId = id,
                 Visible = true
             });
 
