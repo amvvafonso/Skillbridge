@@ -37,6 +37,7 @@ public class Post
     /// Foreign key, links user to post
     /// </summary>
     public string AuthorID { get; set; }
+    
     [ForeignKey(nameof(AuthorID))]
     [DeleteBehavior(DeleteBehavior.Restrict)]
     public virtual User Author { get; set; }
@@ -44,8 +45,9 @@ public class Post
     /// <summary>
     /// Foreign key, links post to organization
     /// </summary>
-    public string Organization { get; set; }
-    [ForeignKey(nameof(Organization))]
+    public string OrganizationId { get; set; }
+
+    [ForeignKey(nameof(OrganizationId))]
     [DeleteBehavior(DeleteBehavior.Restrict)]
-    public virtual Organization OrganizationId { get; set; }
+    public virtual Organization Organization { get; set; }
 }

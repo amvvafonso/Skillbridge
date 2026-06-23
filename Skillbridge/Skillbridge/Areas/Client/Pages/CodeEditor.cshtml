@@ -6,17 +6,76 @@
     Layout = "_Layout";
     
 }
+<link rel="stylesheet" href="~/css/areas/CodeEditor.css" />
 
-<link rel="stylesheet" href="~/css/areas/CodeEditor.css" asp-append-version="true" />
-
-<div>
-    @* Só mostra o botão se puder editar *@
-    @if (Model.CanEdit)
-    {
-        <button id="saveBtn" onclick="saveContent()">Guardar</button>
-    }
-    <div id="editor" style="height: 100vh">
-        
+<div class="code-editor-container">
+    <div class="editor-panel">
+        @* Só mostra o botão se puder editar *@
+        @if (Model.CanEdit)
+        {
+            <div class="editor-toolbar">
+                <button id="saveBtn" onclick="saveContent()">
+                    <i class="bi bi-floppy"></i> Guardar
+                </button>
+            </div>
+        }
+        @*Container do Monaco Editor*@
+        <div id="editor"></div>
+    </div>
+    @* Painel de Chat *@
+    <div class="chat-panel" id="chatPanel">
+        <div class="chat-header" id="chatHeader">
+            <div class="chat-header-left"> 
+                <i class="bi bi-chat-dots-fill"></i>
+                <span>Chat da Sessão</span>
+            </div>
+            <div class="chat-header-right">
+                <span class="chat-online-indicator" id="chatOnlineIndicator"></span>
+                @*<button class="chat-toggle-btn" id="chatToggleBtn" title="Minimizar chat"> 
+                    <i class="bi bi-chevron-down"></i>
+                </button>*@
+            </div>
+        </div>
+        <div class="chat-body" id="chatBody">
+            <div class="chat-messages" id="chatMessages">
+                @* Mensagens carregadas do servidor *@
+                @foreach (var msg in Model.ChatMessages)
+                {
+                    var isOwn = msg.UserId == Model.CurrentUser.Id;
+                    <div class="chat-message @(isOwn ? "own" : "")" data-message-id="@msg.ChatMessageId">
+                        @if (!isOwn)
+                        {
+                            <div class="message-avatar">
+                                @msg.User.Name[0].ToString().ToUpper()
+                            </div>
+                        }
+                        <div class="message-content">
+                            @if (!isOwn)
+                            {
+                                <div class="message-author">@msg.User.Name</div>
+                            }
+                            <div class="message-bubble">
+                                <span class="message-text">@msg.ChatMessageText</span>
+                                <span class="message-time">@msg.SentAt.ToString("HH:mm")</span>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+            <div class="chat-input-area">
+                <div class="chat-input-wrapper">
+                    <input type="text"
+                           id="chatInput"
+                           class="chat-input"
+                           placeholder="Escreve uma mensagem..."
+                           maxlength="500"
+                           autocomplete="off" />
+                    <button id="chatSendBtn" class="chat-send-btn" title="Enviar mensagem">
+                        <i class="bi bi-send-fill"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -24,8 +83,11 @@
 {
     @*Gera um campo hidden com um token de segurança para proteger o POST contra ataques CSRF (Cross-Site Request Forgery) *@
     @Html.AntiForgeryToken()
+    @* --- O SignalR tem de ser primeiro porque senao vai ser carregado com modulo do Monaco --- *@
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
     @* --- Loader do Monaco Editor via CDN --- *@
     <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.52.0/min/vs/loader.js"></script>
+
     <script>
         //Para o editor se tornar acessivel fora do require
         var editor; 
@@ -46,15 +108,22 @@
                 //TODO fazer um map que vai buscar a linguagem a partir da extensão do ficheiro
                 language: 'csharp',
                 //Bloqueia a edição se o utilizador for Viewer
-                readOnly: @Json.Serialize(!Model.CanEdit)
+                readOnly: @Json.Serialize(!Model.CanEdit),
+                //Qunado ha um resize mantem a prorpoçao correta do editor
+                automaticLayout: true
             });
+            
+            //Força recaluclar dimensoes depois do render
+            setTimeout(() => editor.layout(), 100);
         });
+
+        //Constantes Razor
+        const sessionId = '@Model.CurrentSession.Id';
+        const currentUserId = '@Model.CurrentUser.Id';
+        const currentUserName = '@Model.CurrentUser.Name';
         
         //Envia o conteudo atual do editor para o servidor via POST
         function saveContent() {
-            
-            //Constroi o URL mantendo o sessionId atual da página
-            const sessionId = '@Model.CurrentSession.Id';
             
             fetch(`?handler=Save&sessionId=${sessionId}`, {
                 method: 'POST',
@@ -84,5 +153,142 @@
                 }
             });
         }
+        
+        // Cria a ligaçao SignalR
+        const chatConnection = new signalR.HubConnectionBuilder()
+            .withUrl("/chatHub")
+            .configureLogging(signalR.LogLevel.Information)
+            .withAutomaticReconnect()
+            .build();
+        
+        // Elementos do DOM
+        const chatMessages = document.getElementById('chatMessages');
+        const chatInput = document.getElementById('chatInput');
+        const chatSendBtn = document.getElementById('chatSendBtn');
+        const chatToggleBtn = document.getElementById('chatToggleBtn');
+        const chatBody = document.getElementById('chatBody');
+        const chatPanel = document.getElementById('chatPanel');
+        const chatOnlineIndicator = document.getElementById('chatOnlineIndicator');
+
+        // Scroll automático para a última mensagem
+        function scrollToBottom() {
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+        
+        // Cria um elemento de mensagem no DOM
+        function createMessageElement(data) {
+            const isOwn = data.userId === currentUserId;
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `chat-message ${isOwn ? 'own' : ''}`;
+            msgDiv.setAttribute('data-message-id', data.id);
+            let html = '';
+            if (!isOwn) {
+                const initial = data.userName ? data.userName[0].toUpperCase() : '?';
+                html += `<div class="message-avatar">${initial}</div>`;
+            }
+            html += '<div class="message-content">';
+            if (!isOwn) {
+                html += `<div class="message-author">${escapeHtml(data.userName)}</div>`;
+            }
+            html += `<div class="message-bubble">`;
+            html += `<span class="message-text">${escapeHtml(data.text)}</span>`;
+            html += `<span class="message-time">${data.sentAt}</span>`;
+            html += `</div></div>`;
+            msgDiv.innerHTML = html;
+            return msgDiv;
+        }
+        
+        // Proteção contra XSS
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        // Recebe mensagens do servidor
+        chatConnection.on('ReceiveMessage', function (data) {
+            const msgElement = createMessageElement(data);
+            // Animação de entrada
+            msgElement.style.opacity = '0';
+            msgElement.style.transform = 'translateY(10px)';
+            chatMessages.appendChild(msgElement);
+
+            requestAnimationFrame(() => {
+                msgElement.style.transition = 'all 0.3s ease';
+                msgElement.style.opacity = '1';
+                msgElement.style.transform = 'translateY(0)';
+            });
+
+            scrollToBottom();
+        });
+        
+        // Inicia a conexão do chat
+        async function startChat() {
+            try {
+                await chatConnection.start();
+                console.log('Chat SignalR Connected.');
+                chatOnlineIndicator.classList.add('online');
+                // Junta à sessão
+                await chatConnection.invoke('JoinSession', sessionId);
+                scrollToBottom();
+            } catch (err) {
+                console.error('Erro ao conectar ao chat:', err);
+                chatOnlineIndicator.classList.remove('online');
+                setTimeout(startChat, 5000);
+            }
+        }
+        
+        // Envia mensagem
+        async function sendMessage() {
+            const message = chatInput.value.trim();
+            if (!message) return;
+            try {
+                await chatConnection.invoke('SendMessage', sessionId, message);
+                chatInput.value = '';
+                chatInput.focus();
+            } catch (err) {
+                console.error('Erro ao enviar mensagem:', err);
+            }
+        }
+        // Event listeners do chat
+        chatSendBtn.addEventListener('click', sendMessage);
+        chatInput.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+        /*// Toggle do chat (minimizar/expandir)
+        chatToggleBtn.addEventListener('click', function () {
+            chatPanel.classList.toggle('minimized');
+            const icon = chatToggleBtn.querySelector('i');
+            if (chatPanel.classList.contains('minimized')) {
+                icon.className = 'bi bi-chevron-up';
+                chatToggleBtn.title = 'Expandir chat';
+            } else {
+                icon.className = 'bi bi-chevron-down';
+                chatToggleBtn.title = 'Minimizar chat';
+                scrollToBottom();
+            }
+        });*/
+
+        chatConnection.onreconnecting(() => {
+            chatOnlineIndicator.classList.remove('online');
+            chatOnlineIndicator.classList.add('reconnecting');
+        });
+        chatConnection.onreconnected(() => {
+            chatOnlineIndicator.classList.remove('reconnecting');
+            chatOnlineIndicator.classList.add('online');
+            chatConnection.invoke('JoinSession', sessionId);
+        });
+        chatConnection.onclose(() => {
+            chatOnlineIndicator.classList.remove('online');
+        });
+
+        
+        
+        scrollToBottom();
+        // Inicia o chat
+        startChat();
     </script>
 }

@@ -51,6 +51,7 @@ app.MapControllerRoute(
     .WithStaticAssets();
 
 app.MapHub<NotificationHub>("/notificationHub");
+app.MapHub<ChatHub>("/chatHub");
 
 app.MapControllerRoute(
     name: "areas",

@@ -36,4 +36,6 @@ public class ChatMessage
     [ForeignKey(nameof(SessionId))]
     [DeleteBehavior(DeleteBehavior.Restrict)]
     public virtual Session Session { get; set; }
+
+    public DateTime SentAt { get; set; } = DateTime.UtcNow;
 }
