@@ -229,23 +229,37 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 0.5rem;
-    padding: 0.65rem 1rem;
-    border-radius: 8px;
-    background: #0d6efd;
+    gap: 8px;
+    padding: 10px 24px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, rgb(35 2 78),rgb(34 34 108));
     color: #fff !important;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
     text-decoration: none !important;
     border: none;
     cursor: pointer;
-    font-weight: 600;
-    line-height: 1;
+    transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+    box-shadow: 0 4px 15px rgb(121 11 234 / 0.3);
     white-space: nowrap;
 }
 
-.session-action > a.btn-join:hover,
+.session-action > a.btn-join:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 24px rgb(9 12 161 / 0.45);
+    background: linear-gradient(135deg, rgb(54 5 163 / 0.73), rgb(144, 106, 255));
+}
+
 .session-action > a.btn-join:active {
-    background: #0b5ed7;
-    transform: translateY(-1px);
+    transform: translateY(0) scale(0.97);
+    box-shadow: 0 2px 8px rgba(110, 113, 251, 0.3);
+}
+
+.session-action > a.btn-join:focus-visible {
+    outline: 2px solid rgba(110, 113, 251, 0.6);
+    outline-offset: 3px;
 }
 
 .session-action > a.btn-join i {
