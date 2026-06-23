@@ -1,0 +1,271 @@
+using System.Net;
+using Amazon.S3.Model;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.IdentityModel.Tokens;
+using Skillbridge.Data;
+using Skillbridge.Models;
+using Skillbridge.Models.Client;
+using Skillbridge.Models.Utils;
+
+namespace Skillbridge.Pages.Project;
+
+
+[Authorize]
+public class Directory : PageModel
+{
+    
+    private readonly ApplicationDbContext _context;
+
+    public Directory(ApplicationDbContext context)
+    {
+        _context = context;
+    }
+
+    public List<Amazon.S3.Model.S3Bucket> Buckets { get; set; } = new();
+    public List<Amazon.S3.Model.S3Object> Files { get; set; } = new();
+    public string CurrentBucket { get; set; } = string.Empty;
+    public string CurrentPrefix { get; set; } = string.Empty;
+    public List<string> Folders { get; set; } = new();
+    public string ViewMode { get; set; } = "grid";
+    public List<string> org = new List<string>();
+    
+    
+    public IActionResult OnGet(string? bucket, string? prefix, string? viewMode)
+    {
+        try
+        {
+
+            // Gets which organization the user belongs to
+            var orgsMember = _context.Users
+                .Join(_context.OrganizationMembers,
+                    user => user.Id,
+                    om => om.User, // ajusta ao nome real da FK para o User
+                    (user, om) => new { user, om }
+                )
+                .Join(_context.Organizations,
+                    uom => uom.om.Organization, // FK no OrganizationMember que aponta para Organization
+                    organization => organization.OrganizationId,
+                    (uom, organization) => organization.OrganizationId // já seleciona diretamente a Organization
+                )
+                .Distinct()
+                .ToList();
+
+            // IF user doesn't belong to any organization there is not project since projects belong to organizations
+            if (orgsMember.Count == 0)
+            {
+                return Page();
+            }
+
+
+            // Gets each organization's project
+            List<string?> orgProjects = _context.Organizations
+                .Join(_context.Project,
+                    organization => organization.OrganizationId,
+                    project => project.OrganizationId,
+                    ((organization, project) => new { project.ProjectDirectory, organization.OrganizationId })
+                )
+                .Where(p => orgsMember.Contains(p.OrganizationId))
+                .Select(p => p.ProjectDirectory)
+                .ToList();
+
+            // Verifies that there is at least 1 project
+
+            if (orgProjects.Count == 0)
+            {
+                return Page();
+            }
+
+            // If all the conditions above meet then it gets the project and files
+            var s3Api = new S3Api();
+            // Gets all buckets from the S3
+            var bucketList = s3Api.ListBucketsAsync().Result;
+            // Sends it to the Page if not null
+            bucketList.ForEach(b =>
+            {
+                if (orgProjects.Contains(b.BucketName))
+                {
+                    Buckets.Add(b);
+                }
+            });
+
+            // Defines currentBucket for aesthetic elements
+            CurrentBucket = bucket ?? "skillbridge";
+            CurrentPrefix = prefix ?? string.Empty;
+            // Defines view mode
+            ViewMode = viewMode ?? "grid";
+
+            // Gets all files from the current bucket selected
+
+            // Verifies that the user has permission to access the bucket
+            if (!orgProjects.Contains(CurrentBucket))
+            {
+                return LocalRedirect("/");
+
+            }
+
+            // Fetches all files from bucket
+            var filelist = s3Api.ListFilesAsync(CurrentBucket).Result;
+            Files = filelist ?? new List<Amazon.S3.Model.S3Object>();
+
+            // Extract unique folder names from files that share the current prefix
+            Folders = Files
+                .Where(f => (f.Key.StartsWith(CurrentPrefix) && f.Key != CurrentPrefix))
+                .Select(f =>
+                {
+                    var remainder = f.Key[CurrentPrefix.Length..];
+                    var slashIdx = remainder.IndexOf('/');
+                    return slashIdx > 0 ? remainder[..(slashIdx + 1)] : string.Empty;
+                })
+                .Where(f => !string.IsNullOrEmpty(f))
+                .Distinct()
+                .OrderBy(f => f)
+                .ToList();
+
+            // reloads page
+            return Page();
+        }
+        catch (Exception ex)
+        {
+            TempData["Message"] = ex.Message;
+            return RedirectToPage("Directory", new { bucket });
+        }
+    }
+
+    public async Task<IActionResult> OnPostCreateFolderAsync([FromForm] string bucket, [FromForm] string prefix,[FromForm] string folderName) {
+        try
+        {
+            // Initiates class
+            var s3Api = new S3Api();
+            // Verifies that the key is not empty and prepares it 
+            var key = string.IsNullOrEmpty(prefix)
+                ? $"{folderName.Trim('/')}/"
+                : $"{prefix}{folderName.Trim('/')}/";
+
+            // Create the folder on the S3 api
+            var success = await s3Api.EditarFicheiroAsync(bucket, key, string.Empty);
+            TempData["Message"] = success ? "Pasta criada com sucesso!" : "Erro ao criar pasta.";
+            
+            // Reloads the page
+            return RedirectToPage("Directory", new { bucket, prefix });
+        }
+        catch (Exception ex)
+        {
+            TempData["Message"] = ex.Message;
+            return RedirectToPage("Directory", new { bucket });
+        }
+    }
+
+    public async Task<IActionResult> OnPostDeleteFileAsync([FromForm] string bucket, [FromForm] string key) {
+        try
+        {
+            var s3Api = new S3Api();
+            // Deletes the file from key
+            var success = await s3Api.EliminarFicheiroAsync(bucket, key);
+            TempData["Message"] = success ? "Ficheiro eliminado!" : "Erro ao eliminar ficheiro.";
+            // Reloads the page
+            return RedirectToPage("Directory", new { bucket, prefix = GetPrefixFromKey(key) });
+        }
+        catch (Exception ex)
+        {
+            TempData["Message"] = ex.Message;
+            return RedirectToPage("Directory", new { bucket });
+        }
+    }
+
+    public async Task<IActionResult> OnPostDeleteFolderAsync( [FromForm] string bucket, [FromForm] string folderPath) {
+        try
+        {
+            var s3Api = new S3Api();
+            var files = await s3Api.ListFilesAsync(bucket);
+            // Verifies that the folder is empty, if it's not empty it deletes every file inside
+            if (!files.IsNullOrEmpty())
+            {
+                foreach (var file in files.Where(f => f.Key.StartsWith(folderPath)).ToList())
+                {
+                    await s3Api.EliminarFicheiroAsync(bucket, file.Key);
+                }
+            }
+            
+            // Then deletes the bucket
+            var success = await s3Api.EliminarFicheiroAsync(bucket, folderPath);
+            // Status message
+            TempData["Message"] = success ? "Pasta eliminada!" : "Erro ao eliminar pasta.";
+            // relodas the page
+            return RedirectToPage("Directory", new { bucket });
+        }
+        catch (Exception ex)
+        {
+            TempData["Message"] = ex.Message;
+            return  RedirectToPage("Directory", new { bucket });
+        }
+    }
+
+    private static string GetPrefixFromKey(string key)
+    {
+        var lastSlash = key.LastIndexOf('/');
+        return lastSlash > 0 ? key[..lastSlash] : string.Empty;
+    }
+
+    // ── Helpers exposed to the Razor view ──
+
+    public static string GetIconClass(string ext) => ext switch
+    {
+        "cs" or "cshtml" or "csproj" => "fe-type-icon-code",
+        "js" or "ts" or "jsx" or "tsx" => "fe-type-icon-code",
+        "html" or "htm" => "fe-type-icon-html",
+        "css" or "scss" or "less" => "fe-type-icon-css",
+        "json" or "xml" => "fe-type-icon-json",
+        "md" or "txt" => "fe-type-icon-text",
+        "png" or "jpg" or "jpeg" or "gif" or "svg" or "webp" => "fe-type-icon-image",
+        "zip" or "rar" or "7z" or "tar" or "gz" => "fe-type-icon-archive",
+        "pdf" => "fe-type-icon-pdf",
+        _ => "fe-type-icon-default"
+    };
+
+    public static string GetTypeIcon(string ext) => ext switch
+    {
+        "cs" or "cshtml" or "csproj" or "js" or "ts" or "jsx" or "tsx" or "html" or "htm" or "css" or "scss" => "bi-file-earmark-code",
+        "json" or "xml" => "bi-braces",
+        "md" or "txt" => "bi-file-earmark-text",
+        "png" or "jpg" or "jpeg" or "gif" or "svg" or "webp" => "bi-file-earmark-image",
+        "zip" or "rar" or "7z" or "tar" or "gz" => "bi-file-earmark-zip",
+        "pdf" => "bi-file-earmark-pdf",
+        _ => "bi-file-earmark"
+    };
+
+    public static string GetTypeColorClass(string ext) => ext switch
+    {
+        "cs" or "cshtml" => "fe-color-blue",
+        "js" or "ts" => "fe-color-yellow",
+        "html" => "fe-color-orange",
+        "css" or "scss" => "fe-color-purple",
+        "json" => "fe-color-green",
+        "md" or "txt" => "fe-color-gray",
+        "png" or "jpg" or "jpeg" or "gif" or "svg" => "fe-color-pink",
+        "zip" or "rar" => "fe-color-red",
+        "pdf" => "fe-color-red",
+        _ => "fe-color-gray"
+    };
+
+    public static string FormatSize(long? bytes)
+    {
+        var b = bytes ?? 0;
+        return b switch
+        {
+            < 1024 => $"{b} B",
+            < 1024 * 1024 => $"{b / 1024.0:F1} KB",
+            < 1024 * 1024 * 1024 => $"{b / (1024.0 * 1024):F1} MB",
+            _ => $"{b / (1024.0 * 1024 * 1024):F2} GB"
+        };
+    }
+
+    public static string GetBreadcrumbPath(string fullPrefix, string segment)
+    {
+        var parts = fullPrefix.TrimEnd('/').Split('/');
+        var idx = Array.IndexOf(parts, segment);
+        if (idx < 0) return segment;
+        return string.Join("/", parts[..(idx + 1)]);
+    }
+}
