@@ -1,3 +1,5 @@
+using File = Skillbridge.Models.Project.File;
+
 namespace Skillbridge.Models.Utils;
 using Amazon.S3;
 using Amazon.S3.Model;
@@ -88,9 +90,9 @@ public class S3Api
                 BucketName = bucket,
                 Key = key
             };
-            var response = await _s3client.DeleteObjectAsync(request);
-            
-            return response.HttpStatusCode == System.Net.HttpStatusCode.OK;
+            await _s3client.DeleteObjectAsync(request);
+
+            return true;
         }
         catch (AmazonS3Exception e)
         {
@@ -110,6 +112,49 @@ public class S3Api
         {
             Console.WriteLine($"[ERROR][EliminarBucketAsync] {e.Message}");
             return false;
+        }
+    }
+
+    public async Task<List<S3Bucket>> ListBucketsAsync()
+    {
+        try
+        {
+            var request = await _s3client.ListBucketsAsync(new ListBucketsRequest());
+            return request.Buckets;
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine($"[ERROR][ListBucketsAsync] {e.Message}");
+            return null;
+        }
+    }
+
+    public async Task<List<S3Object>> ListFilesAsync(string bucket)
+    {
+        try
+        {
+            string continuationToken = null;
+            var All = new  List<S3Object>();
+            do
+            {
+                var request = await _s3client.ListObjectsV2Async(new ListObjectsV2Request
+                {
+                    BucketName = bucket,
+                    ContinuationToken = continuationToken
+                });
+
+                All.AddRange(request.S3Objects);
+                
+                continuationToken = (bool) request.IsTruncated ? request.NextContinuationToken : null;
+
+            } while (continuationToken != null);
+            
+            return All;
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine($"[ERROR][ListFilesAsync] {e.Message}");
+            return null;
         }
     }
 }

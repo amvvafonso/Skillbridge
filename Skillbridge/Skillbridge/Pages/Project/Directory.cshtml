@@ -1,0 +1,307 @@
+@page
+@using System.IO
+@using DirModel = Skillbridge.Pages.Project.Directory
+@model Skillbridge.Pages.Project.Directory
+
+@{
+    Layout = "_Layout";
+    ViewData["title"] = "Directory";
+}
+
+<link rel="stylesheet" href="~/css/pages/Directory.css" asp-append-version="true" />
+
+<div class="file-explorer">
+
+    <!-- Sidebar: Buckets -->
+    <aside class="fe-sidebar">
+        <div class="fe-sidebar-header">
+            <i class="bi bi-hdd-network"></i>
+            <span>Buckets</span>
+        </div>
+        <ul class="fe-bucket-list">
+            @foreach (var bucket in Model.Buckets)
+            {
+                <li class="fe-bucket-item @(bucket.BucketName == Model.CurrentBucket ? "active" : "")">
+                    <a asp-page="Directory" asp-route-bucket="@bucket.BucketName" asp-route-prefix="">
+                        <i class="bi bi-folder2-open"></i>
+                        <span class="fe-bucket-name">@bucket.BucketName</span>
+                    </a>
+                </li>
+            }
+        </ul>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="fe-main">
+
+        <!-- Toolbar -->
+        <div class="fe-toolbar">
+            <div class="fe-breadcrumb">
+                <a asp-page="Directory" asp-route-bucket="@Model.CurrentBucket" asp-route-prefix="" class="fe-breadcrumb-link">
+                    <i class="bi bi-house-door"></i> /
+                </a>
+                @if (!string.IsNullOrEmpty(Model.CurrentPrefix))
+                {
+                    @foreach (var segment in Model.CurrentPrefix.TrimEnd('/').Split('/'))
+                    {
+                        var path = DirModel.GetBreadcrumbPath(Model.CurrentPrefix, segment);
+                        <a asp-page="Directory" asp-route-bucket="@Model.CurrentBucket" asp-route-prefix="@path" class="fe-breadcrumb-link">
+                            @segment /
+                        </a>
+                    }
+                }
+                <span class="fe-breadcrumb-current">
+                    @(string.IsNullOrEmpty(Model.CurrentPrefix) ? Model.CurrentBucket : Model.CurrentPrefix.Split('/').LastOrDefault(x => !string.IsNullOrEmpty(x)) ?? "")
+                </span>
+            </div>
+
+            <div class="fe-toolbar-actions">
+                <button class="fe-btn fe-btn-icon" id="btnCreateFolder" title="Nova Pasta">
+                    <i class="bi bi-folder-plus"></i>
+                </button>
+                <div class="fe-view-toggle">
+                    <button class="fe-btn fe-btn-icon @(Model.ViewMode == "grid" ? "active" : "")" id="btnGridView" title="Grelha">
+                        <i class="bi bi-grid-3x3-gap"></i>
+                    </button>
+                    <button class="fe-btn fe-btn-icon @(Model.ViewMode != "grid" ? "active" : "")" id="btnListView" title="Lista">
+                        <i class="bi bi-list-ul"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Message -->
+        @if (TempData["Message"] != null)
+        {
+            <div class="fe-message">
+                <i class="bi bi-check-circle"></i>
+                @TempData["Message"]
+            </div>
+        }
+
+        <!-- Folders -->
+        @if (Model.Folders.Any())
+        {
+            <div class="fe-section">
+                <div class="fe-section-label">
+                    <i class="bi bi-folder"></i> Pastas
+                </div>
+
+                <!-- Grid View -->
+                <div class="fe-grid @(Model.ViewMode != "grid" ? "hidden" : "")">
+                    @foreach (var folder in Model.Folders)
+                    {
+                        var folderPath = string.IsNullOrEmpty(Model.CurrentPrefix)
+                            ? folder
+                            : $"{Model.CurrentPrefix}{folder}";
+                        <div class="fe-item-card">
+                            <a asp-page="Directory" asp-route-bucket="@Model.CurrentBucket" asp-route-prefix="@folderPath" class="fe-item-link">
+                                <div class="fe-item-icon fe-folder-icon">
+                                    <i class="bi bi-folder-fill"></i>
+                                </div>
+                                <span class="fe-item-name">@folder.TrimEnd('/')</span>
+                            </a>
+                            <div class="fe-item-actions">
+                                <form asp-page-handler="DeleteFolder" method="post" style="display:inline"
+                                      onsubmit="return confirm('Eliminar esta pasta e todo o seu conteudo?');">
+                                    <input type="hidden" name="bucket" value="@Model.CurrentBucket" />
+                                    <input type="hidden" name="folderPath" value="@folderPath" />
+                                    <button type="submit" class="fe-btn-action" title="Eliminar">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <!-- List View -->
+                <div class="fe-list @(Model.ViewMode == "grid" ? "hidden" : "")">
+                    @foreach (var folder in Model.Folders)
+                    {
+                        var folderPath = string.IsNullOrEmpty(Model.CurrentPrefix)
+                            ? folder
+                            : $"{Model.CurrentPrefix}{folder}";
+                        <div class="fe-item-row">
+                            <a asp-page="Directory" asp-route-bucket="@Model.CurrentBucket" asp-route-prefix="@folderPath" class="fe-item-link-row">
+                                <i class="bi bi-folder-fill fe-type-icon fe-folder-color"></i>
+                                <span class="fe-item-name-col">@folder.TrimEnd('/')</span>
+                                <span class="fe-item-type-col">Pasta</span>
+                                <span class="fe-item-date-col">—</span>
+                            </a>
+                            <div class="fe-item-actions-row">
+                                <form asp-page-handler="DeleteFolder" method="post"
+                                      onsubmit="return confirm('Eliminar esta pasta e todo o seu conteudo?');">
+                                    <input type="hidden" name="bucket" value="@Model.CurrentBucket" />
+                                    <input type="hidden" name="folderPath" value="@folderPath" />
+                                    <button type="submit" class="fe-btn-action" title="Eliminar">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+
+        <!-- Files -->
+        @{
+            var files = Model.Files
+                .Where(f =>
+                {
+                    if (string.IsNullOrEmpty(Model.CurrentPrefix))
+                    {
+                        return f.Key.Split('/').Length == 1;
+                    }
+                    var prefixTrimmed = Model.CurrentPrefix.TrimEnd('/');
+                    return f.Key.StartsWith(prefixTrimmed + "/")
+                        && f.Key[(prefixTrimmed.Length + 1)..].Split('/').Length == 1;
+                })
+                .ToList();
+        }
+
+        @if (files.Any())
+        {
+            <div class="fe-section">
+                <div class="fe-section-label">
+                    <i class="bi bi-file-earmark"></i> Ficheiros
+                </div>
+
+                <!-- Grid View -->
+                <div class="fe-grid @(Model.ViewMode != "grid" ? "hidden" : "")">
+                    @foreach (var file in files)
+                    {
+                        var fileName = file.Key.Split('/').LastOrDefault() ?? file.Key;
+                        var ext = System.IO.Path.GetExtension(fileName).TrimStart('.').ToLowerInvariant();
+                        <div class="fe-item-card">
+                            <a href="#" class="fe-item-link">
+                                <div class="fe-item-icon @DirModel.GetIconClass(ext)">
+                                    <i class="bi @DirModel.GetTypeIcon(ext)"></i>
+                                </div>
+                                <span class="fe-item-name">@fileName</span>
+                                <span class="fe-item-size">@DirModel.FormatSize(file.Size)</span>
+                            </a>
+                            <div class="fe-item-actions">
+                                <form asp-page-handler="DeleteFile" method="post" style="display:inline">
+                                    <input type="hidden" name="bucket" value="@Model.CurrentBucket" />
+                                    <input type="hidden" name="key" value="@file.Key" />
+                                    <button type="submit" class="fe-btn-action" title="Eliminar"
+                                            onsubmit="return confirm('Eliminar este ficheiro?');">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <!-- List View -->
+                <div class="fe-list @(Model.ViewMode == "grid" ? "hidden" : "")">
+                    @foreach (var file in files)
+                    {
+                        var fileName = file.Key.Split('/').LastOrDefault() ?? file.Key;
+                        var ext = System.IO.Path.GetExtension(fileName).TrimStart('.').ToLowerInvariant();
+                        <div class="fe-item-row">
+                            <a href="#" class="fe-item-link-row">
+                                <i class="bi @DirModel.GetTypeIcon(ext) fe-type-icon @(DirModel.GetTypeColorClass(ext))"></i>
+                                <span class="fe-item-name-col">@fileName</span>
+                                <span class="fe-item-type-col">@(string.IsNullOrEmpty(ext) ? "—" : ext.ToUpperInvariant())</span>
+                                <span class="fe-item-size-col">@DirModel.FormatSize(file.Size)</span>
+                                <span class="fe-item-date-col">@(file.LastModified.HasValue ? file.LastModified.Value.ToString("dd/MM/yyyy HH:mm") : "—")</span>
+                            </a>
+                            <div class="fe-item-actions-row">
+                                <form asp-page-handler="DeleteFile" method="post" style="display:inline">
+                                    <input type="hidden" name="bucket" value="@Model.CurrentBucket" />
+                                    <input type="hidden" name="key" value="@file.Key" />
+                                    <button type="submit" class="fe-btn-action" title="Eliminar">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+
+        <!-- Empty State -->
+        @if (!Model.Folders.Any() && !files.Any())
+        {
+            <div class="fe-empty">
+                <i class="bi bi-folder2-open"></i>
+                <p>Esta pasta está vazia</p>
+                <small>Cria uma nova pasta ou faz upload de ficheiros</small>
+            </div>
+        }
+    </main>
+</div>
+
+<!-- Create Folder Modal -->
+<div class="fe-modal hidden" id="createFolderModal">
+    <div class="fe-modal-backdrop" id="modalBackdrop"></div>
+    <div class="fe-modal-content">
+        <div class="fe-modal-header">
+            <h4><i class="bi bi-folder-plus"></i> Nova Pasta</h4>
+            <button class="fe-modal-close" id="modalClose"><i class="bi bi-x-lg"></i></button>
+        </div>
+        <form asp-page-handler="CreateFolder" method="post">
+            <input type="hidden" name="bucket" value="@Model.CurrentBucket" />
+            <input type="hidden" name="prefix" value="@Model.CurrentPrefix" />
+            <div class="fe-modal-body">
+                <label>Nome da pasta</label>
+                <input type="text" name="folderName" class="fe-input" placeholder="Nova Pasta" required autofocus />
+            </div>
+            <div class="fe-modal-footer">
+                <button type="button" class="fe-btn fe-btn-secondary" id="modalCancel">Cancelar</button>
+                <button type="submit" class="fe-btn fe-btn-primary">
+                    <i class="bi bi-check-lg"></i> Criar
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const modal = document.getElementById('createFolderModal');
+        const btnCreate = document.getElementById('btnCreateFolder');
+        const btnClose = document.getElementById('modalClose');
+        const btnCancel = document.getElementById('modalCancel');
+        const backdrop = document.getElementById('modalBackdrop');
+        const gridView = document.getElementById('btnGridView');
+        const listView = document.getElementById('btnListView');
+
+        function openModal() { modal.classList.remove('hidden'); }
+        function closeModal() { modal.classList.add('hidden'); }
+
+        btnCreate.addEventListener('click', openModal);
+        btnClose.addEventListener('click', closeModal);
+        btnCancel.addEventListener('click', closeModal);
+        backdrop.addEventListener('click', closeModal);
+
+        gridView.addEventListener('click', function() {
+            document.querySelectorAll('.fe-grid').forEach(el => el.classList.remove('hidden'));
+            document.querySelectorAll('.fe-list').forEach(el => el.classList.add('hidden'));
+            gridView.classList.add('active');
+            listView.classList.remove('active');
+            localStorage.setItem('feViewMode', 'grid');
+        });
+
+        listView.addEventListener('click', function() {
+            document.querySelectorAll('.fe-list').forEach(el => el.classList.remove('hidden'));
+            document.querySelectorAll('.fe-grid').forEach(el => el.classList.add('hidden'));
+            listView.classList.add('active');
+            gridView.classList.remove('active');
+            localStorage.setItem('feViewMode', 'list');
+        });
+
+        // Restore saved view mode
+        const savedMode = localStorage.getItem('feViewMode');
+        if (savedMode === 'list') {
+            listView.click();
+        }
+    });
+</script>
+}

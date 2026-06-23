@@ -5,7 +5,6 @@
   ViewData["Title"] = "Dashboard";
   Layout = "/Views/Shared/_Layout.cshtml";
 }
-
 <link rel="stylesheet" href="~/css/areas/Client.css" asp-append-version="true" />
 
 <div class="dashboard-container">
@@ -148,10 +147,10 @@
 
       <div class="dashboard-section">
         <div class="section-header">
-          <h2 class="section-title">
+          <a href="/Project/Directory" class="section-title">
             <i class="bi bi-repository"></i>
             Projetos
-          </h2>
+          </a>
           @if ((Model.DashboardModel.Projects != null) && (Model.DashboardModel.Projects.Count > 0))
           {
             <span class="section-badge">@Model.DashboardModel.Projects.Count</span>
@@ -163,6 +162,7 @@
           <div class="project-list">
             @foreach (var project in Model.DashboardModel.Projects)
             {
+              <a style="text-decoration: none" href="/Project/Directory?bucket=@project.ProjectDirectory">
               <div class="project-card">
                 <div class="project-icon">
                   <i class="bi bi-code-square"></i>
@@ -184,6 +184,7 @@
                   </div>
                 </div>
               </div>
+              </a>
             }
           </div>
         }

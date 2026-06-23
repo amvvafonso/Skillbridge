@@ -57,6 +57,10 @@
     display: flex;
     align-items: center;
     gap: 0.5rem;
+    text-decoration: none;
+}
+.section-title:hover {
+    text-decoration: underline;
 }
 
 .section-title i {
