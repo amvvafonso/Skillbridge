@@ -59,6 +59,16 @@
                 <button class="fe-btn fe-btn-icon" id="btnCreateFolder" title="Nova Pasta">
                     <i class="bi bi-folder-plus"></i>
                 </button>
+                <form asp-page-handler="Upload" method="post" enctype="multipart/form-data" id="uploadForm">
+                    <input type="hidden" name="bucket" value="@Model.CurrentBucket" />
+                    <input type="hidden" name="prefix" value="@Model.CurrentPrefix" />
+                    <input asp-for="uploadedFile" id="uploadFile" class="bi bi-file-plus d-none" type="file" onchange="document.getElementById('uploadForm').submit()"/>
+                    <label for="uploadFile">
+                        <div class="fe-btn fe-btn-icon">
+                            <i class="bi bi-file-plus"></i>
+                        </div>
+                    </label>
+                </form>
                 <div class="fe-view-toggle">
                     <button class="fe-btn fe-btn-icon @(Model.ViewMode == "grid" ? "active" : "")" id="btnGridView" title="Grelha">
                         <i class="bi bi-grid-3x3-gap"></i>

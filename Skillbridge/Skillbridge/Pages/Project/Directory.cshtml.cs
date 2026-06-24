@@ -1,5 +1,7 @@
 using System.Net;
+using Amazon.S3;
 using Amazon.S3.Model;
+using Amazon.S3.Transfer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -202,6 +204,53 @@ public class Directory : PageModel
         }
     }
 
+    
+    [BindProperty]
+    public IFormFile uploadedFile { get; set; }
+    public async Task<IActionResult> OnPostUploadAsync([FromForm] string bucket, [FromForm] string prefix)
+    {
+        try
+        {
+            Console.WriteLine("Bucket -->" + bucket);
+            if (uploadedFile == null || uploadedFile.Length == 0)
+            {
+                TempData["Message"] = "Ficheiro inválido!";
+                return RedirectToPage("Directory", new { bucket });
+            }
+            
+            using var stream = uploadedFile.OpenReadStream();
+
+            var client = new S3Api();
+            var transferUtility = new TransferUtility(client.GetS3Client());
+
+            var key = string.IsNullOrEmpty(prefix)
+                ? $"{uploadedFile.FileName.Trim('/')}"
+                : $"{prefix}/{uploadedFile.FileName}";
+            
+            var uploadRequest = new TransferUtilityUploadRequest
+            {
+                InputStream = stream,
+                Key = key,
+                BucketName = bucket,
+                ContentType = uploadedFile.ContentType,
+            };
+            
+            await transferUtility.UploadAsync(uploadRequest);
+            
+            TempData["Message"] = "Ficheiro enviado com sucesso!";
+            
+            return RedirectToPage("Directory", new { bucket, prefix });
+            
+        }
+        catch (Exception ex)
+        {
+            TempData["Message"] = ex.Message;
+            return RedirectToPage("Directory", new { bucket, prefix });
+        }
+        
+    }
+    
+    
     private static string GetPrefixFromKey(string key)
     {
         var lastSlash = key.LastIndexOf('/');

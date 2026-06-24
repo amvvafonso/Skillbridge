@@ -18,6 +18,13 @@ public class S3Api
         
         _s3client = new  AmazonS3Client("skillbridge", "skillbridge", config);
     }
+
+    public AmazonS3Client GetS3Client()
+    {
+        return _s3client;
+    }
+    
+    
     public async Task<string> ObterFicheiroAsync(string bucket, string key)
     {
         try

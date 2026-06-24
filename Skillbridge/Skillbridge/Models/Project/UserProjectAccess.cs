@@ -37,5 +37,11 @@ public class UserProjectAccess
     [ForeignKey(nameof(ProjectId))]
     [DeleteBehavior(DeleteBehavior.Restrict)]
     public virtual Project? Project { get; set; }
-    
+
+    public UserProjectAccess(Role projectRole, string? userId, int projectId)
+    {
+        ProjectRole = projectRole;
+        UserId = userId;
+        ProjectId = projectId;
+    }
 }
