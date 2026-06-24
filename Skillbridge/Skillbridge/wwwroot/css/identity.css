@@ -1,0 +1,717 @@
+/* ─────────────────────────────────────
+   Identity Pages — Dark Theme Styles
+   ───────────────────────────────────── */
+
+/* ── Page Wrapper ──────────────────── */
+
+.identity-page {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+}
+
+/* ── Page Title ────────────────────── */
+
+.identity-title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: rgb(217, 228, 252);
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.identity-title i {
+    font-size: 1.5rem;
+    color: rgb(80, 140, 255);
+}
+
+/* ── Layout: Sidebar + Content ────── */
+
+.identity-layout {
+    display: flex;
+    gap: 2rem;
+    align-items: flex-start;
+}
+
+.identity-sidebar {
+    flex-shrink: 0;
+    width: 220px;
+}
+
+.identity-content {
+    flex: 1;
+    min-width: 0;
+}
+
+/* ── Nav Sidebar ───────────────────── */
+
+.identity-nav {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.identity-nav .nav-link {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    color: rgb(142, 157, 177);
+    text-decoration: none;
+    font-size: 0.95rem;
+    font-weight: 500;
+    border-radius: 10px;
+    transition: background 0.2s ease, color 0.2s ease, transform 0.15s ease;
+}
+
+.identity-nav .nav-link i {
+    font-size: 1.15rem;
+    width: 22px;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.identity-nav .nav-link:hover {
+    background: rgba(80, 140, 255, 0.08);
+    color: rgb(217, 228, 252);
+    transform: translateX(4px);
+}
+
+.identity-nav .nav-link.active {
+    background: rgba(80, 140, 255, 0.15);
+    color: rgb(80, 140, 255);
+    font-weight: 600;
+}
+
+.identity-nav .nav-link.active i {
+    color: rgb(80, 140, 255);
+}
+
+/* ── Card ──────────────────────────── */
+
+.identity-card {
+    background: linear-gradient(180deg, rgba(17, 28, 45, 0.95) 0%, rgba(12, 22, 38, 0.95) 100%);
+    border: 1px solid rgba(80, 140, 255, 0.1);
+    border-radius: 16px;
+    padding: 2rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.identity-card-header {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid rgba(142, 157, 177, 0.12);
+}
+
+.identity-card-title {
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: rgb(217, 228, 252);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.identity-card-title i {
+    color: rgb(80, 140, 255);
+    font-size: 1.2rem;
+}
+
+.identity-card-desc {
+    color: rgb(142, 157, 177);
+    font-size: 0.9rem;
+    margin-top: 6px;
+}
+
+/* ── Form Fields ───────────────────── */
+
+.identity-field {
+    margin-bottom: 1.25rem;
+}
+
+.identity-field label {
+    display: block;
+    color: rgb(142, 157, 177);
+    font-size: 0.85rem;
+    font-weight: 500;
+    margin-bottom: 6px;
+    letter-spacing: 0.02em;
+}
+
+.identity-field .form-control,
+.identity-field input[type="text"],
+.identity-field input[type="email"],
+.identity-field input[type="password"],
+.identity-field input[type="tel"] {
+    background: rgba(8, 20, 37, 0.8);
+    border: 1px solid rgba(142, 157, 177, 0.2);
+    border-radius: 10px;
+    color: rgb(217, 228, 252);
+    padding: 12px 16px;
+    font-size: 0.95rem;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.identity-field .form-control:focus,
+.identity-field input:focus {
+    border-color: rgb(80, 140, 255);
+    box-shadow: 0 0 0 3px rgba(80, 140, 255, 0.15);
+    background: rgba(8, 20, 37, 1);
+    color: rgb(217, 228, 252);
+    outline: none;
+}
+
+.identity-field .form-control:disabled,
+.identity-field input:disabled {
+    background: rgba(8, 20, 37, 0.5);
+    border-color: rgba(142, 157, 177, 0.1);
+    color: rgb(142, 157, 177);
+    opacity: 0.7;
+}
+
+/* Bootstrap form-floating label fix for dark theme */
+.identity-field .form-floating > label {
+    background: transparent !important;
+    color: rgb(142, 157, 177);
+    font-size: 1rem;
+}
+
+.identity-field .form-floating > .form-control:focus ~ label,
+.identity-field .form-floating > .form-control:not(:placeholder-shown) ~ label {
+    background: transparent !important;
+    color: rgb(80, 140, 255);
+    font-size: 0.8rem;
+}
+.identity-field .form-floating > .form-control:focus ~ label,
+.identity-field .form-floating > .form-control:not(:placeholder-shown) ~ label::after {
+    background-color: transparent !important;
+}
+/* ── Buttons ───────────────────────── */
+
+.identity-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 24px;
+    border-radius: 10px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.identity-btn:active {
+    transform: scale(0.97);
+}
+
+.identity-btn-primary {
+    background: linear-gradient(135deg, rgb(80, 140, 255), rgb(110, 113, 251));
+    color: white;
+    box-shadow: 0 4px 16px rgba(80, 140, 255, 0.25);
+}
+
+.identity-btn-primary:hover {
+    box-shadow: 0 6px 24px rgba(80, 140, 255, 0.4);
+    color: white;
+    transform: translateY(-1px);
+}
+
+.identity-btn-secondary {
+    background: rgba(80, 140, 255, 0.1);
+    border: 1px solid rgba(80, 140, 255, 0.3);
+    color: rgb(217, 228, 252);
+}
+
+.identity-btn-secondary:hover {
+    background: rgba(80, 140, 255, 0.18);
+    color: white;
+}
+
+.identity-btn-danger {
+    background: rgba(220, 80, 80, 0.1);
+    border: 1px solid rgba(220, 80, 80, 0.3);
+    color: rgb(220, 100, 100);
+}
+
+.identity-btn-danger:hover {
+    background: rgba(220, 80, 80, 0.2);
+    color: rgb(240, 120, 120);
+}
+
+.identity-btn-sm {
+    padding: 8px 16px;
+    font-size: 0.85rem;
+    border-radius: 8px;
+}
+
+.identity-btn-block {
+    width: 100%;
+}
+
+/* ── Status Messages ───────────────── */
+
+.identity-status {
+    padding: 14px 18px;
+    border-radius: 10px;
+    margin-bottom: 1.25rem;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.identity-status-success {
+    background: rgba(40, 167, 69, 0.1);
+    border: 1px solid rgba(40, 167, 69, 0.25);
+    color: rgb(80, 200, 120);
+}
+
+.identity-status-danger {
+    background: rgba(220, 80, 80, 0.1);
+    border: 1px solid rgba(220, 80, 80, 0.25);
+    color: rgb(220, 100, 100);
+}
+
+.identity-status-warning {
+    background: rgba(255, 193, 7, 0.1);
+    border: 1px solid rgba(255, 193, 7, 0.25);
+    color: rgb(255, 200, 80);
+}
+
+/* ── Info Boxes ────────────────────── */
+
+.identity-info-box {
+    padding: 1rem 1.25rem;
+    border-radius: 10px;
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+}
+
+.identity-info-box-success {
+    background: rgba(40, 167, 69, 0.08);
+    border: 1px solid rgba(40, 167, 69, 0.2);
+    color: rgb(80, 200, 120);
+}
+
+.identity-info-box-warning {
+    background: rgba(255, 193, 7, 0.08);
+    border: 1px solid rgba(255, 193, 7, 0.2);
+    color: rgb(255, 200, 80);
+}
+
+.identity-info-box-danger {
+    background: rgba(220, 80, 80, 0.08);
+    border: 1px solid rgba(220, 80, 80, 0.2);
+    color: rgb(220, 100, 100);
+}
+
+/* ── Section dividers ──────────────── */
+
+.identity-divider {
+    border: none;
+    border-top: 1px solid rgba(142, 157, 177, 0.1);
+    margin: 1.5rem 0;
+}
+
+/* ── 2FA specific ──────────────────── */
+
+.identity-2fa-section {
+    margin-bottom: 1.5rem;
+}
+
+.identity-2fa-section h4 {
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: rgb(217, 228, 252);
+    margin-bottom: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.identity-2fa-section h4 i {
+    color: rgb(80, 140, 255);
+}
+
+.identity-2fa-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 1rem;
+}
+
+/* ── Confirmed badge ───────────────── */
+
+.identity-confirmed-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    background: rgba(40, 167, 69, 0.15);
+    color: rgb(80, 200, 120);
+}
+
+/* ── Responsive ────────────────────── */
+
+@media (max-width: 767.98px) {
+    .identity-page {
+        padding: 1rem 0.75rem;
+    }
+
+    .identity-layout {
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .identity-sidebar {
+        width: 100%;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        background: rgb(8, 20, 37);
+        padding: 8px 0;
+    }
+
+    .identity-nav {
+        flex-direction: row;
+        overflow-x: auto;
+        overflow-y: hidden;
+        padding: 4px 8px 8px 8px;
+        gap: 4px;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        scroll-behavior: smooth;
+    }
+
+    .identity-nav::-webkit-scrollbar {
+        display: none;
+    }
+
+    .identity-nav .nav-link {
+        white-space: nowrap;
+        padding: 8px 12px;
+        font-size: 0.82rem;
+        border-radius: 20px;
+        flex-shrink: 0;
+    }
+
+    .identity-nav .nav-link i {
+        font-size: 1rem;
+    }
+
+    .identity-nav .nav-link span.nav-text {
+        display: inline;
+        margin-left: 4px;
+    }
+
+    .identity-nav .nav-link.active {
+        background: rgba(80, 140, 255, 0.2);
+        box-shadow: 0 0 8px rgba(80, 140, 255, 0.15);
+    }
+
+    .identity-title {
+        font-size: 1.35rem;
+        margin-bottom: 1rem;
+        padding: 0 0.25rem;
+    }
+
+    .identity-title i {
+        font-size: 1.2rem;
+    }
+
+    .identity-card {
+        padding: 1.25rem 1rem;
+        border-radius: 14px;
+    }
+
+    .identity-card-header {
+        margin-bottom: 1rem;
+        padding-bottom: 0.75rem;
+    }
+
+    .identity-card-title {
+        font-size: 1rem;
+    }
+
+    .identity-card-desc {
+        font-size: 0.82rem;
+    }
+
+    /* Form fields — better touch targets */
+    .identity-field {
+        margin-bottom: 1rem;
+    }
+
+    .identity-field label {
+        font-size: 0.82rem;
+    }
+
+    .identity-field .form-control,
+    .identity-field input[type="text"],
+    .identity-field input[type="email"],
+    .identity-field input[type="password"],
+    .identity-field input[type="tel"] {
+        padding: 14px 14px;
+        font-size: 16px; /* prevents iOS zoom on focus */
+        border-radius: 8px;
+    }
+
+    .identity-field .form-floating > .form-control {
+        padding: 1.5rem 14px 0.5rem 14px;
+    }
+
+    /* Buttons — full width on mobile */
+    .identity-btn {
+        padding: 14px 20px;
+        font-size: 0.9rem;
+        border-radius: 10px;
+        min-height: 48px; /* touch-friendly */
+    }
+
+    .identity-actions {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .identity-actions .identity-btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    /* Steps — compact on mobile */
+    .identity-steps {
+        gap: 1.25rem;
+    }
+
+    .identity-step {
+        gap: 0.4rem;
+    }
+
+    .identity-step-number {
+        width: 28px;
+        height: 28px;
+        font-size: 0.82rem;
+    }
+
+    .identity-step-title {
+        font-size: 0.95rem;
+    }
+
+    .identity-step-desc {
+        font-size: 0.82rem;
+        line-height: 1.5;
+    }
+
+    .identity-step-desc a.identity-link {
+        font-size: 0.82rem;
+    }
+
+    /* QR Code — smaller on mobile */
+    .identity-qr-wrapper {
+        padding: 1rem;
+        margin: 0.75rem 0;
+    }
+
+    .identity-qr-wrapper img {
+        max-width: 180px !important;
+        height: auto !important;
+    }
+
+    /* Info boxes — compact */
+    .identity-info-box {
+        padding: 0.75rem 1rem;
+        font-size: 0.82rem;
+        border-radius: 8px;
+    }
+
+    .identity-info-box p {
+        font-size: 0.82rem;
+    }
+
+    /* 2FA actions — stacked */
+    .identity-2fa-actions {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .identity-2fa-actions .identity-btn {
+        width: 100%;
+    }
+
+    .identity-2fa-section {
+        margin-bottom: 1rem;
+    }
+
+    .identity-2fa-section h4 {
+        font-size: 0.95rem;
+    }
+
+    /* Status messages */
+    .identity-status {
+        padding: 10px 14px;
+        font-size: 0.82rem;
+        border-radius: 8px;
+    }
+
+    /* Badge */
+    .identity-confirmed-badge {
+        padding: 3px 10px;
+        font-size: 0.75rem;
+    }
+
+    /* Key input */
+    .identity-key {
+        font-size: 0.78rem;
+        padding: 3px 8px;
+        word-break: break-all;
+    }
+
+    /* Divider */
+    .identity-divider {
+        margin: 1rem 0;
+    }
+
+    /* Validation messages */
+    .identity-field .text-danger,
+    .identity-field .validation-message {
+        font-size: 0.75rem;
+    }
+}
+
+/* ── Validation ────────────────────── */
+
+.identity-field .text-danger {
+    font-size: 0.8rem;
+    color: rgb(220, 100, 100);
+    margin-top: 4px;
+    display: block;
+}
+
+.identity-field .validation-message {
+    font-size: 0.8rem;
+    color: rgb(220, 100, 100);
+    margin-top: 4px;
+}
+
+/* ── Input group addon ─────────────── */
+
+.identity-field .input-group-text {
+    background: rgba(40, 167, 69, 0.15);
+    border: 1px solid rgba(40, 167, 69, 0.25);
+    border-radius: 0 10px 10px 0;
+    color: rgb(80, 200, 120);
+}
+
+/* ── Link styles ───────────────────── */
+
+.identity-link {
+    color: rgb(80, 140, 255);
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s ease;
+}
+
+.identity-link:hover {
+    color: rgb(130, 175, 255);
+    text-decoration: underline;
+}
+
+/* ── Steps (EnableAuthenticator) ────── */
+
+.identity-steps {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.identity-step {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.identity-step-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.identity-step-number {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, rgb(80, 140, 255), rgb(110, 113, 251));
+    color: white;
+    font-size: 0.9rem;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.identity-step-title {
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: rgb(217, 228, 252);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.identity-step-title i {
+    color: rgb(80, 140, 255);
+}
+
+.identity-step-desc {
+    color: rgb(142, 157, 177);
+    font-size: 0.9rem;
+    line-height: 1.6;
+    margin: 0;
+}
+
+/* ── QR Code wrapper ───────────────── */
+
+.identity-qr-wrapper {
+    display: flex;
+    justify-content: center;
+    padding: 1.5rem;
+    margin: 1rem 0;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    border: 1px solid rgba(142, 157, 177, 0.1);
+}
+
+.identity-key {
+    background: rgba(80, 140, 255, 0.1);
+    color: rgb(217, 228, 252);
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-family: monospace;
+    font-size: 0.9rem;
+    border: 1px solid rgba(80, 140, 255, 0.2);
+}
+
+/* ── Actions row ───────────────────── */
+
+.identity-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
