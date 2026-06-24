@@ -6,6 +6,7 @@ using Skillbridge.Utilities;
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Identity;
 using Skillbridge.Models.Client;
+using Skillbridge.Models.Utils;
 
 namespace Skillbridge.Pages.Organization;
 
@@ -69,6 +70,8 @@ public class IndexModel(ApplicationDbContext context, UserManager<User> userMana
         
         [MaxLength(1000)]
         public string? OrganizationDescription { get; set; }
+
+        public IFormFile? LogoFile { get; set; }
     }
 
     public async Task<IActionResult> OnPostCreateOrganizationAsync()
@@ -83,20 +86,51 @@ public class IndexModel(ApplicationDbContext context, UserManager<User> userMana
             return Page();
         }
 
+        var guid = Guid.NewGuid().ToString();
+
+        string logoPath = "/default_logo.png";
+        if (NewOrganization.LogoFile != null && NewOrganization.LogoFile.Length > 0)
+        {
+            
+            using var ms = new System.IO.MemoryStream();
+            await NewOrganization.LogoFile.CopyToAsync(ms);
+            var bytes = ms.ToArray();
+            var s3 = new S3Api();
+            
+
+            var success = await s3.UploadBinaryAsync("logos", $"{guid}.png", bytes, NewOrganization.LogoFile.ContentType);
+            if (success) logoPath = $"{guid}.png";
+        }
+
         var organization = new Models.Organization
         {
-            OrganizationId = Guid.NewGuid().ToString(),
+            OrganizationId = guid,
             OrganizationName = NewOrganization.OrganizationName,
             OrganizationAddress = NewOrganization.OrganizationAddress,
             OrganizationDescription = NewOrganization.OrganizationDescription,
-            Owner = user.Id
+            Owner = user.Id,
+            LogoPath = logoPath
         };
 
         context.Organizations.Add(organization);
+
+        var ogm = new OrganizationMember(Guid.NewGuid().ToString(), guid, user.Id, Role.Owner);
+        context.OrganizationMembers.Add(ogm);
+        
         await context.SaveChangesAsync();
 
         return RedirectToPage();
     }
-        
+    
+    public async Task<IActionResult> OnGetAvatarAsync(string key)
+    {
+        var s3 = new S3Api();
+        var image = await s3.GetBinaryAsync("logos", key);
+
+        if (image == null)
+            return NotFound();
+
+        return File(image.Value.Data, image.Value.ContentType);
+    }
 }
 

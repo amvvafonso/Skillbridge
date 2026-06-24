@@ -112,8 +112,7 @@
                                 <span class="fe-item-name">@folder.TrimEnd('/')</span>
                             </a>
                             <div class="fe-item-actions">
-                                <form asp-page-handler="DeleteFolder" method="post" style="display:inline"
-                                      onsubmit="return confirm('Eliminar esta pasta e todo o seu conteudo?');">
+                                <form  asp-page-handler="DeleteFolder" method="post" style="display:inline" onsubmit="event.preventDefault(); openConfirmModal(this, 'Tem a certeza que quer eliminar esta pasta?', 'Eliminar')">
                                     <input type="hidden" name="bucket" value="@Model.CurrentBucket" />
                                     <input type="hidden" name="folderPath" value="@folderPath" />
                                     <button type="submit" class="fe-btn-action" title="Eliminar">
@@ -140,8 +139,7 @@
                                 <span class="fe-item-date-col">—</span>
                             </a>
                             <div class="fe-item-actions-row">
-                                <form asp-page-handler="DeleteFolder" method="post"
-                                      onsubmit="return confirm('Eliminar esta pasta e todo o seu conteudo?');">
+                                <form asp-page-handler="DeleteFolder" method="post" onsubmit="event.preventDefault(); openConfirmModal(this, 'Tem a certeza que quer eliminar esta pasta?', 'Eliminar')">
                                     <input type="hidden" name="bucket" value="@Model.CurrentBucket" />
                                     <input type="hidden" name="folderPath" value="@folderPath" />
                                     <button type="submit" class="fe-btn-action" title="Eliminar">
@@ -194,11 +192,10 @@
                                 <span class="fe-item-size">@DirModel.FormatSize(file.Size)</span>
                             </a>
                             <div class="fe-item-actions">
-                                <form asp-page-handler="DeleteFile" method="post" style="display:inline">
+                                <form asp-page-handler="DeleteFile" method="post" style="display:inline" onsubmit="event.preventDefault(); openConfirmModal(this, 'Tem a certeza que quer eliminar esta ficheiro?', 'Eliminar')">
                                     <input type="hidden" name="bucket" value="@Model.CurrentBucket" />
                                     <input type="hidden" name="key" value="@file.Key" />
-                                    <button type="submit" class="fe-btn-action" title="Eliminar"
-                                            onsubmit="return confirm('Eliminar este ficheiro?');">
+                                    <button type="submit" class="fe-btn-action" title="Eliminar">
                                         <i class="bi bi-trash"></i>
                                     </button>
                                 </form>
@@ -228,7 +225,7 @@
                                 <span class="fe-item-date-col">@(file.LastModified.HasValue ? file.LastModified.Value.ToString("dd/MM/yyyy HH:mm") : "—")</span>
                             </a>
                             <div class="fe-item-actions-row">
-                                <form asp-page-handler="DeleteFile" method="post" style="display:inline">
+                                <form onsubmit="event.preventDefault(); openConfirmModal(this, 'Tem a certeza que quer eliminar este ficheiro?', 'Eliminar')" asp-page-handler="DeleteFile" method="post" style="display:inline">
                                     <input type="hidden" name="bucket" value="@Model.CurrentBucket" />
                                     <input type="hidden" name="key" value="@file.Key" />
                                     <button type="submit" class="fe-btn-action" title="Eliminar">

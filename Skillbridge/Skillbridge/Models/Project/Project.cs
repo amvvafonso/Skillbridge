@@ -60,4 +60,19 @@ public class Project
     // Relacionamentos 1-N
     // ############################################################
     public ICollection<File> FileList { get; set; } = [];
+
+    public Project(Project project, Organization organization)
+    {
+        ProjectId = project.ProjectId;
+        ProjectName = project.ProjectName;
+        ProjectDescription = project.ProjectDescription;
+        Repository = project.Repository;
+        Public = project.Public;
+        ProjectDirectory = project.ProjectDirectory;
+        OrganizationId = organization.OrganizationId;
+        Organization = organization;
+    }
+    
+    public Project()
+    {}
 }

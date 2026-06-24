@@ -10,20 +10,22 @@
   display: flex;
   align-items: center;
   gap: 0.4rem;
-  padding: 0.45rem 1rem;
+  padding: 0.5rem 1.2rem;
   background: transparent;
-  color: var(--bs-primary, #0d6efd);
-  border: 1.5px solid var(--bs-primary, #0d6efd);
-  border-radius: 999px;
+  color: rgb(110, 113, 251);
+  border: 1.5px solid rgba(110, 113, 251, 0.5);
+  border-radius: 0;
+  font-family: 'Inter', sans-serif;
   font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;
-  transition: background 0.18s ease, color 0.18s ease;
+  transition: all 0.2s ease;
 }
 
 .btn-create-org:hover {
-  background: var(--bs-primary, #0d6efd);
-  color: #fff;
+  background: rgba(110, 113, 251, 0.1);
+  border-color: rgb(110, 113, 251);
+  color: #e2e8f0;
 }
 
 .btn-create-org i {
@@ -58,7 +60,7 @@
   padding: 16px 20px 16px 52px;
   font-size: 1.05rem;
   border: 1px solid rgb(56, 70, 95);
-  border-radius: 12px;
+  border-radius: 0;
   background: rgb(13, 25, 48);
   color: rgb(217, 228, 252);
   outline: none;
@@ -104,7 +106,7 @@
 .org-result-card {
   background: rgb(13, 25, 48);
   border: 1px solid rgb(30, 48, 78);
-  border-radius: 12px;
+  border-radius: 0;
   padding: 24px;
   text-decoration: none;
   transition: border-color 0.2s, transform 0.15s, box-shadow 0.2s;
@@ -113,7 +115,6 @@
   gap: 12px;
   cursor: pointer;
 }
-
 
 .org-result-card:hover {
   border-color: rgb(80, 140, 255);
@@ -125,7 +126,7 @@
 .org-result-logo {
   width: 56px;
   height: 56px;
-  border-radius: 12px;
+  border-radius: 0;
   object-fit: cover;
   background: rgb(22, 38, 68);
 }
@@ -178,23 +179,314 @@
   margin: 0;
 }
 
-/* Animations */
-
-@keyframes slide-up {
-  from {transform: translateY(200%);}
-  to {transform: translateY(0);}
+/* ==========================================
+   SECTION HEADER
+   ========================================== */
+.section-header {
+  width: 100%;
+  max-width: 900px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
 }
 
+.section-title {
+  font-family: 'Inter', sans-serif;
+  font-size: 1.25rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+}
+
+.section-title i {
+  color: rgb(110, 113, 251);
+}
+
+/* ==========================================
+   FE MODAL
+   ========================================== */
+.fe-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(6px);
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.25s ease;
+}
+
+.fe-modal-overlay.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.fe-modal {
+  width: 100%;
+  max-width: 480px;
+  max-height: 90vh;
+  overflow-y: auto;
+  background: linear-gradient(180deg, #111827 0%, #0f172a 100%);
+  border: 1px solid rgba(110, 113, 251, 0.15);
+  border-radius: 0;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.5), 0 0 40px rgba(110, 113, 251, 0.06);
+  transform: translateY(20px) scale(0.97);
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.fe-modal-overlay.active .fe-modal {
+  transform: translateY(0) scale(1);
+}
+
+/* Modal Header */
+.org-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 22px;
+  border-bottom: 1px solid rgba(110, 113, 251, 0.1);
+  background: rgba(110, 113, 251, 0.04);
+}
+
+.org-modal-header h3 {
+  margin: 0;
+  font-family: 'Inter', sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  color: #e2e8f0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.org-modal-header h3 i {
+  color: rgb(110, 113, 251);
+  font-size: 18px;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  color: #64748b;
+  font-size: 24px;
+  cursor: pointer;
+  padding: 0 4px;
+  line-height: 1;
+  transition: color 0.2s ease;
+}
+
+.modal-close:hover {
+  color: #e2e8f0;
+}
+
+/* Modal Body */
+.org-modal-body {
+  padding: 22px;
+}
+
+.org-validation-summary {
+  padding: 10px 14px;
+  border-radius: 0;
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 16px;
+  background: rgba(239, 68, 68, 0.1);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+/* Form Groups */
+.org-form-group {
+  margin-bottom: 18px;
+}
+
+.org-form-label {
+  display: block;
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  color: #94a3b8;
+  margin-bottom: 6px;
+}
+
+.org-form-input {
+  width: 100%;
+  padding: 10px 14px;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  color: #e2e8f0;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(110, 113, 251, 0.15);
+  border-radius: 0;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  box-sizing: border-box;
+}
+
+.org-form-input::placeholder {
+  color: #475569;
+}
+
+.org-form-input:focus {
+  border-color: rgb(110, 113, 251);
+  box-shadow: 0 0 0 3px rgba(110, 113, 251, 0.1);
+}
+
+.org-textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.org-validation-error {
+  display: block;
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  color: #f87171;
+  margin-top: 4px;
+}
+
+/* ==========================================
+   UPLOAD ZONE
+   ========================================== */
+.upload-zone {
+  position: relative;
+  width: 100%;
+  height: 140px;
+  border: 2px dashed rgba(110, 113, 251, 0.25);
+  border-radius: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: rgba(15, 23, 42, 0.4);
+  overflow: hidden;
+}
+
+.upload-zone:hover {
+  border-color: rgba(110, 113, 251, 0.5);
+  background: rgba(110, 113, 251, 0.05);
+}
+
+.upload-zone.drag-over {
+  border-color: rgb(110, 113, 251);
+  background: rgba(110, 113, 251, 0.1);
+  box-shadow: 0 0 0 3px rgba(110, 113, 251, 0.15);
+}
+
+.upload-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  color: #64748b;
+  transition: color 0.2s ease;
+}
+
+.upload-zone:hover .upload-placeholder {
+  color: #94a3b8;
+}
+
+.upload-placeholder i {
+  font-size: 28px;
+  color: rgb(110, 113, 251);
+}
+
+.upload-placeholder span {
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.upload-placeholder small {
+  font-family: 'Inter', sans-serif;
+  font-size: 11.5px;
+  color: #475569;
+}
+
+.logo-preview {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 1;
+}
+
+.hidden-input {
+  display: none;
+}
+
+/* Modal Footer */
+.org-modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 16px 22px;
+  border-top: 1px solid rgba(110, 113, 251, 0.1);
+  background: rgba(110, 113, 251, 0.02);
+}
+
+.org-btn-cancel {
+  padding: 8px 18px;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  color: #94a3b8;
+  background: transparent;
+  border: 1px solid rgba(100, 116, 139, 0.3);
+  border-radius: 0;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.org-btn-cancel:hover {
+  color: #e2e8f0;
+  border-color: #64748b;
+  background: rgba(100, 116, 139, 0.1);
+}
+
+.org-btn-create {
+  padding: 8px 22px;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+  background: linear-gradient(135deg, rgb(110, 113, 251) 0%, rgb(134, 96, 255) 100%);
+  border: none;
+  border-radius: 0;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(110, 113, 251, 0.25);
+}
+
+.org-btn-create:hover {
+  box-shadow: 0 4px 16px rgba(110, 113, 251, 0.4);
+  transform: translateY(-1px);
+}
+
+/* Animations */
+@keyframes slide-up {
+  from { transform: translateY(200%); }
+  to { transform: translateY(0); }
+}
 
 @keyframes slide-down {
-  from {transform: translateY(-50%);}
-  to {transform: translateY(0);}
+  from { transform: translateY(-50%); }
+  to { transform: translateY(0); }
 }
 
-
 @keyframes fade-in {
-  from {opacity: 0;}
-  to {opacity: 1;}
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 .spinner {
@@ -206,15 +498,6 @@
   animation: spin 1s linear infinite;
   align-self: center;
 }
-
-
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-
 
 @keyframes spin {
   0% { transform: rotate(0deg); }

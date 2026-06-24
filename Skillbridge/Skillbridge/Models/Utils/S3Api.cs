@@ -67,7 +67,7 @@ public class S3Api
         }
     }
 
-    public async Task<bool> CriarBucketAsync(string bucket, string key) {
+    public async Task<bool> CriarBucketAsync(string bucket) {
         try
         {
             var request = new PutBucketRequest
@@ -136,6 +136,52 @@ public class S3Api
         }
     }
 
+    public async Task<bool> UploadBinaryAsync(string bucket, string key, byte[] data, string contentType)
+    {
+        try
+        {
+            var request = new PutObjectRequest
+            {
+                BucketName = bucket,
+                Key = key,
+                InputStream = new System.IO.MemoryStream(data),
+                ContentType = contentType
+                
+            };
+            var response = await _s3client.PutObjectAsync(request);
+            return response.HttpStatusCode == System.Net.HttpStatusCode.OK;
+        }
+        catch (AmazonS3Exception e)
+        {
+            Console.WriteLine($"[ERROR][UploadBinaryAsync] {e.Message}");
+            return false;
+        }
+    }
+
+    public async Task<(byte[] Data, string ContentType)?> GetBinaryAsync(string bucket, string key)
+    {
+        try
+        {
+            var request = new GetObjectRequest
+            {
+                BucketName = bucket,
+                Key = key
+            };
+
+            using var response = await _s3client.GetObjectAsync(request);
+            using var ms = new MemoryStream();
+            await response.ResponseStream.CopyToAsync(ms);
+
+            return (ms.ToArray(), response.Headers.ContentType);
+        }
+        catch (AmazonS3Exception e)
+        {
+            Console.WriteLine($"[ERROR][GetBinaryAsync] {e.Message}");
+            return null;
+        }
+    }
+    
+
     public async Task<List<S3Object>> ListFilesAsync(string bucket)
     {
         try
@@ -161,6 +207,24 @@ public class S3Api
         catch (Exception e)
         {
             Console.WriteLine($"[ERROR][ListFilesAsync] {e.Message}");
+            return null;
+        }
+    }
+    
+    public async Task<string?> GetBucketRegionAsync(string bucketName)
+    {
+        try
+        {
+            var response = await _s3client.GetBucketLocationAsync(new GetBucketLocationRequest
+            {
+                BucketName = bucketName
+            });
+
+            return response.Location?.Value;
+        }
+        catch (AmazonS3Exception e)
+        {
+            Console.WriteLine($"[ERROR][GetBucketRegionAsync] {e.Message}");
             return null;
         }
     }
