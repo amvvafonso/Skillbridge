@@ -29,6 +29,7 @@ namespace Skillbridge.Areas.Client.Pages
         public Session CurrentSession { get; set; }
         public User CurrentUser { get; set; } 
         public Boolean CanEdit { get; set; }
+        public List<ChatMessage> ChatMessages { get; set; }
 
         //Classe que representa os dados recebidos do editor no POST
         public class SaveRequest
@@ -73,13 +74,20 @@ namespace Skillbridge.Areas.Client.Pages
             {
                 //Vai buscar o conteudo atualizado ao S3
                 var s3 = new S3Api();
-                CurrentFile.Content = await s3.ObterFicheiroAsync("skillbridge", CurrentFile.Path);
+                CurrentFile.Content = await s3.ObterFicheiroAsync("skillbridge", CurrentFile.Path) ?? string.Empty;
             }
             catch (Amazon.Runtime.AmazonServiceException)
             {
                 //Ficheiro ainda nao existe no S3
                 CurrentFile.Content = string.Empty;
             }
+            
+            //Carrega as mensagens de chat da sessão
+            ChatMessages = await _context.ChatMessages
+                .Where(m=>m.SessionId == CurrentSession.Id)
+                .Include(m=>m.User)
+                .OrderBy(m=>m.SentAt)
+                .ToListAsync();
             
             return Page();
         }

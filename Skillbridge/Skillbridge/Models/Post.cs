@@ -37,6 +37,7 @@ public class Post
     /// Foreign key, links user to post
     /// </summary>
     public string AuthorID { get; set; }
+    
     [ForeignKey(nameof(AuthorID))]
     [DeleteBehavior(DeleteBehavior.Restrict)]
     public virtual User Author { get; set; }
