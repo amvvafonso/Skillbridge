@@ -41,8 +41,9 @@ else
 app.UseHttpsRedirection();
 app.UseRouting();
 
+app.UseAuthentication();
 app.UseAuthorization();
-
+    
 app.MapStaticAssets();
 
 app.MapControllerRoute(
@@ -52,6 +53,7 @@ app.MapControllerRoute(
 
 app.MapHub<NotificationHub>("/notificationHub");
 app.MapHub<ChatHub>("/chatHub");
+app.MapHub<CodeEditorHub>("/codeEditorHub");
 
 app.MapControllerRoute(
     name: "areas",

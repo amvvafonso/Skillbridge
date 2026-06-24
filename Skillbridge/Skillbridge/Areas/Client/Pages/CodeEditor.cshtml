@@ -89,6 +89,35 @@
     <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.52.0/min/vs/loader.js"></script>
 
     <script>
+        //Ligação ao CodeEditorHub
+        const editorConnection = new signalR.HubConnectionBuilder()
+            .withUrl("/codeEditorHub")
+            .configureLogging(signalR.LogLevel.Warning)
+            .withAutomaticReconnect()
+            .build();
+
+        const canEdit = @Json.Serialize(Model.CanEdit);
+
+        //Arranca a ligação e junta ao grupo da sessão
+        async function startEditorHub() {
+            try {
+                await editorConnection.start();
+                await editorConnection.invoke('JoinSession', sessionId);
+                console.log("CodeEditorHub Connected.");
+            } catch (err) {
+                console.log(err);
+                setTimeout(startEditorHub, 5000);
+            }
+        }
+
+        //Constantes Razor
+        const sessionId = '@Model.CurrentSession.Id';
+        const currentUserId = '@Model.CurrentUser.Id';
+        const currentUserName = '@Model.CurrentUser.Name';
+        
+        
+        startEditorHub();
+
         //Para o editor se tornar acessivel fora do require
         var editor; 
         
@@ -111,16 +140,50 @@
                 readOnly: @Json.Serialize(!Model.CanEdit),
                 //Qunado ha um resize mantem a prorpoçao correta do editor
                 automaticLayout: true
+            })
+            //Flag para evitar loops
+            let isFinished = false;
+            //Variavel para o Throttling
+            let debounceTimer = null;
+
+            if (canEdit) {
+                editor.onDidChangeModelContent(() => {
+                    //ignora as alterações recebidas
+                    if (isFinished) return;
+                    clearTimeout(debounceTimer);
+                    debounceTimer = setTimeout(() => {
+                        editorConnection.invoke('SendCodeChange', sessionId, editor.getValue())
+                            .catch(err => console.log("Erro ao enviar código:", err));
+                    }, 150); //150ms de debouce
+                });
+            }
+            
+            //Aprendiz vai receber e aplicar as alterações
+            editorConnection.on("ReceiveCodeChange", (content) => {
+                if (!editor) return;
+                //Sem alterações desnecessárias
+                if (editor.getValue() === content) return;
+
+                isFinished = true;
+                
+                //Guarda a posição do cursor
+                const position = editor.getPosition();
+                const scrollTop = editor.getScrollTop();
+                const scrollLeft = editor.getScrollLeft();
+                
+                editor.setValue(content);
+                
+                //Restaura a posição
+                if (position) editor.setPosition(position);
+                editor.setScrollLeft(scrollLeft);
+                editor.setScrollTop(scrollTop);
+                
+                isFinished = false;
             });
             
             //Força recaluclar dimensoes depois do render
             setTimeout(() => editor.layout(), 100);
         });
-
-        //Constantes Razor
-        const sessionId = '@Model.CurrentSession.Id';
-        const currentUserId = '@Model.CurrentUser.Id';
-        const currentUserName = '@Model.CurrentUser.Name';
         
         //Envia o conteudo atual do editor para o servidor via POST
         function saveContent() {
@@ -291,4 +354,14 @@
         // Inicia o chat
         startChat();
     </script>
+        
 }
+
+
+
+
+
+
+
+
+
