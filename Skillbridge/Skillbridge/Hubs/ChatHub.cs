@@ -82,7 +82,7 @@ public class ChatHub : Hub
             UserId = user.Id,
             ChatMessageId = Guid.NewGuid().ToString(),
             ChatMessageText = message.Trim(),
-            SentAt = DateTime.UtcNow
+            SentAt = DateTime.UtcNow.AddHours(1)
         };
         
         _context.ChatMessages.Add(chatMessage);

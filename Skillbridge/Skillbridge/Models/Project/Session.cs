@@ -22,11 +22,6 @@ public class Session
     public DateTime CreatedAt { get; set; }
     
     /// <summary>
-    /// Datetime of when it starts
-    /// </summary>
-    public DateTime StartsAt { get; set; }
-    
-    /// <summary>
     /// Title of session
     /// </summary>
     [Required]
@@ -54,9 +49,11 @@ public class Session
     /// <summary>
     /// Foreign key, file of session, content to be displayed
     /// </summary>
-    public int fileId { get; set; }
+    public string fileId { get; set; }
     [ForeignKey(nameof(fileId))]
     public virtual File file { get; set; }
+    
+    
     
     
 }

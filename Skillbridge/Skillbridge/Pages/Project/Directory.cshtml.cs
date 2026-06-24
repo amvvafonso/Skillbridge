@@ -9,7 +9,10 @@ using Microsoft.IdentityModel.Tokens;
 using Skillbridge.Data;
 using Skillbridge.Models;
 using Skillbridge.Models.Client;
+using Skillbridge.Models.Project;
 using Skillbridge.Models.Utils;
+using Microsoft.EntityFrameworkCore;
+using File = Skillbridge.Models.Project.File;
 
 namespace Skillbridge.Pages.Project;
 
@@ -17,7 +20,6 @@ namespace Skillbridge.Pages.Project;
 [Authorize]
 public class Directory : PageModel
 {
-    
     private readonly ApplicationDbContext _context;
 
     public Directory(ApplicationDbContext context)
@@ -30,8 +32,9 @@ public class Directory : PageModel
     public string CurrentBucket { get; set; } = string.Empty;
     public string CurrentPrefix { get; set; } = string.Empty;
     public List<string> Folders { get; set; } = new();
+    
+    public Models.Project.Project? CurrentProject { get; set; } = new();
     public string ViewMode { get; set; } = "grid";
-    public List<string> org = new List<string>();
     
     
     public IActionResult OnGet(string? bucket, string? prefix, string? viewMode)
@@ -125,6 +128,8 @@ public class Directory : PageModel
                 .OrderBy(f => f)
                 .ToList();
 
+            CurrentProject = _context.Project.FirstOrDefault(p => p.ProjectDirectory == bucket);
+            
             // reloads page
             return Page();
         }
@@ -205,9 +210,79 @@ public class Directory : PageModel
     }
 
     
+    public async Task<IActionResult> OnPostCreateSessionAsync([FromForm] string bucket, [FromForm] string prefix, [FromForm] string key, [FromForm] string title, [FromForm] string description, [FromForm] bool isPublic)
+    {
+        try
+        {
+            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+                return RedirectToPage("Directory", new { bucket, prefix });
+
+            // Ensure the File exists for the selected S3 key
+            var file = await _context.Files.FirstOrDefaultAsync(f => f.Path == key);
+            if (file == null)
+            {
+                var project = await _context.Project.FirstOrDefaultAsync(p => p.ProjectDirectory == bucket);
+                if (project == null)
+                    return RedirectToPage("Directory", new { bucket, prefix });
+
+                file = new File
+                {
+                    FileId = Guid.NewGuid().ToString(),
+                    Path = key,
+                    Locked = false,
+                    ProjectId = project.ProjectId
+                };
+                await _context.Files.AddAsync(file);
+                await _context.SaveChangesAsync();
+            }
+
+            // Verifies that the file has a session already active
+            if (_context.Sessions.Any(p => p.Active && p.fileId==file.FileId))
+            {
+                TempData["message"] = "Já existe um sessão ativa com esse ficheiro!";
+                return  RedirectToPage("Directory", new { bucket, prefix });
+            }
+            
+            // Create the session
+            var session = new Session
+            {
+                Id = Guid.NewGuid().ToString(),
+                Title = title.Trim(),
+                Description = description.Trim(),
+                isPublic = isPublic,
+                fileId = file.FileId,
+                Active = true,
+                Locked = false,
+                CreatedAt = DateTime.UtcNow
+            };
+            await _context.Sessions.AddAsync(session);
+            await _context.SaveChangesAsync();
+
+            // Grant Mentor access to the current user
+            var access = new SessionAccess
+            {
+                SessionAccessId = Guid.NewGuid().ToString(),
+                SessionId = session.Id,
+                UserId = userId,
+                Role = Models.Client.Role.Mentor
+            };
+            await _context.SessionAccesses.AddAsync(access);
+            await _context.SaveChangesAsync();
+
+            TempData["Message"] = "Sessão criada com sucesso!";
+            return RedirectToPage("/CodeEditor", new { area = "Client", sessionId = session.Id });
+        }
+        catch (Exception ex)
+        {
+            TempData["Message"] = ex.Message;
+            return RedirectToPage("Directory", new { bucket, prefix });
+        }
+    }
+    
     [BindProperty]
     public IFormFile uploadedFile { get; set; }
-    public async Task<IActionResult> OnPostUploadAsync([FromForm] string bucket, [FromForm] string prefix)
+    public async Task<IActionResult> OnPostUploadAsync([FromForm] string bucket, [FromForm] string prefix, [FromForm] int project)
     {
         try
         {
@@ -236,6 +311,16 @@ public class Directory : PageModel
             };
             
             await transferUtility.UploadAsync(uploadRequest);
+
+            var file = new File();
+            file.Path = key;
+            file.FileId = Guid.NewGuid().ToString();
+            file.Locked = false;
+            file.ProjectId = project;
+            
+            await _context.Files.AddAsync(file);
+            
+            await _context.SaveChangesAsync();
             
             TempData["Message"] = "Ficheiro enviado com sucesso!";
             

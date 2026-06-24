@@ -10,15 +10,34 @@
 
 <div class="code-editor-container">
     <div class="editor-panel">
-        @* Só mostra o botão se puder editar *@
-        @if (Model.CanEdit)
-        {
-            <div class="editor-toolbar">
-                <button id="saveBtn" onclick="saveContent()">
-                    <i class="bi bi-floppy"></i> Guardar
-                </button>
+        <div class="editor-toolbar">
+            <div class="toolbar-left">
+                <div class="session-info">
+                    <span class="session-title">@Model.CurrentSession.Title</span>
+                    <span class="session-status @(Model.CurrentSession.Active ? "active" : "inactive")">
+                        <i class="bi @(Model.CurrentSession.Active ? "bi-circle-fill" : "bi-circle")"></i>
+                        @(Model.CurrentSession.Active ? "Ativa" : "Inativa")
+                    </span>
+                </div>
             </div>
-        }
+            <div class="toolbar-right">
+                @if (Model.CanEdit)
+                {
+                    <button id="saveBtn" onclick="saveContent()">
+                        <i class="bi bi-floppy"></i> Guardar
+                    </button>
+                    <button id="inviteBtn" class="toolbar-btn invite" onclick="openInviteModal()">
+                        <i class="bi bi-person-plus"></i> Convidar
+                    </button>
+                    <form method="post" asp-page-handler="EndSession" onsubmit="return confirm('Tens a certeza que queres terminar esta sessão?')">
+                        <input type="hidden" name="sessionId" id="sessionId" value="@Model.CurrentSession.Id"/>
+                        <button type="submit" class="toolbar-btn end-session">
+                            <i class="bi bi-x-circle"></i> Terminar Sessão
+                        </button>
+                    </form>
+                }
+            </div>
+        </div>
         @*Container do Monaco Editor*@
         <div id="editor"></div>
     </div>
@@ -79,6 +98,49 @@
     </div>
 </div>
 
+@* Modal de Convite *@
+<div class="fe-modal-overlay" id="inviteModal">
+    <div class="fe-modal">
+        <div class="invite-modal-header">
+            <h3><i class="bi bi-person-plus"></i> Adicionar à Sessão</h3>
+            <button class="modal-close" onclick="closeInviteModal()">&times;</button>
+        </div>
+        <div class="invite-modal-body">
+            @if (!string.IsNullOrWhiteSpace(Model.InviteMessage))
+            {
+                <div class="invite-message @(Model.InviteError ? "error" : "success")">
+                    @Model.InviteMessage
+                </div>
+            }
+            <form method="post" asp-page-handler="AddUserToSession" id="inviteForm">
+                <input type="hidden" name="sessionId" value="@Model.CurrentSession.Id" />
+                <div class="form-group">
+                    <label for="userEmail">Utilizador</label>
+                    <select name="userEmail" id="userEmail" required>
+                        <option value="">Seleciona um utilizador...</option>
+                        @foreach (var u in Model.AvailableUsers)
+                        {
+                            <option value="@u.Email" selected="@(@Model.SelectedUserEmail == u.Email)">
+                                @u.Name (@u.Email)
+                            </option>
+                        }
+                    </select>
+                    @if (Model.AvailableUsers.Count == 0)
+                    {
+                        <p class="no-users">Todos os membros da organização já estão na sessão.</p>
+                    }
+                </div>
+                <div class="invite-actions">
+                    <button type="button" class="btn-cancel" onclick="closeInviteModal()">Cancelar</button>
+                    <button type="submit" class="btn-confirm" @(Model.AvailableUsers.Count == 0 ? "disabled" : "")>
+                        <i class="bi bi-check"></i> Adicionar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 @section Scripts
 {
     @*Gera um campo hidden com um token de segurança para proteger o POST contra ataques CSRF (Cross-Site Request Forgery) *@
@@ -115,7 +177,6 @@
         const currentUserId = '@Model.CurrentUser.Id';
         const currentUserName = '@Model.CurrentUser.Name';
         
-        
         startEditorHub();
 
         //Para o editor se tornar acessivel fora do require
@@ -132,7 +193,7 @@
                 //Tema
                 theme: 'vs-dark',
                 //Conteudo do ficheiro serializado de forma a evitar problemas com aspas, caracteres especiais, etc...
-                value: @Json.Serialize(Model.CurrentFile.Content),
+                value: @Json.Serialize(@Model.FileContent),
                 //Linguagem 
                 //TODO fazer um map que vai buscar a linguagem a partir da extensão do ficheiro
                 language: 'csharp',
@@ -349,6 +410,35 @@
         });
 
         
+       // Terminar sessão
+        function endSession() {
+            if (!confirm('Terminar esta sessão? Os participantes não poderão continuar a trabalhar.')) return;
+            const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+            fetch(`?handler=EndSession&sessionId=${sessionId}`, {
+                method: 'POST',
+                credentials: 'include',
+                headers: {
+                    'RequestVerificationToken': token
+                }
+            }).then(response => {
+                if (response.ok || response.type === 'redirect') {
+                    window.location.href = '/Project/Directory';
+                } else if (response.status === 403) {
+                    alert('Não tens permissão para terminar a sessão.');
+                } else {
+                    alert('Ocorreu um erro ao terminar a sessão.');
+                }
+            });
+        }
+        
+        // Modal de convite
+        function openInviteModal() {
+            document.getElementById('inviteModal').classList.add('active');
+        }
+        function closeInviteModal() {
+            document.getElementById('inviteModal').classList.remove('active');
+        }
+
         
         scrollToBottom();
         // Inicia o chat
