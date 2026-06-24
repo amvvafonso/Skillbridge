@@ -418,36 +418,12 @@ namespace Skillbridge.Migrations
 
             modelBuilder.Entity("Skillbridge.Models.Project.File", b =>
                 {
-                    b.Property<int>("FileId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("FileId"));
-
-                    b.Property<string>("Content")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("FileType")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Filename")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<bool>("IsFolder")
-                        .HasColumnType("bit");
+                    b.Property<string>("FileId")
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<bool>("Locked")
                         .HasColumnType("bit");
-
-                    b.Property<string>("MarkdownPath")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int?>("Parent")
-                        .HasColumnType("int");
 
                     b.Property<string>("Path")
                         .IsRequired()
@@ -456,12 +432,7 @@ namespace Skillbridge.Migrations
                     b.Property<int>("ProjectId")
                         .HasColumnType("int");
 
-                    b.Property<long>("Size")
-                        .HasColumnType("bigint");
-
                     b.HasKey("FileId");
-
-                    b.HasIndex("Parent");
 
                     b.HasIndex("ProjectId");
 
@@ -536,8 +507,10 @@ namespace Skillbridge.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
-                    b.Property<int>("fileId")
-                        .HasColumnType("int");
+                    b.Property<string>("fileId")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<bool>("isPublic")
                         .HasColumnType("bit");
@@ -737,17 +710,11 @@ namespace Skillbridge.Migrations
 
             modelBuilder.Entity("Skillbridge.Models.Project.File", b =>
                 {
-                    b.HasOne("Skillbridge.Models.Project.File", "ParentId")
-                        .WithMany()
-                        .HasForeignKey("Parent");
-
                     b.HasOne("Skillbridge.Models.Project.Project", "Project")
                         .WithMany("FileList")
                         .HasForeignKey("ProjectId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("ParentId");
 
                     b.Navigation("Project");
                 });
