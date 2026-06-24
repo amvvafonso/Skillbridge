@@ -74,7 +74,7 @@ namespace Skillbridge.Areas.Client.Pages
             {
                 //Vai buscar o conteudo atualizado ao S3
                 var s3 = new S3Api();
-                CurrentFile.Content = await s3.ObterFicheiroAsync("skillbridge", CurrentFile.Path);
+                CurrentFile.Content = await s3.ObterFicheiroAsync("skillbridge", CurrentFile.Path) ?? string.Empty;
             }
             catch (Amazon.Runtime.AmazonServiceException)
             {
