@@ -6,6 +6,30 @@
   min-height: 80vh;
 }
 
+.btn-create-org {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 1rem;
+  background: transparent;
+  color: var(--bs-primary, #0d6efd);
+  border: 1.5px solid var(--bs-primary, #0d6efd);
+  border-radius: 999px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.18s ease, color 0.18s ease;
+}
+
+.btn-create-org:hover {
+  background: var(--bs-primary, #0d6efd);
+  color: #fff;
+}
+
+.btn-create-org i {
+  font-size: 1rem;
+}
+
 @media (max-width: 600px) {
   .org-grid {
     grid-template-columns: 100% !important;

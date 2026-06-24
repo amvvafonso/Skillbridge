@@ -21,12 +21,17 @@ Layout = "_Layout";
         />
     </form>
     <div class="section-header">
-        <h2 class="section-title">
+        <h2 class="section-title" style="color: white;">
             <i class="bi bi-building"></i>
             Organizações
         </h2>
-        <button type="button" class="section-badge" style="cursor:pointer; border:none;" data-bs-toggle="modal" data-bs-target="#createOrgModal" title="Criar organização">
+        <button type="button"
+                class="btn-create-org"
+                data-bs-toggle="modal"
+                data-bs-target="#createOrgModal"
+                title="Criar organização">
             <i class="bi bi-plus-lg"></i>
+            <span>Nova Organização</span>
         </button>
     </div>
     <div style="animation: ease-in 2s;" id="resultsContainer">
