@@ -9,6 +9,7 @@ using Skillbridge.Hubs;
 using Skillbridge.Models;
 using Skillbridge.Models.Client;
 using Skillbridge.Models.Project;
+using Skillbridge.Models.Utils;
 using Skillbridge.Utilities;
 
 namespace Skillbridge.Pages.Organization;
@@ -41,7 +42,7 @@ public class ProfileModel(ApplicationDbContext context, IHubContext<Notification
             .FirstOrDefault(o => o.OrganizationId == id);
 
         if (Organization == null)
-            return NotFound();
+            return RedirectToPage("/");
 
         // Members: owner + invited members
         var members = context.OrganizationMembers
@@ -254,7 +255,7 @@ public class ProfileModel(ApplicationDbContext context, IHubContext<Notification
             try
             {
                 var s3Api = new Models.Utils.S3Api();
-                await s3Api.CriarBucketAsync(NewProjectName, string.Empty);
+                await s3Api.CriarBucketAsync(NewProjectName);
             }
             catch
             {
@@ -332,4 +333,160 @@ public class ProfileModel(ApplicationDbContext context, IHubContext<Notification
         }
     }
     
+    public async Task<IActionResult> OnGetImageAsync(string key)
+    {
+        Console.WriteLine(key);
+        if (string.IsNullOrWhiteSpace(key))
+            return NotFound();
+
+        var s3 = new S3Api();
+        var result = await s3.GetBinaryAsync("logos", key);
+
+        if (result == null)
+            return NotFound();
+
+        return File(result.Value.Data, result.Value.ContentType);
+    }
+
+
+    public async Task<IActionResult> OnPostDeleteOrganizationAsync([FromForm] string organizationId)
+    {
+        try
+        {
+            // Verifies the user is logged
+            if (!User.Identity.IsAuthenticated)
+            {
+                return Forbid();
+            }
+            var user = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            
+            // Verifies the user has permission
+            if (!context.OrganizationMembers.Any(p => p.User == user && p.Organization == organizationId && p.Role == Role.Owner))
+            {
+                return Forbid();
+            }
+            
+            // Verifies that there is a organization with this id
+            if (!context.Organizations.Any(o => o.OrganizationId == organizationId))
+            {
+                return BadRequest();
+            }
+            
+            List<int> listOfProject = new List<int>();
+            List<string> listOfSessions = new List<string>();
+            List<string> listOfFiles = new List<string>();
+
+            // First we need to the delete all data related to the project
+            var _projects = context.Project
+                .Where(p => p.OrganizationId == organizationId)
+                .Select(p => p.ProjectId)
+                .ToList();
+            
+            listOfProject.AddRange(_projects);
+
+            foreach (var proj in listOfProject)
+            {
+                
+                var files = context.Files
+                    .Where(p => p.ProjectId == proj)
+                    .Select(p => p.FileId)
+                    .ToList();
+                
+                listOfFiles.AddRange(files) ;
+
+            }
+
+            foreach (var file in listOfFiles)
+            {
+                var sessions = context.Sessions
+                    .Where(p => p.fileId == file)
+                    .Select(p => p.Id)
+                    .ToList();
+                
+                listOfSessions.AddRange(sessions);
+            }
+            
+            // Deletion of chat messages
+            foreach (var session in listOfSessions)
+            {
+                context.ChatMessages.RemoveRange(
+                    context.ChatMessages
+                        .Where(p => p.SessionId == session)
+                        .ToList()
+                );
+
+                context.SessionAccesses.RemoveRange(
+                    context.SessionAccesses
+                        .Where(p => p.SessionId == session)
+                        .ToList()
+                );
+            }
+            
+            // Delete of sessions
+            foreach (var file in listOfFiles)
+            {
+                context.Sessions.RemoveRange(
+                    context.Sessions
+                        .Where(p => p.fileId == file)
+                        .ToList()
+                );
+            }
+            
+            // Delete files and userproject acesses
+            foreach (var project in listOfProject)
+            {
+                context.Files.RemoveRange(
+                    context.Files
+                        .Where(p => p.ProjectId == project)
+                        .ToList()
+                );
+
+                context.UserProjectAccesses.RemoveRange(
+                    context.UserProjectAccesses
+                        .Where(p => p.ProjectId == project)
+                        .ToList()
+                );
+
+            }
+
+            // OrganizationMembers deletion
+            context.OrganizationMembers.RemoveRange(
+                context.OrganizationMembers
+                    .Where(p => p.Organization == organizationId)
+                    .ToList()
+            );
+            
+            // Projects deletion
+            context.Project.RemoveRange(
+                context.Project
+                    .Where(p => p.OrganizationId == organizationId)
+                    .ToList()
+            );
+            
+            // Posts deletion
+            context.Posts.RemoveRange(
+                context.Posts
+                    .Where(p => p.OrganizationId == organizationId)
+                    .ToList()
+            );
+
+            // AND AFTER 1 MILION YEARS
+            var organization = await context.Organizations
+                .FirstOrDefaultAsync(o => o.OrganizationId == organizationId);
+
+            if (organization == null)
+                return BadRequest();
+
+            context.Organizations.Remove(organization);
+
+            await context.SaveChangesAsync();
+            
+            return RedirectToPage("./Index");
+        }
+        catch (Exception es)
+        {
+            Console.WriteLine(es.Message);
+            return Page();
+        }
+    }
 }

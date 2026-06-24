@@ -218,25 +218,28 @@
         @RenderBody()
     </main>
 </div>
-<div class="modal fade" id="meuModal" tabindex="-1">
-    <div class="modal-dialog">
+<div class="modal fade" id="globalConfirmModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
 
             <div class="modal-header">
-                <h5 class="modal-title">Confirmação</h5>
+                <h5 class="modal-title" id="globalConfirmTitle">
+                    <i class="bi bi-exclamation-triangle me-2" style="color: var(--primary)"></i>
+                    Confirmação
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
 
-            <div class="modal-body">
+            <div class="modal-body" id="globalConfirmBody">
                 Deseja continuar?
             </div>
 
             <div class="modal-footer">
-                <button class="btn btn-secondary"
-                        data-bs-dismiss="modal">
+                <button type="button" class="btn" id="globalConfirmCancelBtn" data-bs-dismiss="modal">
                     Cancelar
                 </button>
 
-                <button class="btn btn-primary">
+                <button type="button" class="btn" id="globalConfirmBtn">
                     Confirmar
                 </button>
             </div>
@@ -308,6 +311,78 @@
 
     // Start the connection.
     start();
+</script>
+<script>
+    // Confirm dialog for middle of function
+    function confirmModal(message = "Deseja continuar?", title = "Confirmação") {
+        return new Promise((resolve) => {
+            const modalEl = document.getElementById("globalConfirmModal");
+            const modal = new bootstrap.Modal(modalEl);
+
+            document.getElementById("globalConfirmTitle").textContent = title;
+            document.getElementById("globalConfirmBody").textContent = message;
+
+            const confirmBtn = document.getElementById("globalConfirmBtn");
+            const cancelBtn = document.getElementById("globalConfirmCancelBtn");
+
+            const onConfirm = () => {
+                cleanup();
+                modal.hide();
+                resolve(true);
+            };
+
+            const onCancel = () => {
+                cleanup();
+                resolve(false);
+            };
+
+            const onHidden = () => {
+                cleanup();
+                resolve(false);
+            };
+
+            function cleanup() {
+                confirmBtn.removeEventListener("click", onConfirm);
+                cancelBtn.removeEventListener("click", onCancel);
+                modalEl.removeEventListener("hidden.bs.modal", onHidden);
+            }
+
+            confirmBtn.addEventListener("click", onConfirm);
+            cancelBtn.addEventListener("click", onCancel);
+            modalEl.addEventListener("hidden.bs.modal", onHidden, { once: true });
+
+            modal.show();
+        });
+    }
+</script>
+
+<script>
+    // Confirm dialog for onsubmit field
+    let formToSubmit = null;
+
+    function openConfirmModal(form, message = "Deseja continuar?", title = "Confirmação") {
+        formToSubmit = form;
+
+        document.getElementById("globalConfirmTitle").textContent = title;
+        document.getElementById("globalConfirmBody").textContent = message;
+
+        const modalElement = document.getElementById("globalConfirmModal");
+        const modal = new bootstrap.Modal(modalElement);
+        modal.show();
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+        const confirmBtn = document.getElementById("globalConfirmBtn");
+
+        if (confirmBtn) {
+            confirmBtn.addEventListener("click", function () {
+                if (formToSubmit) {
+                    formToSubmit.submit();
+                    formToSubmit = null;
+                }
+            });
+        }
+    });
 </script>
 </body>
 </html>

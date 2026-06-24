@@ -41,3 +41,85 @@ body {
 
   --background: rgb(8, 20, 37)
 }
+
+/* ─────────────────────────────────────
+   Global Confirm Modal – Dark Theme
+   ───────────────────────────────────── */
+
+#globalConfirmModal .modal-content {
+    background: linear-gradient(180deg, rgb(12, 28, 50) 0%, rgb(8, 20, 37) 100%);
+    border: 1px solid rgba(80, 140, 255, 0.15);
+    border-radius: 0;
+    color: rgb(217, 228, 252);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
+#globalConfirmModal .modal-header {
+    border-bottom: 1px solid rgba(80, 140, 255, 0.1);
+    padding: 1.25rem 1.5rem;
+}
+
+#globalConfirmModal .modal-title {
+    font-family: Inter, sans-serif;
+    font-weight: 600;
+    font-size: 1.15rem;
+    color: rgb(217, 228, 252);
+}
+
+#globalConfirmModal .btn-close {
+    filter: invert(1) grayscale(100%) brightness(200%);
+    opacity: 0.7;
+    transition: opacity 0.2s ease;
+}
+
+#globalConfirmModal .btn-close:hover {
+    opacity: 1;
+}
+
+#globalConfirmModal .modal-body {
+    padding: 1.5rem;
+    color: rgb(142, 157, 177);
+    font-size: 0.95rem;
+    line-height: 1.6;
+}
+
+#globalConfirmModal .modal-footer {
+    border-top: 1px solid rgba(80, 140, 255, 0.1);
+    padding: 1rem 1.5rem;
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+}
+
+#globalConfirmModal .modal-footer button {
+    font-family: Inter, sans-serif;
+    font-weight: 500;
+    font-size: 0.875rem;
+    padding: 0.5rem 1.25rem;
+    border-radius: 0;
+    transition: all 0.2s ease;
+}
+
+#globalConfirmCancelBtn {
+    background: transparent;
+    border: 1px solid rgba(80, 140, 255, 0.25) !important;
+    color: rgb(142, 157, 177) !important;
+}
+
+#globalConfirmCancelBtn:hover {
+    background: rgba(80, 140, 255, 0.08) !important;
+    color: rgb(217, 228, 252) !important;
+    border-color: rgba(80, 140, 255, 0.4) !important;
+}
+
+#globalConfirmBtn {
+    background: var(--primary) !important;
+    border: 1px solid var(--primary) !important;
+    color: #fff !important;
+}
+
+#globalConfirmBtn:hover {
+    background: rgb(90, 93, 230) !important;
+    border-color: rgb(90, 93, 230) !important;
+    box-shadow: 0 0 12px rgba(110, 113, 251, 0.35);
+}

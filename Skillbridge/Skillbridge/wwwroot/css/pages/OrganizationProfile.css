@@ -431,6 +431,16 @@
   flex-shrink: 0;
 }
 
+.delete-btn {
+  padding: 10px 14px;
+}
+
+.delete-btn:hover {
+  background: rgb(239, 68, 68) !important;
+  border-color: rgb(239, 68, 68) !important;
+  transition: 0.3s;
+}
+
 .add-member-btn:hover {
   background: rgb(56, 116, 240);
   transform: translateY(-1px);

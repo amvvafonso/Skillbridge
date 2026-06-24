@@ -20,56 +20,72 @@ Layout = "_Layout";
             autofocus
         />
     </form>
-    <div class="section-header">
-        <h2 class="section-title" style="color: white;">
-            <i class="bi bi-building"></i>
-            Organizações
-        </h2>
-        <button type="button"
-                class="btn-create-org"
-                data-bs-toggle="modal"
-                data-bs-target="#createOrgModal"
-                title="Criar organização">
-            <i class="bi bi-plus-lg"></i>
-            <span>Nova Organização</span>
-        </button>
-    </div>
+    @if (User.Identity.IsAuthenticated)
+    {
+        <div class="section-header">
+            <h2 class="section-title" style="color: white;">
+                <i class="bi bi-building"></i>
+                Organizações
+            </h2>
+            <button type="button"
+                    class="btn-create-org"
+                    onclick="openCreateModal()"
+                    title="Criar organização">
+                <i class="bi bi-plus-lg"></i>
+                <span>Nova Organização</span>
+            </button>
+        </div>
+    }
     <div style="animation: ease-in 2s;" id="resultsContainer">
-        @await Html.PartialAsync("_OrganizationResults", Model)
-    </div>
-    <div class="modal fade" id="createOrgModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <form method="post" asp-page-handler="CreateOrganization">
-                    <div class="modal-header">
-                        <h5 class="modal-title">Criar Organização</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            @await Html.PartialAsync("_OrganizationResults", Model)
+        </div>
+        <div class="fe-modal-overlay" id="createOrgModal">
+            <div class="fe-modal">
+                <div class="org-modal-header">
+                    <h3><i class="bi bi-building-add"></i> Criar Organização</h3>
+                    <button type="button" class="modal-close" onclick="closeCreateModal()">&times;</button>
+                </div>
+                <form method="post" asp-page-handler="CreateOrganization" enctype="multipart/form-data">
+                    <div class="org-modal-body">
+                        <div asp-validation-summary="ModelOnly" class="org-validation-summary"></div>
+
+                        <div class="org-form-group">
+                            <label asp-for="NewOrganization.LogoFile" class="org-form-label">Logo</label>
+                            <div class="upload-zone" id="uploadZone" onclick="document.getElementById('logoInput').click()">
+                                <img id="logoPreview" class="logo-preview" src="" alt="" style="display:none;"/>
+                                <div class="upload-placeholder" id="uploadPlaceholder">
+                                    <i class="bi bi-cloud-arrow-up"></i>
+                                    <span>Clica ou arrasta uma imagem</span>
+                                    <small>PNG, JPG até 2MB</small>
+                                </div>
+                            </div>
+                            <input asp-for="NewOrganization.LogoFile" type="file" accept="image/png,image/jpeg,image/webp" id="logoInput" class="hidden-input"/>
+                        </div>
+
+                        <div class="org-form-group">
+                            <label asp-for="NewOrganization.OrganizationName" class="org-form-label">Nome</label>
+                            <input asp-for="NewOrganization.OrganizationName" class="org-form-input" maxlength="100"/>
+                            <span asp-validation-for="NewOrganization.OrganizationName" class="org-validation-error"></span>
+                        </div>
+
+                        <div class="org-form-group">
+                            <label asp-for="NewOrganization.OrganizationAddress" class="org-form-label">Endereço</label>
+                            <input asp-for="NewOrganization.OrganizationAddress" class="org-form-input" maxlength="200"/>
+                            <span asp-validation-for="NewOrganization.OrganizationAddress" class="org-validation-error"></span>
+                        </div>
+
+                        <div class="org-form-group">
+                            <label asp-for="NewOrganization.OrganizationDescription" class="org-form-label">Descrição (opcional)</label>
+                            <textarea asp-for="NewOrganization.OrganizationDescription" class="org-form-input org-textarea" maxlength="1000" rows="3"></textarea>
+                        </div>
                     </div>
-                    <div class="modal-body">
-                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-                        <div class="mb-3">
-                            <label asp-for="NewOrganization.OrganizationName" class="form-label">Nome</label>
-                            <input asp-for="NewOrganization.OrganizationName" class="form-control" maxlength="100" />
-                            <span asp-validation-for="NewOrganization.OrganizationName" class="text-danger"></span>
-                        </div>
-                        <div class="mb-3">
-                            <label asp-for="NewOrganization.OrganizationAddress" class="form-label">Endereço</label>
-                            <input asp-for="NewOrganization.OrganizationAddress" class="form-control" maxlength="200" />
-                            <span asp-validation-for="NewOrganization.OrganizationAddress" class="text-danger"></span>
-                        </div>
-                        <div class="mb-3">
-                            <label asp-for="NewOrganization.OrganizationDescription" class="form-label">Descrição (opcional)</label>
-                            <textarea asp-for="NewOrganization.OrganizationDescription" class="form-control" maxlength="1000" rows="3"></textarea>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                        <button type="submit" class="btn btn-primary">Criar</button>
+                    <div class="org-modal-footer">
+                        <button type="button" class="org-btn-cancel" onclick="closeCreateModal()">Cancelar</button>
+                        <button type="submit" class="org-btn-create">Criar</button>
                     </div>
                 </form>
             </div>
         </div>
-    </div>
 </div>
 
 
@@ -80,16 +96,85 @@ Layout = "_Layout";
     const resultsContainer = document.getElementById('resultsContainer');
     let debounceTimeout;
 
-    //Reabre o modal se houver erros de validação
-    const hasValidationErrors = document.querySelector ('#createOrgModal .text-danger') !== null &&
-        document.querySelector('#createOrgModal .text-danger').textContent.trim() !== '';
-
-    if (hasValidationErrors) {
-        const modal = new bootstrap.Modal(document.getElementById('createOrgModal'));
-        modal.show();
+    // --- Modal ---
+    function openCreateModal() {
+        document.getElementById('createOrgModal').classList.add('active');
+    }
+    function closeCreateModal() {
+        document.getElementById('createOrgModal').classList.remove('active');
     }
 
-    // evita reload no Enter
+    // Reopen modal on validation errors
+    document.addEventListener('DOMContentLoaded', () => {
+        const hasErrors = document.querySelector('.org-validation-error') ||
+                          document.querySelector('.org-validation-summary');
+        if (hasErrors && hasErrors.textContent.trim() !== '') {
+            openCreateModal();
+        }
+    });
+
+    // Close modal on overlay click
+    document.getElementById('createOrgModal').addEventListener('click', (e) => {
+        if (e.target.id === 'createOrgModal') closeCreateModal();
+    });
+
+    // --- File Upload Preview ---
+    const logoInput = document.getElementById('logoInput');
+    const logoPreview = document.getElementById('logoPreview');
+    const uploadPlaceholder = document.getElementById('uploadPlaceholder');
+    const uploadZone = document.getElementById('uploadZone');
+
+    logoInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        if (!file.type.startsWith('image/')) {
+            alert('Por favor seleciona uma imagem válida.');
+            logoInput.value = '';
+            return;
+        }
+
+        if (file.size > 2 * 1024 * 1024) {
+            alert('A imagem deve ter no máximo 2MB.');
+            logoInput.value = '';
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            logoPreview.src = ev.target.result;
+            logoPreview.style.display = 'block';
+            uploadPlaceholder.style.display = 'none';
+        };
+        reader.readAsDataURL(file);
+    });
+
+    // Drag and Drop
+    ['dragenter', 'dragover'].forEach(evt => {
+        uploadZone.addEventListener(evt, (e) => {
+            e.preventDefault();
+            uploadZone.classList.add('drag-over');
+        });
+    });
+
+    ['dragleave', 'drop'].forEach(evt => {
+        uploadZone.addEventListener(evt, (e) => {
+            e.preventDefault();
+            uploadZone.classList.remove('drag-over');
+        });
+    });
+
+    uploadZone.addEventListener('drop', (e) => {
+        const file = e.dataTransfer.files[0];
+        if (!file) return;
+
+        const dt = new DataTransfer();
+        dt.items.add(file);
+        logoInput.files = dt.files;
+        logoInput.dispatchEvent(new Event('change'));
+    });
+
+    // --- Search ---
     document.getElementById('searchForm').addEventListener('submit', (e) => {
         resultsContainer.innerHTML = '    <div style="display: flex; flex-direction: column; text-align: center; color: white">\n' +
             '            <p style="color: rgba(255, 255, 255, 0.5)">A Procurar...</p>\n' +
