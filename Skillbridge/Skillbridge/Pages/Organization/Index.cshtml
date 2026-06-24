@@ -1,8 +1,8 @@
 @page
 @model Skillbridge.Pages.Organization.IndexModel
 @{
-    ViewData["Title"] = "Organizações";
-    Layout = "_Layout";
+ViewData["Title"] = "Organizações";
+Layout = "_Layout";
 }
 <link rel="stylesheet" href="~/css/pages/Organization.css" asp-append-version="true" />
 
@@ -20,16 +20,69 @@
             autofocus
         />
     </form>
+    <div class="section-header">
+        <h2 class="section-title">
+            <i class="bi bi-building"></i>
+            Organizações
+        </h2>
+        <button type="button" class="section-badge" style="cursor:pointer; border:none;" data-bs-toggle="modal" data-bs-target="#createOrgModal" title="Criar organização">
+            <i class="bi bi-plus-lg"></i>
+        </button>
+    </div>
     <div style="animation: ease-in 2s;" id="resultsContainer">
         @await Html.PartialAsync("_OrganizationResults", Model)
     </div>
+    <div class="modal fade" id="createOrgModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form method="post" asp-page-handler="CreateOrganization">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Criar Organização</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                        <div class="mb-3">
+                            <label asp-for="NewOrganization.OrganizationName" class="form-label">Nome</label>
+                            <input asp-for="NewOrganization.OrganizationName" class="form-control" maxlength="100" />
+                            <span asp-validation-for="NewOrganization.OrganizationName" class="text-danger"></span>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="NewOrganization.OrganizationAddress" class="form-label">Endereço</label>
+                            <input asp-for="NewOrganization.OrganizationAddress" class="form-control" maxlength="200" />
+                            <span asp-validation-for="NewOrganization.OrganizationAddress" class="text-danger"></span>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="NewOrganization.OrganizationDescription" class="form-label">Descrição (opcional)</label>
+                            <textarea asp-for="NewOrganization.OrganizationDescription" class="form-control" maxlength="1000" rows="3"></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">Criar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 </div>
 
+
+@*Gera um campo hidden com um token de segurança para proteger o POST contra ataques CSRF (Cross-Site Request Forgery) *@
+@Html.AntiForgeryToken()
 <script>
     const input = document.getElementById('searchInput');
     const resultsContainer = document.getElementById('resultsContainer');
     let debounceTimeout;
 
+    //Reabre o modal se houver erros de validação
+    const hasValidationErrors = document.querySelector ('#createOrgModal .text-danger') !== null &&
+        document.querySelector('#createOrgModal .text-danger').textContent.trim() !== '';
+
+    if (hasValidationErrors) {
+        const modal = new bootstrap.Modal(document.getElementById('createOrgModal'));
+        modal.show();
+    }
 
     // evita reload no Enter
     document.getElementById('searchForm').addEventListener('submit', (e) => {
@@ -52,7 +105,7 @@
         const html = await res.text();
         setTimeout(() => {
             resultsContainer.innerHTML = html;
-        }, [250])
+        }, 250)
 
 
         // atualiza a URL sem recarregar (opcional, bom para refresh/share)

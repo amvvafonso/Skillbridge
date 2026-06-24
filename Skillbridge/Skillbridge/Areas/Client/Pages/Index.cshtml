@@ -54,14 +54,7 @@
                   </div>
                   <p class="session-description">@session.Description</p>
                   <div class="session-meta">
-                    <span class="meta-item">
-                      <i class="bi bi-calendar3"></i>
-                      @session.StartsAt.ToString("dd MMM yyyy")
-                    </span>
-                    <span class="meta-item">
-                      <i class="bi bi-clock"></i>
-                      @session.StartsAt.ToString("HH:mm")
-                    </span>
+                    
                     @if (session.isPublic)
                     {
                       <span class="meta-item">

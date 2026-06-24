@@ -9,7 +9,6 @@
 }
 
 <link rel="stylesheet" href="~/css/pages/Directory.css" asp-append-version="true" />
-
 <div class="file-explorer">
 
     <!-- Sidebar: Buckets -->
@@ -62,6 +61,7 @@
                 <form asp-page-handler="Upload" method="post" enctype="multipart/form-data" id="uploadForm">
                     <input type="hidden" name="bucket" value="@Model.CurrentBucket" />
                     <input type="hidden" name="prefix" value="@Model.CurrentPrefix" />
+                    <input type="hidden" name="project" value="@Model.CurrentProject.ProjectId" />
                     <input asp-for="uploadedFile" id="uploadFile" class="bi bi-file-plus d-none" type="file" onchange="document.getElementById('uploadForm').submit()"/>
                     <label for="uploadFile">
                         <div class="fe-btn fe-btn-icon">
@@ -148,6 +148,7 @@
                                         <i class="bi bi-trash"></i>
                                     </button>
                                 </form>
+                                
                             </div>
                         </div>
                     }
@@ -201,6 +202,12 @@
                                         <i class="bi bi-trash"></i>
                                     </button>
                                 </form>
+                                <button type="button" class="fe-btn-action" title="Iniciar Sessão"
+                                        data-session-trigger
+                                        data-key="@file.Key"
+                                        data-name="@fileName">
+                                    <i class="bi bi-play-circle"></i>
+                                </button>
                             </div>
                         </div>
                     }
@@ -228,6 +235,12 @@
                                         <i class="bi bi-trash"></i>
                                     </button>
                                 </form>
+                                <button type="button" class="fe-btn-action" title="Iniciar Sessão"
+                                        data-session-trigger
+                                        data-key="@file.Key"
+                                        data-name="@fileName">
+                                    <i class="bi bi-play-circle"></i>
+                                </button>
                             </div>
                         </div>
                     }
@@ -266,6 +279,42 @@
                 <button type="button" class="fe-btn fe-btn-secondary" id="modalCancel">Cancelar</button>
                 <button type="submit" class="fe-btn fe-btn-primary">
                     <i class="bi bi-check-lg"></i> Criar
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Create Session Modal -->
+<div class="fe-modal hidden" id="createSessionModal">
+    <div class="fe-modal-backdrop" id="sessionModalBackdrop"></div>
+    <div class="fe-modal-content">
+        <div class="fe-modal-header">
+            <h4><i class="bi bi-play-circle-fill"></i> Nova Sessão</h4>
+            <button class="fe-modal-close" id="sessionModalClose"><i class="bi bi-x-lg"></i></button>
+        </div>
+        <form asp-page-handler="CreateSession" method="post" id="sessionForm">
+            <input type="hidden" name="bucket" value="@Model.CurrentBucket" />
+            <input type="hidden" name="prefix" value="@Model.CurrentPrefix" />
+            <input type="hidden" name="key" id="sessionFileKey" />
+            <div class="fe-modal-body">
+                <div style="margin-bottom:16px">
+                    <label>Título</label>
+                    <input type="text" name="title" id="sessionTitle" class="fe-input" placeholder="Nome da sessão" required maxlength="50" />
+                </div>
+                <div style="margin-bottom:16px">
+                    <label>Descrição</label>
+                    <textarea name="description" id="sessionDesc" class="fe-input" placeholder="Breve descrição da sessão" required maxlength="200" rows="3" style="resize:vertical"></textarea>
+                </div>
+                <div style="display:flex;align-items:center;gap:10px">
+                    <input type="checkbox" name="isPublic" id="sessionPublic" checked />
+                    <label for="sessionPublic" style="margin-bottom:0">Sessão pública</label>
+                </div>
+            </div>
+            <div class="fe-modal-footer">
+                <button type="button" class="fe-btn fe-btn-secondary" id="sessionModalCancel">Cancelar</button>
+                <button type="submit" class="fe-btn fe-btn-primary">
+                    <i class="bi bi-check-lg"></i> Criar Sessão
                 </button>
             </div>
         </form>
@@ -312,6 +361,38 @@
         if (savedMode === 'list') {
             listView.click();
         }
+
+        // ── Session Modal ──
+        const sessionModal = document.getElementById('createSessionModal');
+        const sessionBackdrop = document.getElementById('sessionModalBackdrop');
+        const sessionClose = document.getElementById('sessionModalClose');
+        const sessionCancel = document.getElementById('sessionModalCancel');
+        const sessionKeyInput = document.getElementById('sessionFileKey');
+        const sessionTitleInput = document.getElementById('sessionTitle');
+
+        function openSessionModal(fileKey, fileName) {
+            sessionKeyInput.value = fileKey;
+            sessionTitleInput.value = fileName.replace(/\.[^.]+$/, '');
+            sessionModal.classList.remove('hidden');
+        }
+
+        function closeSessionModal() {
+            sessionModal.classList.add('hidden');
+            document.getElementById('sessionForm').reset();
+        }
+
+        // Attach click handler to session buttons (event delegation for dynamic content)
+        document.addEventListener('click', function(e) {
+            const btn = e.target.closest('[data-session-trigger]');
+            if (btn) {
+                e.preventDefault();
+                openSessionModal(btn.dataset.key, btn.dataset.name);
+            }
+        });
+
+        sessionClose.addEventListener('click', closeSessionModal);
+        sessionCancel.addEventListener('click', closeSessionModal);
+        sessionBackdrop.addEventListener('click', closeSessionModal);
     });
 </script>
 }
