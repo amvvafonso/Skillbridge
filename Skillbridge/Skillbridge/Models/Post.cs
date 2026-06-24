@@ -44,8 +44,8 @@ public class Post
     /// <summary>
     /// Foreign key, links post to organization
     /// </summary>
-    public string Organization { get; set; }
-    [ForeignKey(nameof(Organization))]
+    public string OrganizationId { get; set; }
+    [ForeignKey(nameof(OrganizationId))]
     [DeleteBehavior(DeleteBehavior.Restrict)]
-    public virtual Organization OrganizationId { get; set; }
+    public virtual Organization Organization { get; set; }
 }

@@ -135,7 +135,45 @@
                         {
                             <span class="project-badge public" style="margin-left: auto;">@Model.Projects.Count</span>
                         }
+                        @if (Model.UserPerm is Role.Owner or Role.Manager)
+                        {
+                            <button type="button" class="pub-add-btn" id="btn-toggle-project" title="Novo projeto">
+                                <i class="bi bi-plus-lg"></i>
+                            </button>
+                        }
                     </h2>
+
+                    <!-- Create Project Form (hidden by default) -->
+                    @if (Model.UserPerm is Role.Owner or Role.Manager)
+                    {
+                        <form id="form-create-project" method="post" class="create-project-form" style="display:none;">
+                            <div class="create-project-inner">
+                                <input type="text" asp-for="NewProjectName" placeholder="Nome do projeto" class="create-project-name" maxlength="200" />
+                                <textarea asp-for="NewProjectDescription" placeholder="Descreve o projeto…" class="create-project-description" maxlength="200" rows="3"></textarea>
+                                <input type="text" asp-for="NewProjectRepository" placeholder="Link do GitHub (opcional)" class="create-project-repository" />
+                                <div class="create-project-toggle">
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" asp-for="NewProjectPublic" checked />
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                    <span class="toggle-label">
+                                        <i class="bi bi-@(Model.NewProjectPublic ? "globe2" : "lock")"></i>
+                                        <span id="visibility-text">Público</span>
+                                    </span>
+                                </div>
+                                <div class="create-project-footer">
+                                    <span class="char-count"><span id="project-char-current">0</span> / 200</span>
+                                    <div class="create-project-actions">
+                                        <button type="button" class="create-project-cancel" id="btn-cancel-project">Cancelar</button>
+                                        <button type="submit" class="create-project-submit" id="btn-submit-project">
+                                            <i class="bi bi-plus-circle"></i> Criar Projeto
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    }
+
                     @if (Model.Projects.Count > 0)
                     {
                         <div class="projects-grid">
@@ -153,7 +191,7 @@
                     }
                     else
                     {
-                        <p class="org-empty">Esta organização ainda não tem projetos.</p>
+                        <p class="org-empty" id="project-placeholder">Esta organização ainda não tem projetos.</p>
                     }
                 </div>
             </div>
@@ -319,6 +357,59 @@
                     }
                 });
             });
+
+            // -------- Create Project Form --------
+            const projectForm = document.getElementById('form-create-project');
+            const btnToggleProject = document.getElementById('btn-toggle-project');
+            const btnCancelProject = document.getElementById('btn-cancel-project');
+            const projectTextarea = document.querySelector('.create-project-description');
+            const projectCharCurrent = document.getElementById('project-char-current');
+            const projectEmpty = document.getElementById('project-placeholder');
+            const projectCheckbox = document.querySelector('input[name="NewProjectPublic"]');
+            const visibilityText = document.getElementById('visibility-text');
+
+            if (btnToggleProject && projectForm) {
+                function toggleProjectForm() {
+                    const isHidden = projectForm.style.display === 'none';
+                    projectForm.style.display = isHidden ? 'block' : 'none';
+                    if (projectEmpty) projectEmpty.style.display = isHidden ? 'none' : 'block';
+                    if (isHidden && projectTextarea) projectTextarea.focus();
+                }
+
+                btnToggleProject.addEventListener('click', toggleProjectForm);
+                btnCancelProject.addEventListener('click', toggleProjectForm);
+
+                // Character counter
+                projectTextarea.addEventListener('input', () => {
+                    projectCharCurrent.textContent = projectTextarea.value.length;
+                });
+
+                // Visibility toggle
+                projectCheckbox.addEventListener('change', () => {
+                    if (visibilityText) {
+                        visibilityText.textContent = projectCheckbox.checked ? 'Público' : 'Privado';
+                        const icon = visibilityText.previousElementSibling;
+                        if (icon) {
+                            icon.className = projectCheckbox.checked ? 'bi bi-globe2' : 'bi bi-lock';
+                        }
+                    }
+                });
+
+                // AJAX submit
+                projectForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    const formData = new FormData(projectForm);
+                    const response = await fetch(window.location.pathname + '?handler=CreateProject', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    const data = await response.json();
+                    mostrarToast(data.success ? "Sucesso" : "Erro", data.message, data.success ? "success" : "danger");
+                    if (data.success) {
+                        setTimeout(() => location.reload(), 800);
+                    }
+                });
+            }
         })();
         </script>
     </div>

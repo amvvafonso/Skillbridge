@@ -8,6 +8,7 @@ using Skillbridge.Data;
 using Skillbridge.Hubs;
 using Skillbridge.Models;
 using Skillbridge.Models.Client;
+using Skillbridge.Models.Project;
 using Skillbridge.Utilities;
 
 namespace Skillbridge.Pages.Organization;
@@ -81,7 +82,7 @@ public class ProfileModel(ApplicationDbContext context, IHubContext<Notification
         // Announcements by the organization, limited by POST_LIMIT
         Posts = context.Posts
             .OrderByDescending(p => p.Created)
-            .Where(p => p.Organization == Organization.OrganizationId)
+            .Where(p => p.OrganizationId == Organization.OrganizationId)
             .Take(POST_LIMIT)
             .Join(context.Users,
                 p => p.AuthorID,
@@ -125,6 +126,18 @@ public class ProfileModel(ApplicationDbContext context, IHubContext<Notification
     [BindProperty]
     public string? NewPostContent { get; set; }
 
+    [BindProperty]
+    public string? NewProjectName { get; set; }
+
+    [BindProperty]
+    public string? NewProjectDescription { get; set; }
+
+    [BindProperty]
+    public string? NewProjectRepository { get; set; }
+
+    [BindProperty]
+    public bool NewProjectPublic { get; set; } = true;
+
     public async Task<IActionResult> OnPostCreatePostAsync(string id)
     {
         try
@@ -143,7 +156,7 @@ public class ProfileModel(ApplicationDbContext context, IHubContext<Notification
                 Content = NewPostContent,
                 Created = DateTime.UtcNow,
                 AuthorID = userId,
-                Organization = id,
+                OrganizationId = id,
                 Visible = true
             });
 
@@ -179,6 +192,83 @@ public class ProfileModel(ApplicationDbContext context, IHubContext<Notification
         }
     }
     
+    public async Task<IActionResult> OnPostCreateProjectAsync(string id)
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(NewProjectName) || string.IsNullOrEmpty(NewProjectDescription))
+                return new JsonResult(new { success = false, message = "Preenche o nome e a descrição do projeto!" });
+
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+                return new JsonResult(new { success = false, message = "Precisas de estar autenticado." });
+
+            // Verifies user has Manager or Owner role in this organization
+            var member = await context.OrganizationMembers
+                .FirstOrDefaultAsync(m => m.Organization == id && m.User == userId);
+
+            if (member == null || (member.Role != Role.Owner && member.Role != Role.Manager))
+                return new JsonResult(new { success = false, message = "Não tens permissão para criar projetos." });
+
+            // Generate S3 bucket name from project name (slug)
+            var slug = NewProjectName.ToLower()
+                .Replace(" ", "-")
+                .Replace("á", "a").Replace("à", "a").Replace("â", "a").Replace("ã", "a")
+                .Replace("é", "e").Replace("ê", "e")
+                .Replace("í", "i").Replace("î", "i")
+                .Replace("ó", "o").Replace("ô", "o").Replace("õ", "o")
+                .Replace("ú", "u").Replace("û", "u")
+                .Replace("ç", "c")
+                .Replace("ã", "a")
+                .Replace("ó", "o")
+                .Replace("ó", "o")
+                .Replace("ó", "o");
+
+            // Remove consecutive dashes and trim
+            while (slug.Contains("--")) slug = slug.Replace("--", "-");
+            slug = slug.Trim('-');
+            
+            var newProject = new Models.Project.Project
+            {
+                ProjectName = NewProjectName,
+                ProjectDescription = NewProjectDescription,
+                Repository = NewProjectRepository,
+                Public = NewProjectPublic,
+                ProjectDirectory = slug,
+                OrganizationId = id
+            };
+            
+            context.Project.Add(newProject);
+            await context.SaveChangesAsync();
+            
+            // Gives permission to all user in the organization
+            context.UserProjectAccesses.AddRange(
+                context.OrganizationMembers
+                    .Where(m => m.Organization == id)
+                    .Select(p => new UserProjectAccess(Role.Apprentice, p.User, newProject.ProjectId))
+                    .ToList()
+                );
+            
+            await context.SaveChangesAsync();
+            // Try to create S3 bucket for the project
+            try
+            {
+                var s3Api = new Models.Utils.S3Api();
+                await s3Api.CriarBucketAsync(NewProjectName, string.Empty);
+            }
+            catch
+            {
+                // S3 bucket creation is not critical - project still created in DB
+            }
+
+            return new JsonResult(new { success = true, message = "Projeto criado com sucesso!" });
+        }
+        catch (Exception ex)
+        {
+            return new JsonResult(new { success = false, message = ex.Message });
+        }
+    }
+
     public async Task<IActionResult> OnPostAddMemberAsync(string Id)
     {
         try
