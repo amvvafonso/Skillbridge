@@ -6,12 +6,215 @@
     ViewData["Title"] = "Como funciona?";
 }
 
-<!DOCTYPE html>
+<link rel="stylesheet" href="~/css/pages/FAQ.css" asp-append-version="true" />
 
-<html>
-<body>
-<div>
-    <h1>How it works</h1>
+<div class="faq-page">
+    <!-- Hero Section -->
+    <section class="faq-hero">
+        <div class="faq-hero-content">
+            <h1 class="faq-title">Como funciona a <span style="color: var(--primary);">Skillbridge</span>?</h1>
+            <p class="faq-subtitle">
+                A Skillbridge é uma plataforma de mentoria em tempo real que liga mentores experientes a aprendizes motivados, através de sessões de código colaborativo integradas em organizações estruturadas.
+            </p>
+        </div>
+    </section>
+
+    <!-- Steps Section -->
+    <section class="faq-section">
+        <h2 class="faq-section-title">Fluxo de Trabalho</h2>
+        <div class="faq-steps">
+
+            <div class="faq-step">
+                <div class="faq-step-number">01</div>
+                <div class="faq-step-content">
+                    <h3>Crie ou junte-se a uma organização</h3>
+                    <p>
+                        As organizações são o coração da Skillbridge. Empresas, universidades ou comunidades podem criar o seu próprio espaço para estruturar programas de mentoria. Cada organização gere os seus membros, projetos e sessões.
+                    </p>
+                </div>
+            </div>
+
+            <div class="faq-step">
+                <div class="faq-step-number">02</div>
+                <div class="faq-step-content">
+                    <h3>Defina projetos com repositórios reais</h3>
+                    <p>
+                        Dentro da organização, pode criar projetos ligados a repositórios reais. Cada projeto tem uma estrutura de pastas e ficheiros acessível diretamente no editor integrado — sem ambientes fictícios.
+                    </p>
+                </div>
+            </div>
+
+            <div class="faq-step">
+                <div class="faq-step-number">03</div>
+                <div class="faq-step-content">
+                    <h3>Junte mentores e aprendizes</h3>
+                    <p>
+                        Atribua os papéis de Mentor ou Aprendiz a cada projeto. O mentor orienta o processo e o aprendiz implementa. Ambos veem o mesmo código, em tempo real, no mesmo editor.
+                    </p>
+                </div>
+            </div>
+
+            <div class="faq-step">
+                <div class="faq-step-number">04</div>
+                <div class="faq-step-content">
+                    <h3>Sessões de código em tempo real</h3>
+                    <p>
+                        Sessões de código colaborativo com edição simultânea, chat integrado e partilha instantânea de alterações. O editor suporta realce de sintaxe para múltiplas linguagens e histórico de alterações.
+                    </p>
+                </div>
+            </div>
+
+            <div class="faq-step">
+                <div class="faq-step-number">05</div>
+                <div class="faq-step-content">
+                    <h3>Feedback e notificações</h3>
+                    <p>
+                        Receba notificações em tempo real sobre novas sessões, convites para organizações e atualizações de projetos. O feed de publicações permite partilhar conquistas e anunciar eventos dentro da organização.
+                    </p>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- Features Grid -->
+    <section class="faq-section">
+        <h2 class="faq-section-title">Funcionalidades</h2>
+        <div class="faq-features">
+
+            <div class="faq-feature-card">
+                <div class="faq-feature-icon">
+                    <i class="bi bi-code-slash"></i>
+                </div>
+                <h3>Editor colaborativo</h3>
+                <p>
+                    Editor de código integrado com suporte para múltiplas linguagens, realce de sintaxe através do Prism.js e edição em tempo real sincronizada entre mentor e aprendiz.
+                </p>
+            </div>
+
+            <div class="faq-feature-card">
+                <div class="faq-feature-icon">
+                    <i class="bi bi-chat-dots"></i>
+                </div>
+                <h3>Chat em tempo real</h3>
+                <p>
+                    Comunicação instantânea em cada sessão, baseada em SignalR. As mensagens ficam guardadas na base de dados para consulta futura.
+                </p>
+            </div>
+
+            <div class="faq-feature-card">
+                <div class="faq-feature-icon">
+                    <i class="bi bi-diagram-3"></i>
+                </div>
+                <h3>Organizações estruturadas</h3>
+                <p>
+                    Sistema de papéis granular (Owner, Manager, Mentor, Aprendiz) com permissões por projeto. Cada utilizador pode pertencer a várias organizações.
+                </p>
+            </div>
+
+            <div class="faq-feature-card">
+                <div class="faq-feature-icon">
+                    <i class="bi bi-folder2-open"></i>
+                </div>
+                <h3>Navegação de ficheiros</h3>
+                <p>
+                    Explorador de ficheiros integrado no editor. Navegue pela estrutura do projeto como se estivesse no VS Code, sem sair do navegador.
+                </p>
+            </div>
+
+            <div class="faq-feature-card">
+                <div class="faq-feature-icon">
+                    <i class="bi bi-bell"></i>
+                </div>
+                <h3>Notificações em tempo real</h3>
+                <p>
+                    Sistema de notificações em tempo real através de um SignalR Hub. Notificações automáticas no navegador e histórico completo dentro da aplicação.
+                </p>
+            </div>
+
+            <div class="faq-feature-card">
+                <div class="faq-feature-icon">
+                    <i class="bi bi-shield-lock"></i>
+                </div>
+                <h3>Sessões públicas e privadas</h3>
+                <p>
+                    Controlo de visibilidade por sessão. Sessões públicas para aprendizagem por observação e sessões privadas para mentoria 1:1 mais focada.
+                </p>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- FAQ Accordion -->
+    <section class="faq-section">
+        <h2 class="faq-section-title">Perguntas frequentes</h2>
+        <div class="accordion" id="faqAccordion">
+
+            <div class="faq-accordion-item">
+                <h2 class="faq-accordion-header">
+                    <button class="faq-accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#faq1" aria-expanded="true">
+                        Preciso de instalar alguma coisa?
+                    </button>
+                </h2>
+                <div id="faq1" class="collapse show" data-bs-parent="#faqAccordion">
+                    <div class="faq-accordion-body">
+                        Não. A Skillbridge funciona 100% no navegador. Basta criar uma conta e começar a utilizar o editor colaborativo diretamente.
+                    </div>
+                </div>
+            </div>
+
+            <div class="faq-accordion-item">
+                <h2 class="faq-accordion-header">
+                    <button class="faq-accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
+                        Posso ser mentor e aprendiz ao mesmo tempo?
+                    </button>
+                </h2>
+                <div id="faq2" class="collapse" data-bs-parent="#faqAccordion">
+                    <div class="faq-accordion-body">
+                        Sim. O papel é definido por projeto — pode ser mentor num projeto e aprendiz noutro. Essa flexibilidade é intencional.
+                    </div>
+                </div>
+            </div>
+
+            <div class="faq-accordion-item">
+                <h2 class="faq-accordion-header">
+                    <button class="faq-accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">
+                        As sessões são gravadas?
+                    </button>
+                </h2>
+                <div id="faq3" class="collapse" data-bs-parent="#faqAccordion">
+                    <div class="faq-accordion-body">
+                        O histórico de mensagens e ficheiros é guardado na base de dados. As alterações de código são persistidas em tempo real, permitindo retomar sessões iniciadas anteriormente.
+                    </div>
+                </div>
+            </div>
+
+            <div class="faq-accordion-item">
+                <h2 class="faq-accordion-header">
+                    <button class="faq-accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq4">
+                        Que linguagens são suportadas?
+                    </button>
+                </h2>
+                <div id="faq4" class="collapse" data-bs-parent="#faqAccordion">
+                    <div class="faq-accordion-body">
+                        O editor suporta realce de sintaxe para C#, Python, JavaScript, TypeScript, HTML, CSS, JSON e muitas outras através do Prism.js. A lista pode ser expandida conforme necessário.
+                    </div>
+                </div>
+            </div>
+
+            <div class="faq-accordion-item">
+                <h2 class="faq-accordion-header">
+                    <button class="faq-accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq5">
+                        Quem pode criar uma organização?
+                    </button>
+                </h2>
+                <div id="faq5" class="collapse" data-bs-parent="#faqAccordion">
+                    <div class="faq-accordion-body">
+                        Qualquer utilizador registado pode criar uma organização. O criador torna-se automaticamente o Owner e pode convidar outros membros, definir projetos e gerir permissões.
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </section>
 </div>
-</body>
-</html>
