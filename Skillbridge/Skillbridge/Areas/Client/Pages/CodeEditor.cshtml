@@ -29,9 +29,12 @@
                     <button id="inviteBtn" class="toolbar-btn invite" onclick="openInviteModal()">
                         <i class="bi bi-person-plus"></i> Convidar
                     </button>
-                    <button type="button" class="toolbar-btn end-session" onclick="endSession()">
-                        <i class="bi bi-x-circle"></i> Terminar Sessão
-                    </button>
+                    <form method="post" asp-page-handler="EndSession" onsubmit="return confirm('Tens a certeza que queres terminar esta sessão?')">
+                        <input type="hidden" name="sessionId" id="sessionId" value="@Model.CurrentSession.Id"/>
+                        <button type="submit" class="toolbar-btn end-session">
+                            <i class="bi bi-x-circle"></i> Terminar Sessão
+                        </button>
+                    </form>
                 }
             </div>
         </div>
@@ -109,7 +112,7 @@
                     @Model.InviteMessage
                 </div>
             }
-            <form method="post" asp-handler="AddUserToSession" id="inviteForm">
+            <form method="post" asp-page-handler="AddUserToSession" id="inviteForm">
                 <input type="hidden" name="sessionId" value="@Model.CurrentSession.Id" />
                 <div class="form-group">
                     <label for="userEmail">Utilizador</label>
