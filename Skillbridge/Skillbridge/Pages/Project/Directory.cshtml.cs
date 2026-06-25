@@ -94,9 +94,9 @@ public class Directory : PageModel
                     Buckets.Add(b);
                 }
             });
-
+            
             // Defines currentBucket for aesthetic elements
-            CurrentBucket = bucket ?? "skillbridge";
+            CurrentBucket = bucket ??  string.Empty;
             CurrentPrefix = prefix ?? string.Empty;
             // Defines view mode
             ViewMode = viewMode ?? "grid";

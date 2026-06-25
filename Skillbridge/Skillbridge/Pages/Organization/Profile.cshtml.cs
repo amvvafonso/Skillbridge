@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using Amazon.RuntimeDependencies;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -28,7 +29,7 @@ public class ProfileModel(ApplicationDbContext context, IHubContext<Notification
     public Role? UserPerm { get; set; }
     
     // Record modifier provides built-in functionality for encapsulating data
-    public record UserInfo(string Name, string Email, Role Role);
+    public record UserInfo(string UserId, string Name, string Email, Role Role);
     public record ProjectInfo(int Id, string Name, string Description, bool IsPublic);
     public record PostInfo(string Id, string Title, string Content, DateTime Created, string AuthorName);
 
@@ -56,7 +57,7 @@ public class ProfileModel(ApplicationDbContext context, IHubContext<Notification
 
         Members = members
                 .Distinct()
-                .Select(u => new UserInfo(u.User.Name ?? string.Empty, u.User.Email ?? string.Empty, u.Role))
+                .Select(u => new UserInfo(u.User.Id ,u.User.Name ?? string.Empty, u.User.Email ?? string.Empty, u.Role))
                 .ToList();
         
         // Projets that are owned by the organization that are public
@@ -487,6 +488,44 @@ public class ProfileModel(ApplicationDbContext context, IHubContext<Notification
         {
             Console.WriteLine(es.Message);
             return Page();
+        }
+    }
+
+    public async Task<IActionResult> OnPostRemoveMember([FromForm] string memberId, [FromForm] string organizationId)
+    {
+        try
+        {
+            var user =  User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            
+            if (user == null)
+            {
+                return new JsonResult(new { success = false, message = "Não tem permissão para remover membros!" });
+            }
+
+            if (!context.OrganizationMembers.Any(p => p.User == user && p.Organization == organizationId && p.Role == Role.Owner))
+            {
+                return new JsonResult(new { success = false, message = "Não tem permissão para remover membros!!" });
+            }
+
+            if (context.OrganizationMembers.Any(p => p.User == memberId && p.Organization == organizationId && p.Role == Role.Owner))
+            {
+                return new JsonResult(new { success = false, message = "Não pode remover o dono da organização!" });
+            }
+            
+            context.OrganizationMembers.RemoveRange(
+                context.OrganizationMembers
+                    .Where(p => p.User == memberId && p.Organization == organizationId)
+                    .ToList()
+                );
+            
+            await context.SaveChangesAsync();
+            
+            return new JsonResult(new { success = true, message = "Membro removido com sucesso da organização" });
+        }
+        catch (Exception es)
+        {
+            Console.WriteLine(es.Message);
+            return new JsonResult(new { success = false, message = "Ocorreu um erro na operação" });
         }
     }
 }
