@@ -33,8 +33,8 @@
             <div class="align-content-center">
                 <form method="post" asp-page-handler="DeleteOrganization" onsubmit="event.preventDefault(); openConfirmModal(this, 'Tem a certeza que quer eliminar a organização? Esta operação vai eliminar todos os registos associados a esta organização!', 'Eliminar organização')">
                     <input type="hidden" name="organizationId" value="@Model.Organization.OrganizationId"/>
-                    <button class="add-member-btn delete-btn">
-                        <i class="bi bi-trash"></i>
+                    <button class="add-member-btn delete-btn">Eliminar organização
+                        <i style="font-size: 13px" class="bi bi-trash"></i>
                     </button>
                 </form>
             </div>
@@ -186,13 +186,13 @@
                         <div class="projects-grid">
                             @foreach (var project in Model.Projects)
                             {
-                                <a asp-page="/Project/Index" asp-route-id="@project.Id" class="project-card">
+                                <div asp-route-id="@project.Id" class="project-card">
                                     <h3 class="project-name">@project.Name</h3>
                                     <p class="project-desc">@project.Description</p>
                                     <span class="project-badge @(project.IsPublic ? "public" : "private")">
                                         <i class="bi bi-@(project.IsPublic ? "globe2" : "lock")"></i> @(project.IsPublic ? "Público" : "Privado")
                                     </span>
-                                </a>
+                                </div>
                             }
                         </div>
                     }
@@ -218,7 +218,7 @@
                         <div class="members-list">
                             @foreach (var member in Model.Members)
                             {
-                                <div class="member-row">
+                                <div id="row-@member.UserId" class="member-row">
                                     <div class="member-avatar">
                                         @(member.Name?.Length > 0 ? member.Name[0].ToString().ToUpper() : "?")
                                     </div>
@@ -226,6 +226,49 @@
                                         <p class="member-name">@member.Name <span class="member-role">@member.Role</span></p>
                                         <p class="member-email">@member.Email</p>
                                     </div>
+                                    @if (member.Role != Role.Owner && Model.UserPerm == Role.Owner && User.Identity.IsAuthenticated)
+                                    {
+                                        <div class="remove-member-btn-div">
+                                            <form class="remove-member-form" method="post" asp-page-handler="RemoveMember">
+                                                <input type="hidden" name="organizationId" value="@Model.Organization.OrganizationId"/>
+                                                <input type="hidden" name="memberId" value="@member.UserId"/>
+                                                <input type="hidden" name="user" value="@member.Name"/>
+                                                <input type="hidden" name="userId" value="@member.UserId"/>
+                                                <button class="remove-member-btn" type="submit">
+                                                    <i class="bi bi-person-dash-fill"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                        <script>
+                                                document.addEventListener("submit", async (e) => {
+                                                    const form = e.target;
+                                                    if (!form.classList.contains("remove-member-form")) return;
+                                            
+                                                    e.preventDefault();
+                                                    const user = form.user.value;
+                                            
+                                                    if (!await confirmModal('Tem a certeza que quer remover ' + user + ' da organização?', 'Eliminar')) return;
+                                            
+                                                    const formData = new FormData(form);
+                                            
+                                                    try {
+                                                        const res = await fetch(window.location.pathname + '?handler=RemoveMember', {
+                                                            method: "POST",
+                                                            body: formData
+                                                        });
+                                            
+                                                        const response = await res.json();
+                                                        mostrarToast(response.success ? "Informação" : "Erro", response.message, response.success ? "success" : "danger");
+                                            
+                                                        if (response.success) {
+                                                            document.getElementById('row-@member.UserId').remove();
+                                                        }
+                                                    } catch (err) {
+                                                        mostrarToast("Erro", "Não foi possível comunicar com o servidor.", "danger");
+                                                    }
+                                                });
+                                            </script>
+                                    }
                                 </div>
                             }
                         </div>
@@ -291,7 +334,7 @@
             const empty = document.getElementById('post-placeholder');
             
             // Verifies that the elements exist
-            if (btnToggle && form && empty) {
+            if (btnToggle && form) {
             function toggleForm() {
                 const isHidden = form.style.display === 'none';
                 form.style.display = isHidden ? 'block' : 'none';
@@ -374,7 +417,7 @@
             const projectEmpty = document.getElementById('project-placeholder');
             const projectCheckbox = document.querySelector('input[name="NewProjectPublic"]');
             const visibilityText = document.getElementById('visibility-text');
-
+            
             if (btnToggleProject && projectForm) {
                 function toggleProjectForm() {
                     const isHidden = projectForm.style.display === 'none';

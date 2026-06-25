@@ -414,6 +414,28 @@
   color: rgb(90, 112, 148);
 }
 
+.remove-member-btn {
+  padding: 4px 8px;
+  background: rgb(13, 25, 48);
+  border: 1px solid rgb(30, 48, 78);
+  border-radius: 5px;
+  color: rgb(60, 78, 108);
+}
+.remove-member-btn-div {
+width: 100%;
+  text-align: right;
+}
+@media (max-width: 576px){
+  .remove-member-btn-div {
+    width: 100%;
+  }
+}
+
+.remove-member-btn:hover {
+  border-color: var(--primary);
+  transition: 0.2s;
+  color: var(--primary);
+}
 .add-member-btn {
   display: inline-flex;
   align-items: center;
@@ -433,12 +455,13 @@
 
 .delete-btn {
   padding: 10px 14px;
+  align-self: center;
 }
 
 .delete-btn:hover {
   background: rgb(239, 68, 68) !important;
   border-color: rgb(239, 68, 68) !important;
-  transition: 0.3s;
+  transition: 1s;
 }
 
 .add-member-btn:hover {
