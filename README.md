@@ -6,14 +6,14 @@ O **Skillbridge** é uma plataforma focada em **Shadow Work** (trabalho de sombr
 # TODO
 
 - [x] Atualização dos campos do InputModel e da base de dados para novos atributos e dados
-- [ ] Criação da página das organizações
-- [ ] Desenvolvimento da base de dados e da estrutura de modelos
-- [ ] Criação da área de cliente onde estará as sessões que pode entrar, e os ficheiros que pode estudar
-- [ ] Edição estética do perfil do utilizador (Alteração de password e outro tipos de dados)
-- [ ] Desenvolvimento de estrutura de ficheiros e de visualização dos meus com uso de [[#Websocket|Websocket]]
-- [ ] Relacionar ficheiros de código com ficheiros markdown para comentários
-- [ ] Chat na sessão
-- [ ] Interpretação de ficheiro para associação markdown
+- [x] Criação da página das organizações
+- [x] Desenvolvimento da base de dados e da estrutura de modelos
+- [x] Criação da área de cliente onde estará as sessões que pode entrar, e os ficheiros que pode estudar
+- [x] Edição estética do perfil do utilizador (Alteração de password e outro tipos de dados)
+- [x] Desenvolvimento de estrutura de ficheiros e de visualização dos meus com uso de [[#Websocket|Websocket]]
+- [ ] Relacionar ficheiros de código com ficheiros markdown para comentários - (to be added)
+- [x] Chat na sessão
+- [ ] Interpretação de ficheiro para associação markdown - (to be added)
 - [x] Notificações
 - [x] Toast support
 
