@@ -29,7 +29,7 @@
                     <button id="inviteBtn" class="toolbar-btn invite" onclick="openInviteModal()">
                         <i class="bi bi-person-plus"></i> Convidar
                     </button>
-                    <form method="post" asp-page-handler="EndSession" onsubmit="return confirm('Tens a certeza que queres terminar esta sessão?')">
+                    <form method="post" asp-page-handler="EndSession" onsubmit="event.preventDefault(); openConfirmModal(this, 'Tem a certeza que quer terminar esta sessão?', 'Terminar sessão')">
                         <input type="hidden" name="sessionId" id="sessionId" value="@Model.CurrentSession.Id"/>
                         <button type="submit" class="toolbar-btn end-session">
                             <i class="bi bi-x-circle"></i> Terminar Sessão
@@ -269,11 +269,11 @@
             }).then(response => {
                 //Mostra alerta de sucesso se o servidor devolver 200 OK
                 if (response.ok) {
-                    alert('Guardado');
+                    mostrarToast('Guardado', 'Conteudo gravado com sucesso!', 'success');
                 } else if (response.status === 403) {
-                    alert('Não tens permissão para guardar');
+                    mostrarToast('Erro', 'Não tens permissão para guardar', 'danger');
                 } else {
-                    alert('Ocorreu um erro ao guardar');
+                    mostrarToast('Erro', 'Ocorreu um erro ao gravar!', 'danger');
                 }
             });
         }
@@ -412,7 +412,6 @@
         
        // Terminar sessão
         function endSession() {
-            if (!confirm('Terminar esta sessão? Os participantes não poderão continuar a trabalhar.')) return;
             const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
             fetch(`?handler=EndSession&sessionId=${sessionId}`, {
                 method: 'POST',
@@ -424,9 +423,9 @@
                 if (response.ok || response.type === 'redirect') {
                     window.location.href = '/Project/Directory';
                 } else if (response.status === 403) {
-                    alert('Não tens permissão para terminar a sessão.');
+                    mostrarToast('Erro','Não tens permissão para terminar a sessão.', 'danger');
                 } else {
-                    alert('Ocorreu um erro ao terminar a sessão.');
+                    mostrarToast('Erro', 'Ocorreu um erro ao terminar a sessão.', 'danger');
                 }
             });
         }
