@@ -1,4 +1,6 @@
 @page "{id}"
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.EntityFrameworkCore
 @using Skillbridge.Models.Client
 @model Skillbridge.Pages.Organization.ProfileModel
 @{
@@ -30,14 +32,17 @@
                     </span>
                 }
             </div>
-            <div class="align-content-center">
-                <form method="post" asp-page-handler="DeleteOrganization" onsubmit="event.preventDefault(); openConfirmModal(this, 'Tem a certeza que quer eliminar a organização? Esta operação vai eliminar todos os registos associados a esta organização!', 'Eliminar organização')">
-                    <input type="hidden" name="organizationId" value="@Model.Organization.OrganizationId"/>
-                    <button class="add-member-btn delete-btn">Eliminar organização
-                        <i style="font-size: 13px" class="bi bi-trash"></i>
-                    </button>
-                </form>
-            </div>
+            @if (User.Identity.IsAuthenticated && Model.UserPerm == Role.Owner)
+            {
+                <div class="align-content-center">
+                    <form method="post" asp-page-handler="DeleteOrganization" onsubmit="event.preventDefault(); openConfirmModal(this, 'Tem a certeza que quer eliminar a organização? Esta operação vai eliminar todos os registos associados a esta organização!', 'Eliminar organização')">
+                        <input type="hidden" name="organizationId" value="@Model.Organization.OrganizationId"/>
+                        <button class="add-member-btn delete-btn">Eliminar organização
+                            <i style="font-size: 13px" class="bi bi-trash"></i>
+                        </button>
+                    </form>
+                </div>
+            }
         </div>
 
         <!-- Two Column Layout -->
