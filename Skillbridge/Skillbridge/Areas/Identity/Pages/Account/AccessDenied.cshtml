@@ -1,0 +1,38 @@
+@page
+
+@{
+    ViewData["Title"] = "Acesso Negado";
+}
+
+<link rel="stylesheet" href="~/css/shared/error.css" asp-append-version="true" />
+
+<div class="error-page">
+    <div class="error-content">
+        <!-- Código de erro -->
+        <div class="error-code">ACESSO NEGADO</div>
+        <!-- GIF meme com efeito -->
+        <div class="error-gif-wrapper">
+            <div class="error-gif-glow"></div>
+            <img
+                src="https://media1.tenor.com/m/sPKmCiqldCEAAAAC/nuh-uh.gif"
+                alt="Nuh Uh - Scout TF2 Meme"
+                class="error-gif"
+                loading="eager"
+            />
+        </div>
+        <!-- Mensagem de erro -->
+        <h1 class="error-title">Nuh Uh!</h1>
+        <p class="error-subtitle">Não tens autorização para fazer isto. Tenta outra vez... ou não.</p>
+        <!-- Botões de ação -->
+        <div class="error-btn-group">
+            <a href="/" class="error-btn" id="access-denied-go-home-btn">
+                <i class="bi bi-house-door-fill"></i>
+                <span>Voltar ao Início</span>
+            </a>
+            <a href="/Identity/Account/Login" class="error-btn error-btn-secondary" id="access-denied-login-btn">
+                <i class="bi bi-box-arrow-in-right"></i>
+                <span>Iniciar Sessão</span>
+            </a>
+        </div>
+    </div>
+</div>

@@ -26,10 +26,18 @@ public class HomeController(IHubContext<NotificationHub> notificationHub) : Cont
     }
 
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-    public IActionResult Error()
+    public IActionResult Error(int? statusCode)
     {
-        return View(
-            new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier }
-        );
+        //Aplica o códito HTTP correto à resposta
+        if (statusCode.HasValue) Response.StatusCode = statusCode.Value;
+
+        //Seleciona a view consoante o código de erro
+        var viewName = statusCode switch
+        {
+            403 => "Forbidden",
+            _ => "Error"
+        };
+
+        return View(viewName, new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
     }
 }
