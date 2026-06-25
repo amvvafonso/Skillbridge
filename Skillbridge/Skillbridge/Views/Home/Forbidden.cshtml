@@ -1,6 +1,5 @@
-@model ErrorViewModel
 @{
-    ViewData["Title"] = "Erro";
+    ViewData["Title"] = "403 - Acesso Proibido";
 }
 
 <link rel="stylesheet" href="~/css/shared/error.css" asp-append-version="true" />
@@ -8,7 +7,7 @@
 <div class="error-page">
     <div class="error-content">
         <!-- Código de erro -->
-        <div class="error-code">ERRO</div>
+        <div class="error-code">403</div>
         <!-- GIF meme com efeito de brilho -->
         <div class="error-gif-wrapper">
             <div class="error-gif-glow"></div>
@@ -21,19 +20,11 @@
         </div>
         <!-- Mensagem de erro -->
         <h1 class="error-title">Nuh Uh!</h1>
-        <p class="error-subtitle">Algo correu mal... mas ninguém vai admitir. 😏</p>
-        @if (Model?.ShowRequestId == true)
-        {
-            <div class="error-request-id">
-                <span class="error-request-label">Request ID:</span>
-                <code class="error-request-code">@Model.RequestId</code>
-            </div>
-        }
+        <p class="error-subtitle">Não tens permissão para aceder a esta página. Vai dar uma volta. 🚫</p>
         <!-- Botão de ação -->
-        <a asp-area="" asp-controller="Home" asp-action="Index" class="error-btn" id="error-go-home-btn">
+        <a asp-area="" asp-controller="Home" asp-action="Index" class="error-btn" id="forbidden-go-home-btn">
             <i class="bi bi-house-door-fill"></i>
             <span>Voltar ao Início</span>
         </a>
     </div>
 </div>
-}
