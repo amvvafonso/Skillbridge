@@ -414,7 +414,8 @@
   color: rgb(90, 112, 148);
 }
 
-.remove-member-btn {
+.remove-member-btn,
+.upgrade-member-btn{
   padding: 4px 8px;
   background: rgb(13, 25, 48);
   border: 1px solid rgb(30, 48, 78);
@@ -431,11 +432,17 @@ width: 100%;
   }
 }
 
-.remove-member-btn:hover {
+.remove-member-btn:hover,
+.upgrade-member-btn:hover {
   border-color: var(--primary);
   transition: 0.2s;
   color: var(--primary);
 }
+
+.upgrade-member-btn i {
+  color: #4dabf7;
+}
+
 .add-member-btn {
   display: inline-flex;
   align-items: center;

@@ -491,7 +491,7 @@ public class ProfileModel(ApplicationDbContext context, IHubContext<Notification
         }
     }
 
-    public async Task<IActionResult> OnPostRemoveMember([FromForm] string memberId, [FromForm] string organizationId)
+    public async Task<IActionResult> OnPostRemoveMemberAsync([FromForm] string memberId, [FromForm] string organizationId)
     {
         try
         {
@@ -526,6 +526,57 @@ public class ProfileModel(ApplicationDbContext context, IHubContext<Notification
         {
             Console.WriteLine(es.Message);
             return new JsonResult(new { success = false, message = "Ocorreu um erro na operação" });
+        }
+    }
+
+    public async Task<IActionResult> OnPostUpgradeMemberAsync(string organizationId, string memberId)
+    {
+        try
+        {
+            //Obtem o ID do user autenticado
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            //Verifica se o utilizador pertence à organização
+            var currentMember = await context.OrganizationMembers
+                .FirstOrDefaultAsync(m => m.Organization == organizationId && m.User == userId);
+
+            //Bloqueia se não pertencer ou não tiver permissão de Manager/Owner
+            if (currentMember == null || (currentMember.Role != Role.Owner && currentMember.Role != Role.Manager))
+                return new JsonResult(new { success = false, message = "Não tens permissão para fazer isto" });
+
+            //Vai buscar o membro que vai ser promovido
+            var member = await context.OrganizationMembers
+                .FirstOrDefaultAsync(m => m.Organization == organizationId && m.User == memberId);
+
+            //Verifica se o membro existe
+            if (member == null)
+                return new JsonResult(new { success = false, message = "Membro não encontrado" });
+
+            //Define o novo role consoanete o role atual e quem está a promover
+            var newRole = member.Role switch
+            {
+                Role.Apprentice => Role.Mentor,
+                Role.Mentor when currentMember.Role == Role.Owner => Role.Manager,
+                //Manager não pode promover Mentor para Managaer
+                Role.Mentor => Role.Mentor,
+                _ => member.Role
+            };
+
+            //Se o role não mudou
+            if (newRole == member.Role)
+                return new JsonResult(
+                    new { success = false, message = "Este membro já está no papel máximo permitido" });
+
+            //Aplica o novo role e guarda
+            member.Role = newRole;
+            await context.SaveChangesAsync();
+
+            return new JsonResult(new
+                { success = true, message = $"Membro promovido a {newRole}!", newRole = newRole.ToString() });
+        }
+        catch (Exception e)
+        {
+            return new JsonResult(new { success = false, message = e.Message });
         }
     }
 }

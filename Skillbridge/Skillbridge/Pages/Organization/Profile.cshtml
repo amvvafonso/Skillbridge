@@ -7,17 +7,18 @@
     ViewData["Title"] = Model.Organization?.OrganizationName;
     Layout = "_Layout";
 }
-<link rel="stylesheet" href="~/css/pages/OrganizationProfile.css" asp-append-version="true" />
+<link rel="stylesheet" href="~/css/pages/OrganizationProfile.css" asp-append-version="true"/>
 @if (Model.Organization != null)
 {
     <div class="org-profile">
 
         <!-- Banner -->
-        <img src="@Model.Organization.BannerPath" alt="Banner" class="org-banner" />
+        <img src="@Model.Organization.BannerPath" alt="Banner" class="org-banner"/>
 
         <!-- Header of organization -->
         <div class="org-header">
-            <img src="?handler=Image&key=@Model.Organization.LogoPath" alt="@Model.Organization.OrganizationName" class="org-logo"/>
+            <img src="?handler=Image&key=@Model.Organization.LogoPath" alt="@Model.Organization.OrganizationName"
+                 class="org-logo"/>
             <div class="org-header-info w-100">
                 <h1 class="org-name">@Model.Organization.OrganizationName</h1>
                 <p class="org-address">
@@ -35,7 +36,9 @@
             @if (User.Identity.IsAuthenticated && Model.UserPerm == Role.Owner)
             {
                 <div class="align-content-center">
-                    <form method="post" asp-page-handler="DeleteOrganization" onsubmit="event.preventDefault(); openConfirmModal(this, 'Tem a certeza que quer eliminar a organização? Esta operação vai eliminar todos os registos associados a esta organização!', 'Eliminar organização')">
+                    <form method="post" asp-page-handler="DeleteOrganization"
+                          onsubmit="event.preventDefault(); openConfirmModal(this, 'Tem a certeza que quer eliminar a organização? Esta operação vai eliminar todos os registos associados a esta organização!', 'Eliminar organização')">
+                        @Html.AntiForgeryToken()
                         <input type="hidden" name="organizationId" value="@Model.Organization.OrganizationId"/>
                         <button class="add-member-btn delete-btn">Eliminar organização
                             <i style="font-size: 13px" class="bi bi-trash"></i>
@@ -81,13 +84,17 @@
                     @if (Model.UserPerm is Role.Owner or Role.Manager)
                     {
                         <form id="form-create-post" method="post" class="create-post-form" style="display:none;">
+                            @Html.AntiForgeryToken()
                             <div class="create-post-inner">
-                                <input type="text" asp-for="NewPostTitle" placeholder="Título" class="create-post-title" maxlength="100" />
-                                <textarea asp-for="NewPostContent" placeholder="Escreve a publicação…" class="create-post-content" maxlength="500" rows="4"></textarea>
+                                <input type="text" asp-for="NewPostTitle" placeholder="Título" class="create-post-title"
+                                       maxlength="100"/>
+                                <textarea asp-for="NewPostContent" placeholder="Escreve a publicação…"
+                                          class="create-post-content" maxlength="500" rows="4"></textarea>
                                 <div class="create-post-footer">
                                     <span class="char-count"><span id="char-current">0</span> / 500</span>
                                     <div class="create-post-actions">
-                                        <button type="button" class="create-post-cancel" id="btn-cancel-post">Cancelar</button>
+                                        <button type="button" class="create-post-cancel" id="btn-cancel-post">Cancelar
+                                        </button>
                                         <button type="submit" class="create-post-submit" id="btn-submit-post">
                                             <i class="bi bi-send-fill"></i> Publicar
                                         </button>
@@ -110,9 +117,11 @@
                                                 <i class="bi bi-calendar3"></i>
                                                 @post.Created.ToString("dd/MM/yyyy")
                                             </span>
+                                            @* Botão de eliminar publicação — só visível para Owner e Manager *@
                                             @if (Model.UserPerm is Role.Owner or Role.Manager)
                                             {
-                                                <button type="button" class="pub-delete-btn" data-post-id="@post.Id" title="Remover publicação">
+                                                <button type="button" class="pub-delete-btn" data-post-id="@post.Id"
+                                                        title="Remover publicação">
                                                     <i class="bi bi-trash3"></i>
                                                 </button>
                                             }
@@ -159,13 +168,17 @@
                     @if (Model.UserPerm is Role.Owner or Role.Manager)
                     {
                         <form id="form-create-project" method="post" class="create-project-form" style="display:none;">
+                            @Html.AntiForgeryToken()
                             <div class="create-project-inner">
-                                <input type="text" asp-for="NewProjectName" placeholder="Nome do projeto" class="create-project-name" maxlength="200" />
-                                <textarea asp-for="NewProjectDescription" placeholder="Descreve o projeto…" class="create-project-description" maxlength="200" rows="3"></textarea>
-                                <input type="text" asp-for="NewProjectRepository" placeholder="Link do GitHub (opcional)" class="create-project-repository" />
+                                <input type="text" asp-for="NewProjectName" placeholder="Nome do projeto"
+                                       class="create-project-name" maxlength="200"/>
+                                <textarea asp-for="NewProjectDescription" placeholder="Descreve o projeto…"
+                                          class="create-project-description" maxlength="200" rows="3"></textarea>
+                                <input type="text" asp-for="NewProjectRepository"
+                                       placeholder="Link do GitHub (opcional)" class="create-project-repository"/>
                                 <div class="create-project-toggle">
                                     <label class="toggle-switch">
-                                        <input type="checkbox" asp-for="NewProjectPublic" checked />
+                                        <input type="checkbox" asp-for="NewProjectPublic" checked/>
                                         <span class="toggle-slider"></span>
                                     </label>
                                     <span class="toggle-label">
@@ -176,7 +189,9 @@
                                 <div class="create-project-footer">
                                     <span class="char-count"><span id="project-char-current">0</span> / 200</span>
                                     <div class="create-project-actions">
-                                        <button type="button" class="create-project-cancel" id="btn-cancel-project">Cancelar</button>
+                                        <button type="button" class="create-project-cancel" id="btn-cancel-project">
+                                            Cancelar
+                                        </button>
                                         <button type="submit" class="create-project-submit" id="btn-submit-project">
                                             <i class="bi bi-plus-circle"></i> Criar Projeto
                                         </button>
@@ -228,51 +243,41 @@
                                         @(member.Name?.Length > 0 ? member.Name[0].ToString().ToUpper() : "?")
                                     </div>
                                     <div>
-                                        <p class="member-name">@member.Name <span class="member-role">@member.Role</span></p>
+                                        <p class="member-name">@member.Name <span
+                                                class="member-role">@member.Role</span></p>
                                         <p class="member-email">@member.Email</p>
                                     </div>
-                                    @if (member.Role != Role.Owner && Model.UserPerm == Role.Owner && User.Identity.IsAuthenticated)
+                                    @* Mostra os botões de ação apenas se:
+                                            - o membro não for Owner (Owner não pode ser alterado)
+                                            - e o utilizador atual for Owner OU for Manager a promover um Aprendiz *@
+                                    @if (member.Role != Role.Owner && (Model.UserPerm == Role.Owner || Model.UserPerm == Role.Manager && member.Role == Role.Apprentice))
                                     {
                                         <div class="remove-member-btn-div">
-                                            <form class="remove-member-form" method="post" asp-page-handler="RemoveMember">
-                                                <input type="hidden" name="organizationId" value="@Model.Organization.OrganizationId"/>
+                                            @* Formulário de upgrade de role *@
+                                            <form class="upgrade-member-form" method="post"
+                                                  asp-page-handler="UpgradeMember">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="organizationId"
+                                                       value="@Model.Organization.OrganizationId"/>
                                                 <input type="hidden" name="memberId" value="@member.UserId"/>
+                                                <button class="upgrade-member-btn" type="submit"
+                                                        title="Promover membro">
+                                                    <i class="bi bi-arrow-up-circle-fill"></i>
+                                                </button>
+                                            </form>
+                                            @* Formulário de remoção de membro *@
+                                            <form class="remove-member-form" method="post"
+                                                  asp-page-handler="RemoveMember">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="organizationId"
+                                                       value="@Model.Organization.OrganizationId"/>
                                                 <input type="hidden" name="user" value="@member.Name"/>
-                                                <input type="hidden" name="userId" value="@member.UserId"/>
+                                                <input type="hidden" name="memberId" value="@member.UserId"/>
                                                 <button class="remove-member-btn" type="submit">
                                                     <i class="bi bi-person-dash-fill"></i>
                                                 </button>
                                             </form>
                                         </div>
-                                        <script>
-                                                document.addEventListener("submit", async (e) => {
-                                                    const form = e.target;
-                                                    if (!form.classList.contains("remove-member-form")) return;
-                                            
-                                                    e.preventDefault();
-                                                    const user = form.user.value;
-                                            
-                                                    if (!await confirmModal('Tem a certeza que quer remover ' + user + ' da organização?', 'Eliminar')) return;
-                                            
-                                                    const formData = new FormData(form);
-                                            
-                                                    try {
-                                                        const res = await fetch(window.location.pathname + '?handler=RemoveMember', {
-                                                            method: "POST",
-                                                            body: formData
-                                                        });
-                                            
-                                                        const response = await res.json();
-                                                        mostrarToast(response.success ? "Informação" : "Erro", response.message, response.success ? "success" : "danger");
-                                            
-                                                        if (response.success) {
-                                                            document.getElementById('row-@member.UserId').remove();
-                                                        }
-                                                    } catch (err) {
-                                                        mostrarToast("Erro", "Não foi possível comunicar com o servidor.", "danger");
-                                                    }
-                                                });
-                                            </script>
                                     }
                                 </div>
                             }
@@ -280,40 +285,51 @@
                         @if (Model.UserPerm == Role.Manager || Model.UserPerm == Role.Owner)
                         {
                             <form id="form-add-member" method="post" class="add-member-form">
+                                @Html.AntiForgeryToken()
                                 <div class="add-member-input-wrap">
                                     <i class="bi bi-envelope"></i>
-                                    <input asp-for="MemberEmail" placeholder="Email do membro" />
+                                    <input asp-for="MemberEmail" placeholder="Email do membro"/>
                                 </div>
                                 <button id="btn-add" type="submit" asp-page-handler="AddMember" class="add-member-btn">
                                     <i class="bi bi-person-plus"></i> Adicionar
                                 </button>
                             </form>
                         }
+
+                        <form id="antiForgeryForm" method="post" style="display:none;">
+                            @Html.AntiForgeryToken()
+                        </form>
                         <script>
-                        document.getElementById('form-add-member').addEventListener('submit', async (e) => {
-                            e.preventDefault();
-                            // Gets formdata
-                            const formData = new FormData(e.target);
-                            
-                            // Sends to the API, runs OnPostAddMemberAsync
-                            const response = await fetch(window.location.pathname + '?handler=AddMember', {
-                                method: 'POST',
-                                body: formData
-                            });
-                            
-                            // Gets the response
-                            const data = await response.json();
-                            // Shows the response on the toast
-                            mostrarToast(data.success ? "Informação" : "Erro", data.message, data.success ? "success" : "danger");
-    
-                            if (data.success) {
-                                e.target.reset(); // limpa o input do email
+                            const addMemberForm = document.getElementById('form-add-member');
+
+                            if (addMemberForm) {
+                                addMemberForm.addEventListener('submit', async (e) => {
+                                    e.preventDefault();
+
+                                    const formData = new FormData(addMemberForm);
+                                    const token = addMemberForm.querySelector('input[name="__RequestVerificationToken"]').value;
+
+                                    const response = await fetch(window.location.pathname + '?handler=AddMember', {
+                                        method: 'POST',
+                                        headers: {
+                                            'RequestVerificationToken': token
+                                        },
+                                        body: formData
+                                    });
+
+                                    const data = await response.json();
+                                    mostrarToast(
+                                        data.success ? "Informação" : "Erro",
+                                        data.message,
+                                        data.success ? "success" : "danger"
+                                    );
+
+                                    if (data.success) {
+                                        addMemberForm.reset();
+                                    }
+                                });
                             }
-                        });
-    
-                        
                         </script>
-                        
                     }
                     else
                     {
@@ -329,143 +345,224 @@
 
         <!-- Create Post AJAX -->
         <script>
-        (function() {
-            // Gets the many elements
-            const form = document.getElementById('form-create-post');
-            const btnToggle = document.getElementById('btn-toggle-post');
-            const btnCancel = document.getElementById('btn-cancel-post');
-            const textarea = document.querySelector('.create-post-content');
-            const charCurrent = document.getElementById('char-current');
-            const empty = document.getElementById('post-placeholder');
-            
-            // Verifies that the elements exist
-            if (btnToggle && form) {
-            function toggleForm() {
-                const isHidden = form.style.display === 'none';
-                form.style.display = isHidden ? 'block' : 'none';
-                empty.style.display = isHidden ? 'none' : 'block';
-                if (isHidden) textarea.focus();
-            }
-            
-     
-            
-            // Add the event to the buttons
-            btnToggle.addEventListener('click', toggleForm);
-            btnCancel.addEventListener('click', toggleForm);
+            (function () {
+                // Gets the many elements
+                const form = document.getElementById('form-create-post');
+                const btnToggle = document.getElementById('btn-toggle-post');
+                const btnCancel = document.getElementById('btn-cancel-post');
+                const textarea = document.querySelector('.create-post-content');
+                const charCurrent = document.getElementById('char-current');
+                const empty = document.getElementById('post-placeholder');
 
-            // Character counter
-            textarea.addEventListener('input', () => {
-                charCurrent.textContent = textarea.value.length;
-            });
+                // Verifies that the elements exist
+                if (btnToggle && form) {
+                    function toggleForm() {
+                        const isHidden = form.style.display === 'none';
+                        form.style.display = isHidden ? 'block' : 'none';
+                        if (empty) empty.style.display = isHidden ? 'none' : 'block';
+                        if (isHidden && textarea) textarea.focus();
+                    }
 
-            // AJAX submit
-            form.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const formData = new FormData(form);
-                const response = await fetch(window.location.pathname + '?handler=CreatePost', {
-                    method: 'POST',
-                    body: formData
-                });
-                // API response
-                const data = await response.json();
-                // Shows toast
-                mostrarToast(data.success ? "Sucesso" : "Erro", data.message, data.success ? "success" : "danger");
-                if (data.success) {
-                    setTimeout(() => location.reload(), 800);
-                }
-            });
-        }
 
-            // Delete post handlers
-            document.querySelectorAll('.pub-delete-btn').forEach(btn => {
-                btn.addEventListener('click', async () => {
-                    //gets the postId from the post
-                    const postId = btn.dataset.postId;
-                        
-                    //confirms the action
-                    if (!await confirmModal('Tens a certeza que queres remover esta publicação?', 'Eliminar')) return;
-                    
-                    // Query the anti forgery token, required by ASP.NET for security
-                    const token = document.querySelector(
-                        'input[name="__RequestVerificationToken"]'
-                    ).value;
-                    
-                    try {
-                        // Sends the post to the api
-                        const response = await fetch(`${window.location.pathname}?handler=DeletePost&postId=${encodeURIComponent(postId)}`, {
+                    // Add the event to the buttons
+                    btnToggle.addEventListener('click', toggleForm);
+                    btnCancel.addEventListener('click', toggleForm);
+
+                    // Character counter
+                    textarea.addEventListener('input', () => {
+                        charCurrent.textContent = textarea.value.length;
+                    });
+
+                    // AJAX submit
+                    form.addEventListener('submit', async (e) => {
+                        e.preventDefault();
+                        const formData = new FormData(form);
+                        const token = form.querySelector('input[name="__RequestVerificationToken"]').value;
+
+                        const response = await fetch(window.location.pathname + '?handler=CreatePost', {
                             method: 'POST',
                             headers: {
                                 'RequestVerificationToken': token
-                            }
+                            },
+                            body: formData
                         });
-                        // Response
+                        // API response
                         const data = await response.json();
-                        // Shows result
+                        // Shows toast
                         mostrarToast(data.success ? "Sucesso" : "Erro", data.message, data.success ? "success" : "danger");
                         if (data.success) {
-                            // looks for the closest element with the class and removes it
-                            const postEl = btn.closest('.pub-post');
-                            if (postEl) postEl.remove();
+                            setTimeout(() => location.reload(), 800);
                         }
-                    } catch (err) {
-                        mostrarToast("Erro", "Falha ao remover a publicação.", "danger");
-                    }
-                });
-            });
-
-            // -------- Create Project Form --------
-            const projectForm = document.getElementById('form-create-project');
-            const btnToggleProject = document.getElementById('btn-toggle-project');
-            const btnCancelProject = document.getElementById('btn-cancel-project');
-            const projectTextarea = document.querySelector('.create-project-description');
-            const projectCharCurrent = document.getElementById('project-char-current');
-            const projectEmpty = document.getElementById('project-placeholder');
-            const projectCheckbox = document.querySelector('input[name="NewProjectPublic"]');
-            const visibilityText = document.getElementById('visibility-text');
-            
-            if (btnToggleProject && projectForm) {
-                function toggleProjectForm() {
-                    const isHidden = projectForm.style.display === 'none';
-                    projectForm.style.display = isHidden ? 'block' : 'none';
-                    if (projectEmpty) projectEmpty.style.display = isHidden ? 'none' : 'block';
-                    if (isHidden && projectTextarea) projectTextarea.focus();
+                    });
                 }
 
-                btnToggleProject.addEventListener('click', toggleProjectForm);
-                btnCancelProject.addEventListener('click', toggleProjectForm);
+                // Delete post handlers
+                document.querySelectorAll('.pub-delete-btn').forEach(btn => {
+                    btn.addEventListener('click', async () => {
+                        //gets the postId from the post
+                        const postId = btn.dataset.postId;
 
-                // Character counter
-                projectTextarea.addEventListener('input', () => {
-                    projectCharCurrent.textContent = projectTextarea.value.length;
-                });
+                        //confirms the action
+                        if (!await confirmModal('Tens a certeza que queres remover esta publicação?', 'Eliminar')) return;
 
-                // Visibility toggle
-                projectCheckbox.addEventListener('change', () => {
-                    if (visibilityText) {
-                        visibilityText.textContent = projectCheckbox.checked ? 'Público' : 'Privado';
-                        const icon = visibilityText.previousElementSibling;
-                        if (icon) {
-                            icon.className = projectCheckbox.checked ? 'bi bi-globe2' : 'bi bi-lock';
+                        // Query the anti forgery token, required by ASP.NET for security
+                        const token = document.querySelector('#antiForgeryForm input[name="__RequestVerificationToken"]').value;
+                        
+                        try {
+                            // Sends the post to the api
+                            const response = await fetch(`${window.location.pathname}?handler=DeletePost&postId=${encodeURIComponent(postId)}`, {
+                                method: 'POST',
+                                headers: {
+                                    'RequestVerificationToken': token
+                                },
+                            });
+                            // Response
+                            const data = await response.json();
+                            // Shows result
+                            mostrarToast(data.success ? "Sucesso" : "Erro", data.message, data.success ? "success" : "danger");
+                            if (data.success) {
+                                // looks for the closest element with the class and removes it
+                                const postEl = btn.closest('.pub-post');
+                                if (postEl) postEl.remove();
+                            }
+                        } catch (err) {
+                            mostrarToast("Erro", "Falha ao remover a publicação.", "danger");
                         }
-                    }
+                    });
                 });
 
-                // AJAX submit
-                projectForm.addEventListener('submit', async (e) => {
-                    e.preventDefault();
-                    const formData = new FormData(projectForm);
-                    const response = await fetch(window.location.pathname + '?handler=CreateProject', {
+                // -------- Create Project Form --------
+                const projectForm = document.getElementById('form-create-project');
+                const btnToggleProject = document.getElementById('btn-toggle-project');
+                const btnCancelProject = document.getElementById('btn-cancel-project');
+                const projectTextarea = document.querySelector('.create-project-description');
+                const projectCharCurrent = document.getElementById('project-char-current');
+                const projectEmpty = document.getElementById('project-placeholder');
+                const projectCheckbox = document.querySelector('input[name="NewProjectPublic"]');
+                const visibilityText = document.getElementById('visibility-text');
+
+                if (btnToggleProject && projectForm) {
+                    function toggleProjectForm() {
+                        const isHidden = projectForm.style.display === 'none';
+                        projectForm.style.display = isHidden ? 'block' : 'none';
+                        if (projectEmpty) projectEmpty.style.display = isHidden ? 'none' : 'block';
+                        if (isHidden && projectTextarea) projectTextarea.focus();
+                    }
+
+                    btnToggleProject.addEventListener('click', toggleProjectForm);
+                    btnCancelProject.addEventListener('click', toggleProjectForm);
+
+                    // Character counter
+                    projectTextarea.addEventListener('input', () => {
+                        projectCharCurrent.textContent = projectTextarea.value.length;
+                    });
+
+                    // Visibility toggle
+                    projectCheckbox.addEventListener('change', () => {
+                        if (visibilityText) {
+                            visibilityText.textContent = projectCheckbox.checked ? 'Público' : 'Privado';
+                            const icon = visibilityText.previousElementSibling;
+                            if (icon) {
+                                icon.className = projectCheckbox.checked ? 'bi bi-globe2' : 'bi bi-lock';
+                            }
+                        }
+                    });
+
+                    // AJAX submit
+                    projectForm.addEventListener('submit', async (e) => {
+                        e.preventDefault();
+                        const formData = new FormData(projectForm);
+                        const token = projectForm.querySelector('input[name="__RequestVerificationToken"]').value;
+
+                        const response = await fetch(window.location.pathname + '?handler=CreateProject', {
+                            method: 'POST',
+                            headers: {
+                                'RequestVerificationToken': token
+                            },
+                            body: formData
+                        });
+                        const data = await response.json();
+                        mostrarToast(data.success ? "Sucesso" : "Erro", data.message, data.success ? "success" : "danger");
+                        if (data.success) {
+                            setTimeout(() => location.reload(), 800);
+                        }
+                    });
+                }
+            })();
+
+            //Interceta o submit de qualquer formulário de upgrade
+            document.addEventListener('submit', async e => {
+                const form = e.target;
+
+                //Ignora formulário que não sejam upgrade
+                if (!form.classList.contains('upgrade-member-form')) return;
+                e.preventDefault();
+                
+                const formData = new FormData(form);
+                const token = form.querySelector('input[name="__RequestVerificationToken"]').value;
+                try {
+                    //Envia o pedido ao handler UpgradeMember via AJAX
+                    const res = await fetch(window.location.pathname + '?handler=UpgradeMember', {
                         method: 'POST',
+                        headers: {
+                            'RequestVerificationToken': token
+                        },
                         body: formData
                     });
-                    const data = await response.json();
-                    mostrarToast(data.success ? "Sucesso" : "Erro", data.message, data.success ? "success" : "danger");
-                    if (data.success) {
-                        setTimeout(() => location.reload(), 800);
+                    const response = await res.json();
+
+                    //Mostra toast de sucesso ou erro
+                    mostrarToast(
+                        response.success ? 'Informação' : 'Erro',
+                        response.message,
+                        response.success ? 'success' : 'danger'
+                    );
+
+                    //Atualiza o badge do role na UI
+                    if (response.success) {
+                        const memberId = form.querySelector('[name="memberId"]').value;
+                        const roleSpan = document.querySelector(`#row-${memberId} .member-role`);
+
+                        if (roleSpan) roleSpan.textContent = response.newRole;
                     }
-                });
-            }
-        })();
+                } catch (err) {
+                    //Erro de rede ou responsta inválida
+                    mostrarToast('Erro', 'Não foi possível comunicar com o servidor', 'danger');
+                }
+            })
+        </script>
+        <script>
+            document.addEventListener("submit", async (e) => {
+                const form = e.target;
+                if (!form.classList.contains("remove-member-form")) return;
+
+                e.preventDefault();
+                const user = form.user.value;
+
+                if (!await confirmModal('Tem a certeza que quer remover ' + user + ' da organização?', 'Eliminar')) return;
+
+                const formData = new FormData(form);
+                const token = form.querySelector('input[name="__RequestVerificationToken"]').value;
+
+                try {
+                    const res = await fetch(window.location.pathname + '?handler=RemoveMember', {
+                        method: 'POST',
+                        headers: {
+                            'RequestVerificationToken': token
+                        },
+                        body: formData
+                    });
+
+                    const response = await res.json();
+
+                    if (response.success) {
+                        mostrarToast("Informação", response.message, "success");
+                        setTimeout(() => location.reload(), 500);
+                    }
+                } catch (err) {
+                    mostrarToast("Erro", "Não foi possível comunicar com o servidor.", "danger");
+                }
+            });
         </script>
     </div>
 }
