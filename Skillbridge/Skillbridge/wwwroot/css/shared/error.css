@@ -1,0 +1,294 @@
+/* ─────────────────────────────────────
+   Error Page – "Nuh Uh" Theme
+   ───────────────────────────────────── */
+
+.error-page {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 80vh;
+    position: relative;
+    overflow: hidden;
+    padding: 2rem 1rem;
+}
+
+/* ── Floating Particles ── */
+
+.error-particles {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.particle {
+    position: absolute;
+    bottom: -10px;
+    background: var(--primary, rgb(110, 113, 251));
+    border-radius: 50%;
+    animation: floatUp linear infinite;
+}
+
+@keyframes floatUp {
+    0% {
+        transform: translateY(0) scale(1);
+        opacity: 0;
+    }
+    10% {
+        opacity: 0.6;
+    }
+    90% {
+        opacity: 0.2;
+    }
+    100% {
+        transform: translateY(-85vh) scale(0.3);
+        opacity: 0;
+    }
+}
+
+/* ── Content Container ── */
+
+.error-content {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 1rem;
+    max-width: 560px;
+}
+
+/* ── Glitch Error Code ── */
+
+.error-code {
+    font-family: 'Inter', sans-serif;
+    font-size: clamp(3.5rem, 10vw, 6rem);
+    font-weight: 900;
+    letter-spacing: 0.15em;
+    color: rgba(110, 113, 251, 0.12);
+    position: relative;
+    user-select: none;
+    line-height: 1;
+    animation: glitchPulse 4s ease-in-out infinite;
+}
+
+.error-code::before,
+.error-code::after {
+    content: attr(data-text);
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.error-code::before {
+    color: rgba(255, 60, 100, 0.08);
+    animation: glitch1 3s infinite;
+}
+
+.error-code::after {
+    color: rgba(60, 200, 255, 0.08);
+    animation: glitch2 3s infinite;
+}
+
+@keyframes glitchPulse {
+    0%, 100% { opacity: 0.7; }
+    50% { opacity: 1; }
+}
+
+@keyframes glitch1 {
+    0%, 100% { transform: translate(0); }
+    20% { transform: translate(-3px, 2px); }
+    40% { transform: translate(3px, -1px); }
+    60% { transform: translate(-1px, 1px); }
+    80% { transform: translate(2px, -2px); }
+}
+
+@keyframes glitch2 {
+    0%, 100% { transform: translate(0); }
+    20% { transform: translate(3px, -2px); }
+    40% { transform: translate(-2px, 1px); }
+    60% { transform: translate(1px, -1px); }
+    80% { transform: translate(-3px, 2px); }
+}
+
+/* ── GIF Wrapper ── */
+
+.error-gif-wrapper {
+    position: relative;
+    margin: 0.5rem 0 0.75rem;
+}
+
+.error-gif-glow {
+    position: absolute;
+    inset: -8px;
+    background: radial-gradient(
+        ellipse at center,
+        rgba(110, 113, 251, 0.35) 0%,
+        rgba(110, 113, 251, 0) 70%
+    );
+    border-radius: 20px;
+    z-index: -1;
+    filter: blur(16px);
+    animation: glowPulse 3s ease-in-out infinite alternate;
+}
+
+@keyframes glowPulse {
+    0% {
+        opacity: 0.5;
+        transform: scale(1);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1.08);
+    }
+}
+
+.error-gif {
+    display: block;
+    width: clamp(200px, 50vw, 320px);
+    height: auto;
+    border-radius: 16px;
+    border: 2px solid rgba(110, 113, 251, 0.3);
+    box-shadow:
+        0 0 20px rgba(110, 113, 251, 0.15),
+        0 8px 32px rgba(0, 0, 0, 0.4);
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
+                border-color 0.3s ease,
+                box-shadow 0.3s ease;
+}
+
+.error-gif:hover {
+    transform: scale(1.04) rotate(-1deg);
+    border-color: rgba(110, 113, 251, 0.6);
+    box-shadow:
+        0 0 30px rgba(110, 113, 251, 0.3),
+        0 12px 40px rgba(0, 0, 0, 0.5);
+}
+
+/* ── Typography ── */
+
+.error-title {
+    font-family: 'Inter', sans-serif;
+    font-size: clamp(2rem, 6vw, 3rem);
+    font-weight: 800;
+    color: rgb(217, 228, 252);
+    margin: 0;
+    letter-spacing: -0.02em;
+    background: linear-gradient(135deg, rgb(217, 228, 252) 0%, var(--primary, rgb(110, 113, 251)) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.error-subtitle {
+    font-family: 'Inter', sans-serif;
+    font-size: clamp(0.95rem, 2.5vw, 1.15rem);
+    color: rgb(142, 157, 177);
+    margin: 0;
+    line-height: 1.6;
+    max-width: 420px;
+}
+
+/* ── Request ID ── */
+
+.error-request-id {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(110, 113, 251, 0.06);
+    border: 1px solid rgba(110, 113, 251, 0.12);
+    border-radius: 8px;
+    padding: 0.5rem 1rem;
+    font-size: 0.8rem;
+}
+
+.error-request-label {
+    color: rgb(142, 157, 177);
+    font-family: 'Inter', sans-serif;
+    font-weight: 500;
+}
+
+.error-request-code {
+    color: var(--primary, rgb(110, 113, 251));
+    font-family: 'Courier New', monospace;
+    font-size: 0.78rem;
+    word-break: break-all;
+}
+
+/* ── CTA Button ── */
+
+.error-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-top: 0.75rem;
+    padding: 0.8rem 2rem;
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: #fff;
+    background: linear-gradient(135deg, var(--primary, rgb(110, 113, 251)) 0%, rgb(90, 93, 230) 100%);
+    border: none;
+    border-radius: 12px;
+    text-decoration: none;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+                box-shadow 0.3s ease;
+    box-shadow: 0 4px 15px rgba(110, 113, 251, 0.3);
+}
+
+.error-btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        135deg,
+        rgba(255, 255, 255, 0.15) 0%,
+        rgba(255, 255, 255, 0) 50%
+    );
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.error-btn:hover {
+    transform: translateY(-2px) scale(1.03);
+    box-shadow: 0 8px 25px rgba(110, 113, 251, 0.45);
+    color: #fff;
+    text-decoration: none;
+}
+
+.error-btn:hover::before {
+    opacity: 1;
+}
+
+.error-btn:active {
+    transform: translateY(0) scale(0.98);
+}
+
+.error-btn i {
+    font-size: 1.1rem;
+}
+
+/* ── Responsive ── */
+
+@media (max-width: 480px) {
+    .error-page {
+        padding: 1.5rem 1rem;
+        min-height: 70vh;
+    }
+
+    .error-content {
+        gap: 0.75rem;
+    }
+
+    .error-request-id {
+        flex-direction: column;
+        gap: 0.25rem;
+        text-align: center;
+    }
+}

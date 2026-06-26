@@ -1,0 +1,212 @@
+.faq-page {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem 4rem;
+    color: rgb(217, 228, 252);
+    font-family: Inter, sans-serif;
+}
+
+/* ── Hero ── */
+.faq-hero {
+    text-align: center;
+    padding: 3rem 0 2rem;
+}
+
+.faq-title {
+    font-size: 2.25rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    line-height: 1.2;
+}
+
+.faq-subtitle {
+    font-size: 1.05rem;
+    color: rgb(142, 157, 177);
+    max-width: 640px;
+    margin: 0 auto;
+    line-height: 1.7;
+}
+
+/* ── Sections ── */
+.faq-section {
+    padding: 2.5rem 0;
+}
+
+.faq-section-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 2rem;
+    text-align: center;
+    color: rgb(217, 228, 252);
+}
+
+/* ── Steps ── */
+.faq-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.faq-step {
+    display: grid;
+    grid-template-columns: 60px 1fr;
+    gap: 1.5rem;
+    padding-bottom: 2rem;
+    position: relative;
+}
+
+.faq-step:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    top: 48px;
+    left: 29px;
+    width: 2px;
+    height: calc(100% - 48px);
+    background: linear-gradient(to bottom, rgba(110, 113, 251, 0.4), transparent);
+}
+
+.faq-step-number {
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, rgb(110, 113, 251), rgb(80, 83, 220));
+    color: #fff;
+    font-size: 1.25rem;
+    font-weight: 700;
+    border-radius: 0;
+}
+
+.faq-step-content h3 {
+    font-size: 1.15rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: rgb(217, 228, 252);
+}
+
+.faq-step-content p {
+    color: rgb(142, 157, 177);
+    font-size: 0.95rem;
+    line-height: 1.7;
+    margin: 0;
+}
+
+/* ── Features Grid ── */
+.faq-features {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+    gap: 1.25rem;
+}
+
+.faq-feature-card {
+    background: linear-gradient(180deg, rgba(17, 28, 45, 0.8), rgba(8, 20, 37, 0.9));
+    border: 1px solid rgba(80, 140, 255, 0.1);
+    padding: 1.75rem;
+    border-radius: 0;
+    transition: border-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.faq-feature-card:hover {
+    border-color: rgba(110, 113, 251, 0.35);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 20px rgba(110, 113, 251, 0.1);
+}
+
+.faq-feature-icon {
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1rem;
+    font-size: 1.5rem;
+    color: var(--primary);
+}
+
+.faq-feature-card h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: rgb(217, 228, 252);
+}
+
+.faq-feature-card p {
+    font-size: 0.875rem;
+    color: rgb(142, 157, 177);
+    line-height: 1.6;
+    margin: 0;
+}
+
+/* ── Accordion ── */
+.faq-accordion-item {
+    border: none;
+    margin-bottom: 0.75rem;
+}
+
+.faq-accordion-header {
+    margin: 0;
+}
+
+.faq-accordion-button {
+    background: rgba(17, 28, 45, 0.6) !important;
+    color: rgb(217, 228, 252) !important;
+    border: 1px solid rgba(80, 140, 255, 0.1) !important;
+    border-radius: 0 !important;
+    font-family: Inter, sans-serif;
+    font-size: 0.95rem;
+    font-weight: 500;
+    padding: 1rem 1.25rem;
+    transition: background 0.2s ease, border-color 0.2s ease !important;
+}
+
+.faq-accordion-button:not(.collapsed) {
+    background: rgba(110, 113, 251, 0.08) !important;
+    border-color: rgba(110, 113, 251, 0.25) !important;
+    box-shadow: none !important;
+    color: rgb(217, 228, 252) !important;
+}
+
+.faq-accordion-button:hover {
+    background: rgba(110, 113, 251, 0.05) !important;
+}
+
+.faq-accordion-button::after {
+    filter: invert(1) grayscale(100%) brightness(200%);
+}
+
+.faq-accordion-body {
+    color: rgb(142, 157, 177);
+    font-size: 0.9rem;
+    line-height: 1.7;
+    padding: 1rem 1.25rem;
+    background: rgba(8, 20, 37, 0.5);
+    border: 1px solid rgba(80, 140, 255, 0.1);
+    border-top: none;
+    border-radius: 0;
+}
+
+/* ── Mobile ── */
+@media (max-width: 600px) {
+    .faq-title {
+        font-size: 1.75rem;
+    }
+    .faq-subtitle {
+        font-size: 0.95rem;
+    }
+    .faq-step {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+    .faq-step:not(:last-child)::after {
+        display: none;
+    }
+    .faq-step-number {
+        width: 44px;
+        height: 44px;
+        font-size: 1rem;
+    }
+    .faq-features {
+        grid-template-columns: 1fr;
+    }
+}
