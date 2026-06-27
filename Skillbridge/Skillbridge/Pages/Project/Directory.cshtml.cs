@@ -1,4 +1,5 @@
 using System.Net;
+using System.Security.Claims;
 using Amazon.S3;
 using Amazon.S3.Model;
 using Amazon.S3.Transfer;
@@ -35,13 +36,26 @@ public class Directory : PageModel
     
     public Models.Project.Project? CurrentProject { get; set; } = new();
     public string ViewMode { get; set; } = "grid";
-    
+    public Role UserPerm { get; set; } = Role.Unknown;
     
     public IActionResult OnGet(string? bucket, string? prefix, string? viewMode)
     {
         try
         {
 
+            var user = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            UserPerm = _context.OrganizationMembers
+                .Join(_context.Project,
+                    orgM => orgM.Organization,
+                    projectM => projectM.OrganizationId,
+                    ((orgM, project) => new { orgM, project })
+                )
+                .Where(p => p.orgM.User == user && p.project.ProjectDirectory == bucket)
+                .Select(p => p.orgM.Role)
+                .FirstOrDefault();
+            
+            
             // Gets which organization the user belongs to
             var orgsMember = _context.Users
                 .Join(_context.OrganizationMembers,
@@ -52,8 +66,10 @@ public class Directory : PageModel
                 .Join(_context.Organizations,
                     uom => uom.om.Organization, // FK no OrganizationMember que aponta para Organization
                     organization => organization.OrganizationId,
-                    (uom, organization) => organization.OrganizationId // já seleciona diretamente a Organization
+                    (uom, organization) => new {organization.OrganizationId, uom.user} // já seleciona diretamente a Organization
                 )
+                .Where(p => p.user.Id == user)
+                .Select(p => p.OrganizationId)
                 .Distinct()
                 .ToList();
 
@@ -62,8 +78,6 @@ public class Directory : PageModel
             {
                 return Page();
             }
-
-
             // Gets each organization's project
             List<string?> orgProjects = _context.Organizations
                 .Join(_context.Project,
@@ -76,11 +90,13 @@ public class Directory : PageModel
                 .ToList();
 
             // Verifies that there is at least 1 project
-
             if (orgProjects.Count == 0)
             {
                 return Page();
             }
+
+            
+            
 
             // If all the conditions above meet then it gets the project and files
             var s3Api = new S3Api();
@@ -143,6 +159,7 @@ public class Directory : PageModel
     public async Task<IActionResult> OnPostCreateFolderAsync([FromForm] string bucket, [FromForm] string prefix,[FromForm] string folderName) {
         try
         {
+            
             // Initiates class
             var s3Api = new S3Api();
             // Verifies that the key is not empty and prepares it 

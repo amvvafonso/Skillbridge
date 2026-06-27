@@ -1,5 +1,6 @@
 @page
 @using System.IO
+@using Skillbridge.Models.Client
 @using DirModel = Skillbridge.Pages.Project.Directory
 @model Skillbridge.Pages.Project.Directory
 
@@ -55,28 +56,29 @@
             </div>
 
             <div class="fe-toolbar-actions">
-                <button class="fe-btn fe-btn-icon" id="btnCreateFolder" title="Nova Pasta">
-                    <i class="bi bi-folder-plus"></i>
-                </button>
-                <form asp-page-handler="Upload" method="post" enctype="multipart/form-data" id="uploadForm">
-                    <input type="hidden" name="bucket" value="@Model.CurrentBucket" />
-                    <input type="hidden" name="prefix" value="@Model.CurrentPrefix" />
-                    <input type="hidden" name="project" value="@Model.CurrentProject.ProjectId" />
-                    <input asp-for="uploadedFile" id="uploadFile" class="bi bi-file-plus d-none" type="file" onchange="document.getElementById('uploadForm').submit()"/>
-                    <label for="uploadFile">
-                        <div class="fe-btn fe-btn-icon">
-                            <i class="bi bi-file-plus"></i>
-                        </div>
-                    </label>
-                </form>
+                    <button class="fe-btn fe-btn-icon" id="btnCreateFolder" title="Nova Pasta">
+                        <i class="bi bi-folder-plus"></i>
+                    </button>
+                    <form asp-page-handler="Upload" method="post" enctype="multipart/form-data" id="uploadForm">
+                        <input type="hidden" name="bucket" value="@Model.CurrentBucket"/>
+                        <input type="hidden" name="prefix" value="@Model.CurrentPrefix"/>
+                        <input type="hidden" name="project" value="@Model.CurrentProject.ProjectId"/>
+                        <input asp-for="uploadedFile" id="uploadFile" class="bi bi-file-plus d-none" type="file" onchange="document.getElementById('uploadForm').submit()"/>
+                        <label for="uploadFile">
+                            <div class="fe-btn fe-btn-icon">
+                                <i class="bi bi-file-plus"></i>
+                            </div>
+                        </label>
+                    </form>
                 <div class="fe-view-toggle">
-                    <button class="fe-btn fe-btn-icon @(Model.ViewMode == "grid" ? "active" : "")" id="btnGridView" title="Grelha">
-                        <i class="bi bi-grid-3x3-gap"></i>
-                    </button>
-                    <button class="fe-btn fe-btn-icon @(Model.ViewMode != "grid" ? "active" : "")" id="btnListView" title="Lista">
-                        <i class="bi bi-list-ul"></i>
-                    </button>
-                </div>
+                        <button class="fe-btn fe-btn-icon @(Model.ViewMode == "grid" ? "active" : "")" id="btnGridView" title="Grelha">
+                            <i class="bi bi-grid-3x3-gap"></i>
+                        </button>
+                        <button class="fe-btn fe-btn-icon @(Model.ViewMode != "grid" ? "active" : "")" id="btnListView" title="Lista">
+                            <i class="bi bi-list-ul"></i>
+                        </button>
+                    </div>
+                
             </div>
         </div>
 
@@ -199,12 +201,15 @@
                                         <i class="bi bi-trash"></i>
                                     </button>
                                 </form>
-                                <button type="button" class="fe-btn-action" title="Iniciar Sessão"
-                                        data-session-trigger
-                                        data-key="@file.Key"
-                                        data-name="@fileName">
-                                    <i class="bi bi-play-circle"></i>
-                                </button>
+                                @if (Model.UserPerm != Role.Apprentice && Model.UserPerm != Role.Unknown)
+                                {
+                                    <button type="button" class="fe-btn-action" title="Iniciar Sessão"
+                                            data-session-trigger
+                                            data-key="@file.Key"
+                                            data-name="@fileName">
+                                        <i class="bi bi-play-circle"></i>
+                                    </button>
+                                }
                             </div>
                         </div>
                     }
@@ -216,30 +221,38 @@
                     {
                         var fileName = file.Key.Split('/').LastOrDefault() ?? file.Key;
                         var ext = System.IO.Path.GetExtension(fileName).TrimStart('.').ToLowerInvariant();
-                        <div class="fe-item-row">
-                            <a href="#" class="fe-item-link-row">
-                                <i class="bi @DirModel.GetTypeIcon(ext) fe-type-icon @(DirModel.GetTypeColorClass(ext))"></i>
-                                <span class="fe-item-name-col">@fileName</span>
-                                <span class="fe-item-type-col">@(string.IsNullOrEmpty(ext) ? "—" : ext.ToUpperInvariant())</span>
-                                <span class="fe-item-size-col">@DirModel.FormatSize(file.Size)</span>
-                                <span class="fe-item-date-col">@(file.LastModified.HasValue ? file.LastModified.Value.ToString("dd/MM/yyyy HH:mm") : "—")</span>
-                            </a>
-                            <div class="fe-item-actions-row">
-                                <form onsubmit="event.preventDefault(); openConfirmModal(this, 'Tem a certeza que quer eliminar este ficheiro?', 'Eliminar')" asp-page-handler="DeleteFile" method="post" style="display:inline">
-                                    <input type="hidden" name="bucket" value="@Model.CurrentBucket" />
-                                    <input type="hidden" name="key" value="@file.Key" />
-                                    <button type="submit" class="fe-btn-action" title="Eliminar">
-                                        <i class="bi bi-trash"></i>
-                                    </button>
-                                </form>
-                                <button type="button" class="fe-btn-action" title="Iniciar Sessão"
-                                        data-session-trigger
-                                        data-key="@file.Key"
-                                        data-name="@fileName">
-                                    <i class="bi bi-play-circle"></i>
-                                </button>
+                            <div class="fe-item-row">
+                                <a href="#" class="fe-item-link-row">
+                                    <i class="bi @DirModel.GetTypeIcon(ext) fe-type-icon @(DirModel.GetTypeColorClass(ext))"></i>
+                                    <span class="fe-item-name-col">@fileName</span>
+                                    <span
+                                        class="fe-item-type-col">@(string.IsNullOrEmpty(ext) ? "—" : ext.ToUpperInvariant())</span>
+                                    <span class="fe-item-size-col">@DirModel.FormatSize(file.Size)</span>
+                                    <span
+                                        class="fe-item-date-col">@(file.LastModified.HasValue ? file.LastModified.Value.ToString("dd/MM/yyyy HH:mm") : "—")</span>
+                                </a>
+                                <div class="fe-item-actions-row">
+                                    
+                                        <form
+                                            onsubmit="event.preventDefault(); openConfirmModal(this, 'Tem a certeza que quer eliminar este ficheiro?', 'Eliminar')"
+                                            asp-page-handler="DeleteFile" method="post" style="display:inline">
+                                            <input type="hidden" name="bucket" value="@Model.CurrentBucket"/>
+                                            <input type="hidden" name="key" value="@file.Key"/>
+                                            <button type="submit" class="fe-btn-action" title="Eliminar">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </form>
+                                        @if (Model.UserPerm != Role.Apprentice && Model.UserPerm != Role.Unknown)
+                                        {
+                                        <button type="button" class="fe-btn-action" title="Iniciar Sessão"
+                                                data-session-trigger
+                                                data-key="@file.Key"
+                                                data-name="@fileName">
+                                            <i class="bi bi-play-circle"></i>
+                                        </button>
+                                    }
+                                </div>
                             </div>
-                        </div>
                     }
                 </div>
             </div>
