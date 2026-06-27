@@ -40,7 +40,10 @@
                           onsubmit="event.preventDefault(); openConfirmModal(this, 'Tem a certeza que quer eliminar a organização? Esta operação vai eliminar todos os registos associados a esta organização!', 'Eliminar organização')">
                         @Html.AntiForgeryToken()
                         <input type="hidden" name="organizationId" value="@Model.Organization.OrganizationId"/>
-                        <button class="add-member-btn delete-btn">Eliminar organização
+                        <button class="add-member-btn delete-btn desktop">Eliminar organização
+                            <i style="font-size: 13px" class="bi bi-trash"></i>
+                        </button>
+                        <button class="add-member-btn delete-btn mobile">
                             <i style="font-size: 13px" class="bi bi-trash"></i>
                         </button>
                     </form>

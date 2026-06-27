@@ -185,6 +185,7 @@
 }
 
 .mobile-link {
+    color: white !important;
     display: flex;
     align-items: center;
     gap: 14px;

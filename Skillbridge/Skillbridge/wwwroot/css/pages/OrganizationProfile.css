@@ -471,6 +471,22 @@ width: 100%;
   transition: 1s;
 }
 
+.desktop {
+  
+}
+
+.mobile {
+  display: none;
+}
+@media (max-width: 576px){
+  .desktop {
+    display: none;
+  }
+  .mobile {
+    display: unset;
+  }
+}
+
 .add-member-btn:hover {
   background: rgb(56, 116, 240);
   transform: translateY(-1px);

@@ -353,6 +353,13 @@
     opacity: 1;
 }
 
+@media (max-width: 600px){
+    .fe-item-actions {
+        opacity: 1;
+    }
+
+}
+
 .fe-btn-action {
     background: rgba(220, 80, 80, 0.1);
     border: none;
