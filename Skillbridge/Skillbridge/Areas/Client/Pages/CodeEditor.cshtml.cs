@@ -33,7 +33,7 @@ namespace Skillbridge.Areas.Client.Pages
         // File 
         public string FileContent { get; set; }
         public File CurrentFile {get;set; }
-        public Session CurrentSession { get; set; }
+        public Session? CurrentSession { get; set; }
         public User CurrentUser { get; set; } 
         public Boolean CanEdit { get; set; }
         
@@ -63,6 +63,9 @@ namespace Skillbridge.Areas.Client.Pages
                 .Include(s => s.file)
                 .FirstOrDefaultAsync(s => s.Id == sessionId);
 
+            if (CurrentSession == null) return Forbid();
+
+            
             if (!CurrentSession.Active) return Forbid();
    
             
@@ -87,6 +90,21 @@ namespace Skillbridge.Areas.Client.Pages
             {
                 return Forbid();
             }
+
+
+            string? bucket = _context.Files
+                .Join(_context.Project,
+                    f => f.ProjectId,
+                    p => p.ProjectId,
+                    (f, p) => new { f, p })
+                .Where(x => x.f.FileId == CurrentFile.FileId)
+                .Select(x => x.p.ProjectDirectory)
+                .FirstOrDefault();
+
+            if (string.IsNullOrEmpty(bucket))
+            {
+                return NotFound();
+            }
             
             //So consegue editar se tiver o role Mentor na sessão
             CanEdit = sessionAcess.Role == Role.Mentor;
@@ -94,7 +112,7 @@ namespace Skillbridge.Areas.Client.Pages
             try
             {
                 //Vai buscar o conteudo atualizado ao S3
-                FileContent = await s3Api.ObterFicheiroAsync("skillbridge", CurrentFile.Path) ?? string.Empty;
+                FileContent = await s3Api.ObterFicheiroAsync(bucket, CurrentFile.Path) ?? string.Empty;
             }
             catch (Amazon.Runtime.AmazonServiceException)
             {

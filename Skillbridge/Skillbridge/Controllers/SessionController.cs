@@ -64,43 +64,7 @@ public class SessionController : ControllerBase
             new { id = session.Id },
             session);
     }
+    
 
-    // PUT: api/session/{id}
-    [HttpPut("{id}")]
-    public async Task<IActionResult> UpdateSession(string id, Session session)
-    {
-        if (id != session.Id)
-            return BadRequest();
 
-        _context.Entry(session).State = EntityState.Modified;
-
-        try
-        {
-            await _context.SaveChangesAsync();
-        }
-        catch (DbUpdateConcurrencyException)
-        {
-            if (!await _context.Sessions.AnyAsync(s => s.Id == id))
-                return NotFound();
-
-            throw;
-        }
-
-        return NoContent();
-    }
-
-    // DELETE: api/session/{id}
-    [HttpDelete("{id}")]
-    public async Task<IActionResult> DeleteSession(string id)
-    {
-        var session = await _context.Sessions.FindAsync(id);
-
-        if (session == null)
-            return NotFound();
-
-        _context.Sessions.Remove(session);
-        await _context.SaveChangesAsync();
-
-        return NoContent();
-    }
 }

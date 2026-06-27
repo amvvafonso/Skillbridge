@@ -164,7 +164,7 @@ public class Directory : PageModel
             // Verifies that the key is not empty and prepares it 
             var key = string.IsNullOrEmpty(prefix)
                 ? $"{folderName.Trim('/')}/"
-                : $"{prefix}{folderName.Trim('/')}/";
+                : $"{prefix}{folderName.Trim('/')}";
 
             // Create the folder on the S3 api
             var success = await s3Api.EditarFicheiroAsync(bucket, key, string.Empty);
