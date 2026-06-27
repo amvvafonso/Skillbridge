@@ -74,8 +74,8 @@ namespace Skillbridge.Areas.Identity.Pages.Account
 
                 await _emailSender.SendEmailAsync(
                     Input.Email,
-                    "Reset Password",
-                    $"Please reset your password by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
+                    "Redefinir Palavra-passe",
+                    $"Por favor, redefina a sua palavra-passe clicando <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>aqui</a>.");
 
                 return RedirectToPage("./ForgotPasswordConfirmation");
             }

@@ -1,4 +1,4 @@
-﻿@page
+@page
 @model LoginModel
 
 @{
@@ -19,13 +19,13 @@
                     <span asp-validation-for="Input.Email" class="text-danger"></span>
                 </div>
                 <div class="mb-3">
-                    <label asp-for="Input.Password" class="form-label login-label">Password</label>
-                    <input asp-for="Input.Password" class="form-control login-input" autocomplete="current-password" aria-required="true" placeholder="A sua password"/>
+                    <label asp-for="Input.Password" class="form-label login-label">Palavra-passe</label>
+                    <input asp-for="Input.Password" class="form-control login-input" autocomplete="current-password" aria-required="true" placeholder="A sua palavra-passe"/>
                     <span asp-validation-for="Input.Password" class="text-danger"></span>
                 </div>
                 <div class="checkbox mb-3 login-label d-flex justify-content-between">
                     <p>
-                        <a id="forgot-password" asp-page="./ForgotPassword">Esqueces-te da password?</a>
+                        <a id="forgot-password" asp-page="./ForgotPassword">Esqueceste a palavra-passe?</a>
                     </p>
                     <label asp-for="Input.RememberMe" class="form-label">
                         <input class="form-check-input" asp-for="Input.RememberMe"/>
@@ -34,7 +34,7 @@
                 </div>
                 </div>
                 <div>
-                    <button id="login-submit" type="submit" class="w-100 btn btn-lg btn-primary login-button">SIGN IN <span style="vertical-align: center" class="material-symbols-outlined">arrow_right_alt</span></button>
+                    <button id="login-submit" type="submit" class="w-100 btn btn-lg btn-primary login-button">ENTRAR <span style="vertical-align: center" class="material-symbols-outlined">arrow_right_alt</span></button>
                 </div>
                 <div style="margin-top: 10px" class="d-grid justify-content-center">
                     <p class="login-label">

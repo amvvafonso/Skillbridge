@@ -1,4 +1,4 @@
-﻿@page
+@page
 @model RegisterModel
 @{
 }
@@ -24,13 +24,13 @@
                 <span asp-validation-for="Input.Email" class="text-danger"></span>
             </div>
             <div class=" mb-3">
-                <label class="login-label" asp-for="Input.Password">Password</label>
-                <input asp-for="Input.Password" class="form-control login-input" autocomplete="new-password" aria-required="true" placeholder="Password"/>
+                <label class="login-label" asp-for="Input.Password">Palavra-passe</label>
+                <input asp-for="Input.Password" class="form-control login-input" autocomplete="new-password" aria-required="true" placeholder="Palavra-passe"/>
                 <span asp-validation-for="Input.Password" class="text-danger"></span>
             </div>
             <div class=" mb-3">
-                <label  class="login-label" asp-for="Input.ConfirmPassword">Confirmar Password</label>
-                <input asp-for="Input.ConfirmPassword" class="form-control login-input" autocomplete="new-password" aria-required="true" placeholder="Confirmação de Password"/>
+                <label  class="login-label" asp-for="Input.ConfirmPassword">Confirmar Palavra-passe</label>
+                <input asp-for="Input.ConfirmPassword" class="form-control login-input" autocomplete="new-password" aria-required="true" placeholder="Confirmação de Palavra-passe"/>
                 <span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
             </div>
             </div>
