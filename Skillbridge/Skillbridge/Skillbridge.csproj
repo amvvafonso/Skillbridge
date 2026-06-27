@@ -37,4 +37,7 @@
       <UpToDateCheckInput Remove="Areas\Client\Views\Client\Index.cshtml" />
     </ItemGroup>
 
+    <ItemGroup>
+    </ItemGroup>
+
 </Project>

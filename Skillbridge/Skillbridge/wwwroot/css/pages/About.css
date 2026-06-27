@@ -1,0 +1,113 @@
+.sobre-page {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 48px 24px 80px;
+    font-family: 'Inter', sans-serif;
+    color: #e2e8f0;
+}
+.sobre-hero {
+    text-align: center;
+    margin-bottom: 48px;
+}
+.sobre-title {
+    font-size: 2.4rem;
+    font-weight: 700;
+    color: #fff;
+}
+.sobre-subtitle {
+    color: #94a3b8;
+    margin-top: 8px;
+}
+.sobre-section {
+    margin-bottom: 40px;
+}
+.sobre-section-title {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: #fff;
+    border-bottom: 1px solid rgba(110, 113, 251, 0.2);
+    padding-bottom: 8px;
+    margin-bottom: 20px;
+}
+.sobre-card {
+    background: rgba(30, 41, 59, 0.5);
+    border: 1px solid rgba(51, 65, 85, 0.5);
+    border-radius: 12px;
+    padding: 20px 24px;
+    line-height: 1.8;
+}
+.sobre-authors {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+.sobre-author-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: rgba(30, 41, 59, 0.5);
+    border: 1px solid rgba(51, 65, 85, 0.5);
+    border-radius: 12px;
+    padding: 16px 20px;
+    flex: 1;
+    min-width: 220px;
+}
+.sobre-author-card i {
+    font-size: 28px;
+    color: rgb(110, 113, 251);
+}
+.sobre-author-card div {
+    display: flex;
+    flex-direction: column;
+}
+.sobre-author-name {
+    font-weight: 600;
+    color: #fff;
+}
+.sobre-author-number {
+    font-size: 0.85rem;
+    color: #94a3b8;
+}
+.sobre-credits {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 14px;
+}
+.sobre-credit-item {
+    background: rgba(30, 41, 59, 0.5);
+    border: 1px solid rgba(51, 65, 85, 0.5);
+    border-radius: 10px;
+    padding: 14px 16px;
+}
+.sobre-credit-name {
+    font-weight: 600;
+    color: #fff;
+    margin-bottom: 4px;
+}
+.sobre-credit-desc {
+    font-size: 0.85rem;
+    color: #cbd5e1;
+    margin-bottom: 6px;
+}
+.sobre-credit-source {
+    font-size: 0.78rem;
+    color: rgb(140, 143, 255);
+}
+.sobre-credentials {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.sobre-credential-item {
+    display: flex;
+    gap: 20px;
+    background: rgba(245, 158, 11, 0.08);
+    border: 1px solid rgba(245, 158, 11, 0.25);
+    border-radius: 10px;
+    padding: 12px 18px;
+    flex-wrap: wrap;
+}
+.sobre-credential-role {
+    font-weight: 600;
+    color: #f59e0b;
+}
