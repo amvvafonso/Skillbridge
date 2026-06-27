@@ -56,7 +56,7 @@ namespace Skillbridge.Areas.Identity.Pages.Account
             var user = await _userManager.FindByEmailAsync(email);
             if (user == null)
             {
-                return NotFound($"Unable to load user with email '{email}'.");
+                return NotFound($"Não foi possível encontrar o utilizador com o email '{email}'.");
             }
 
             Email = email;

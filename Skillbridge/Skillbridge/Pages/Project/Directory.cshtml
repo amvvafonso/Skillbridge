@@ -6,7 +6,7 @@
 
 @{
     Layout = "_Layout";
-    ViewData["title"] = "Directory";
+    ViewData["title"] = "Diretório";
 }
 
 <link rel="stylesheet" href="~/css/pages/Directory.css" asp-append-version="true" />
@@ -16,7 +16,7 @@
     <aside class="fe-sidebar">
         <div class="fe-sidebar-header">
             <i class="bi bi-hdd-network"></i>
-            <span>Buckets</span>
+            <span>Projetos</span>
         </div>
         <ul class="fe-bucket-list">
             @foreach (var bucket in Model.Buckets)
