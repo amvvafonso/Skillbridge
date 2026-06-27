@@ -26,7 +26,7 @@ public class Directory : PageModel
     public Directory(ApplicationDbContext context, S3Api s3Api)
     {
         _context = context;
-        s3Api = s3Api;
+        this.s3Api = s3Api;
     }
 
     public List<Amazon.S3.Model.S3Bucket> Buckets { get; set; } = new();

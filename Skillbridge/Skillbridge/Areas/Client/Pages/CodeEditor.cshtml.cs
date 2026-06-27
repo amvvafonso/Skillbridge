@@ -22,11 +22,12 @@ namespace Skillbridge.Areas.Client.Pages
         private readonly UserManager<User> _userManager;
         private readonly IHubContext<NotificationHub> _notificationHub;   
         private readonly S3Api s3Api;
-        public CodeEditorModel(ApplicationDbContext context, UserManager<User> userManager, IHubContext<NotificationHub> notificationHub)
+        public CodeEditorModel(ApplicationDbContext context, UserManager<User> userManager, IHubContext<NotificationHub> notificationHub, S3Api s3Api)
         {
             _context = context;
             _userManager = userManager;
             this._notificationHub = notificationHub;
+            this.s3Api = s3Api;
         }
         
         // File 
