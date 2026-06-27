@@ -13,7 +13,7 @@
     <div class="org-profile">
 
         <!-- Banner -->
-        <img src="@Model.Organization.BannerPath" alt="Banner" class="org-banner"/>
+        <img src="?handler=Image&key=@Model.Organization.BannerPath" alt="Banner" class="org-banner"/>
 
         <!-- Header of organization -->
         <div class="org-header">
@@ -35,9 +35,12 @@
             </div>
             @if (User.Identity.IsAuthenticated && Model.UserPerm == Role.Owner)
             {
-                <div class="align-content-center">
-                    <button type="button" class="edit-org-btn" id="btn-edit-org" title="Editar organização">
+                <div class="align-content-center d-flex g-1">
+                    <button type="button" class="edit-org-btn desktop" id="btn-edit-org" title="Editar organização">
                         <i class="bi bi-pencil"></i> Editar
+                    </button>
+                    <button type="button" class="edit-org-btn mobile" id="btn-edit-org" title="Editar organização">
+                        <i class="bi bi-pencil"></i>
                     </button>
                     <form method="post" asp-page-handler="DeleteOrganization"
                           onsubmit="event.preventDefault(); openConfirmModal(this, 'Tem a certeza que quer eliminar a organização? Esta operação vai eliminar todos os registos associados a esta organização!', 'Eliminar organização')">
@@ -584,7 +587,7 @@
                     </div>
                     <form id="form-edit-org" method="post" enctype="multipart/form-data">
                         @Html.AntiForgeryToken()
-
+                        <input type="hidden" name="organizationId" value="@Model.Organization.OrganizationId"/>
                         <div class="edit-modal-body">
                             <!-- Name -->
                             <div class="edit-field">
@@ -631,7 +634,7 @@
                             <div class="edit-field">
                                 <label class="edit-label">Banner</label>
                                 <div class="edit-file-row">
-                                    <img src="@Model.Organization.BannerPath" alt="Banner atual"
+                                    <img src="?handler=Image&key=@Model.Organization.BannerPath" alt="Banner atual"
                                          class="edit-file-preview edit-banner-preview" id="preview-banner"/>
                                     <div class="edit-file-input-wrap">
                                         <label class="edit-file-label">
@@ -659,7 +662,7 @@
         <script>
             (function () {
                 const overlay = document.getElementById('edit-org-overlay');
-                const btnEdit = document.getElementById('btn-edit-org');
+                const btnEdits = document.querySelectorAll('.edit-org-btn');
                 const btnClose = document.getElementById('btn-close-edit');
                 const btnCancel = document.getElementById('btn-cancel-edit');
                 const form = document.getElementById('form-edit-org');
@@ -674,10 +677,12 @@
                 const bannerFilename = document.getElementById('banner-filename');
 
                 // Open modal
-                if (btnEdit && overlay) {
-                    btnEdit.addEventListener('click', () => {
-                        overlay.style.display = 'flex';
-                        document.body.style.overflow = 'hidden';
+                if (overlay) {
+                    btnEdits.forEach(btn => {
+                        btn.addEventListener('click', () => {
+                            overlay.style.display = 'flex';
+                            document.body.style.overflow = 'hidden';
+                        });
                     });
                 }
 

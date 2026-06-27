@@ -16,9 +16,9 @@ namespace Skillbridge.Areas.Client.Pages
 {
 
     [Authorize]
-    public class IndexModel(ApplicationDbContext context, UserManager<User> userManager) : PageModel
+    public class IndexModel(ApplicationDbContext context, UserManager<User> userManager, S3Api s3Api) : PageModel
     {
-        private readonly S3Api s3Api;
+        private readonly S3Api s3Api = s3Api;
         //Propriedade que vai ser usada pelo @model no .cshtml
         public IndexViewModel DashboardModel { get; set; } = default!;
         

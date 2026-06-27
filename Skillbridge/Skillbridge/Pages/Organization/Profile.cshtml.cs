@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Skillbridge.Data;
 using Skillbridge.Hubs;
 using Skillbridge.Models;
@@ -16,13 +17,13 @@ using Skillbridge.Utilities;
 
 namespace Skillbridge.Pages.Organization;
 
-public class ProfileModel(ApplicationDbContext context, IHubContext<NotificationHub> notificationHub, S3Api s3Api) : PageModel
+public class ProfileModel(ApplicationDbContext context, IHubContext<NotificationHub> notificationHub, IConfiguration configuration) : PageModel
 {
     //Limit of posts visible
     private readonly int POST_LIMIT = 3;
     private readonly IHubContext<NotificationHub> notificationHub = notificationHub;
-
-    private readonly S3Api s3Api = s3Api;
+    private readonly IConfiguration _configuration = configuration;
+    
     // DB table vars
     public Models.Organization? Organization { get; set; }
     public List<UserInfo> Members { get; set; } = [];
@@ -257,6 +258,7 @@ public class ProfileModel(ApplicationDbContext context, IHubContext<Notification
             // Try to create S3 bucket for the project
             try
             {
+                var s3Api = new Models.Utils.S3Api(_configuration);
                 await s3Api.CriarBucketAsync(NewProjectName);
             }
             catch
@@ -341,7 +343,8 @@ public class ProfileModel(ApplicationDbContext context, IHubContext<Notification
         if (string.IsNullOrWhiteSpace(key))
             return NotFound();
 
-        var result = await s3Api.GetBinaryAsync("logos", key);
+        var s3 = new S3Api(_configuration);
+        var result = await s3.GetBinaryAsync("logos", key);
 
         if (result == null)
             return NotFound();
@@ -586,24 +589,26 @@ public class ProfileModel(ApplicationDbContext context, IHubContext<Notification
         [FromForm] string EditAddress,
         [FromForm] string EditDescription,
         [FromForm] IFormFile? EditLogo,
-        [FromForm] IFormFile? EditBanner)
+        [FromForm] IFormFile? EditBanner,
+        [FromForm] string organizationId)
     {
         try
         {
             // Verify user is authenticated
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)
+                ;
             if (string.IsNullOrEmpty(userId))
                 return new JsonResult(new { success = false, message = "Precisas de estar autenticado." });
 
             // Verify user is Owner of this organization
             var member = await context.OrganizationMembers
-                .FirstOrDefaultAsync(m => m.Organization == id && m.User == userId);
-
+                .FirstOrDefaultAsync(m => m.Organization == organizationId && m.User == userId);
+            
             if (member == null || member.Role != Role.Owner)
                 return new JsonResult(new { success = false, message = "Apenas o dono pode editar a organização." });
 
             // Fetch organization
-            var org = await context.Organizations.FirstOrDefaultAsync(o => o.OrganizationId == id);
+            var org = await context.Organizations.FirstOrDefaultAsync(o => o.OrganizationId == organizationId);
             if (org == null)
                 return new JsonResult(new { success = false, message = "Organização não encontrada." });
 
@@ -622,11 +627,13 @@ public class ProfileModel(ApplicationDbContext context, IHubContext<Notification
                     return new JsonResult(new { success = false, message = "Logo deve ser PNG, JPG ou WebP." });
 
                 using var logoStream = EditLogo.OpenReadStream();
-                var logoData = new byte[EditLogo.Length];
-                await logoStream.ReadAsync(logoData);
+                using var logoMemory = new MemoryStream();
+                await logoStream.CopyToAsync(logoMemory);
+                var logoData = logoMemory.ToArray();
 
+                var s3 = new S3Api(_configuration);
                 var key = $"{id}_logo_{Guid.NewGuid()}{ext}";
-                var ok = await s3Api.UploadBinaryAsync("logos", key, logoData, EditLogo.ContentType);
+                var ok = await s3.UploadBinaryAsync("logos", key, logoData, EditLogo.ContentType);
 
                 if (ok)
                     org.LogoPath = key;
@@ -640,11 +647,13 @@ public class ProfileModel(ApplicationDbContext context, IHubContext<Notification
                     return new JsonResult(new { success = false, message = "Banner deve ser PNG, JPG ou WebP." });
 
                 using var bannerStream = EditBanner.OpenReadStream();
-                var bannerData = new byte[EditBanner.Length];
-                await bannerStream.ReadAsync(bannerData);
+                using var bannerMemory = new MemoryStream();
+                await bannerStream.CopyToAsync(bannerMemory);
+                var bannerData = bannerMemory.ToArray();
 
+                var s3 = new S3Api(_configuration);
                 var key = $"{id}_banner_{Guid.NewGuid()}{ext}";
-                var ok = await s3Api.UploadBinaryAsync("logos", key, bannerData, EditBanner.ContentType);
+                var ok = await s3.UploadBinaryAsync("logos", key, bannerData, EditBanner.ContentType);
 
                 if (ok)
                     org.BannerPath = key;
