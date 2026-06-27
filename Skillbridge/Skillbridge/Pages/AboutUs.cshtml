@@ -1,0 +1,72 @@
+@page
+@model Skillbridge.Pages.AboutUs
+
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Sobre o Projeto";
+}
+
+<link rel="stylesheet" href="~/css/pages/About.css" asp-append-version="true" />
+
+<div class="sobre-page">
+    <section class="sobre-hero">
+        <h1 class="sobre-title">Sobre o <span style="color: var(--primary);">Projeto</span></h1>
+        <p class="sobre-subtitle">Informação institucional, autoria e créditos do trabalho.</p>
+    </section>
+
+    <section class="sobre-section">
+        <h2 class="sobre-section-title">Identificação Académica</h2>
+        <div class="sobre-card">
+            <p><strong>Curso:</strong> @Model.CourseName</p>
+            <p><strong>Disciplina:</strong> @Model.SubjectName</p>
+            <p><strong>Ano letivo:</strong> @Model.AcademicYear</p>
+        </div>
+    </section>
+
+    <section class="sobre-section">
+        <h2 class="sobre-section-title">Autores</h2>
+        <div class="sobre-authors">
+            @foreach (var author in Model.Authors)
+            {
+                <div class="sobre-author-card">
+                    <i class="bi bi-person-circle"></i>
+                    <div>
+                        <span class="sobre-author-name">@author.Name</span>
+                        <span class="sobre-author-number">Nº @author.Number</span>
+                    </div>
+                </div>
+            }
+        </div>
+    </section>
+
+    <section class="sobre-section">
+        <h2 class="sobre-section-title">Bibliotecas, Frameworks e Código de Terceiros</h2>
+        <div class="sobre-credits">
+            @foreach (var credit in Model.Credits)
+            {
+                <div class="sobre-credit-item">
+                    <div class="sobre-credit-name">@credit.Name</div>
+                    <div class="sobre-credit-desc">@credit.Description</div>
+                    <div class="sobre-credit-source">@credit.Source</div>
+                </div>
+            }
+        </div>
+    </section>
+
+    @if (Model.TestCredentials.Any())
+    {
+        <section class="sobre-section">
+            <h2 class="sobre-section-title">Utilizadores de Teste</h2>
+            <div class="sobre-credentials">
+                @foreach (var cred in Model.TestCredentials)
+                {
+                    <div class="sobre-credential-item">
+                        <span class="sobre-credential-role">@cred.Role</span>
+                        <span><strong>Login:</strong> @cred.Login</span>
+                        <span><strong>Password:</strong> @cred.Password</span>
+                    </div>
+                }
+            </div>
+        </section>
+    }
+</div>

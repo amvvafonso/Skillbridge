@@ -56,6 +56,9 @@
                     <li class="nav-item">
                         <a style="color: rgb(142, 157, 177)" class="nav-link btn-hover" href="/FAQ">Como funciona</a>
                     </li>
+                    <li class="nav-item">
+                        <a style="color: rgb(142, 157, 177)" class="nav-link btn-hover" href="/AboutUs">Sobre</a>
+                    </li>
                     @if (User.Identity.IsAuthenticated)
                     {
                     <li class="nav-item">
@@ -89,6 +92,11 @@
                     <a href="/FAQ" class="mobile-link">
                         <i class="bi bi-lightbulb"></i>
                         <span>Como funciona</span>
+                    </a>
+                </li><li class="mobile-nav-item">
+                    <a href="/AboutUs" class="mobile-link">
+                        <i class="bi bi-info-circle"></i>
+                        <span>Sobre</span>
                     </a>
                 </li>
                 @if (User.Identity.IsAuthenticated)
