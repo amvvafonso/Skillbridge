@@ -6,6 +6,8 @@ using Skillbridge.Models;
 
 namespace Skillbridge.Controllers;
 
+
+
 public class HomeController(IHubContext<NotificationHub> notificationHub) : Controller
 {
     public async Task<IActionResult> Index()
