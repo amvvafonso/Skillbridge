@@ -22,10 +22,11 @@ namespace Skillbridge.Pages.Project;
 public class Directory : PageModel
 {
     private readonly ApplicationDbContext _context;
-
-    public Directory(ApplicationDbContext context)
+    private readonly S3Api s3Api;
+    public Directory(ApplicationDbContext context, S3Api s3Api)
     {
         _context = context;
+        s3Api = s3Api;
     }
 
     public List<Amazon.S3.Model.S3Bucket> Buckets { get; set; } = new();
@@ -99,7 +100,6 @@ public class Directory : PageModel
             
 
             // If all the conditions above meet then it gets the project and files
-            var s3Api = new S3Api();
             // Gets all buckets from the S3
             var bucketList = s3Api.ListBucketsAsync().Result;
             // Sends it to the Page if not null
@@ -161,7 +161,6 @@ public class Directory : PageModel
         {
             
             // Initiates class
-            var s3Api = new S3Api();
             // Verifies that the key is not empty and prepares it 
             var key = string.IsNullOrEmpty(prefix)
                 ? $"{folderName.Trim('/')}/"
@@ -184,7 +183,6 @@ public class Directory : PageModel
     public async Task<IActionResult> OnPostDeleteFileAsync([FromForm] string bucket, [FromForm] string key) {
         try
         {
-            var s3Api = new S3Api();
             // Deletes the file from key
             var success = await s3Api.EliminarFicheiroAsync(bucket, key);
             TempData["Message"] = success ? "Ficheiro eliminado!" : "Erro ao eliminar ficheiro.";
@@ -201,7 +199,6 @@ public class Directory : PageModel
     public async Task<IActionResult> OnPostDeleteFolderAsync( [FromForm] string bucket, [FromForm] string folderPath) {
         try
         {
-            var s3Api = new S3Api();
             var files = await s3Api.ListFilesAsync(bucket);
             // Verifies that the folder is empty, if it's not empty it deletes every file inside
             if (!files.IsNullOrEmpty())
@@ -312,8 +309,7 @@ public class Directory : PageModel
             
             using var stream = uploadedFile.OpenReadStream();
 
-            var client = new S3Api();
-            var transferUtility = new TransferUtility(client.GetS3Client());
+            var transferUtility = new TransferUtility(s3Api.GetS3Client());
 
             var key = string.IsNullOrEmpty(prefix)
                 ? $"{uploadedFile.FileName.Trim('/')}"

@@ -856,5 +856,264 @@ width: 100%;
   transform: translateY(-1px);
 }
 
+/* -------- Edit Organization Button -------- */
+.edit-org-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  background: rgba(80, 140, 255, 0.1);
+  border: 1px solid rgba(80, 140, 255, 0.3);
+  color: rgb(80, 140, 255);
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.15s;
+}
+
+.edit-org-btn:hover {
+  background: rgba(80, 140, 255, 0.2);
+  transform: translateY(-1px);
+}
+
+/* -------- Edit Organization Modal -------- */
+.edit-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 20px;
+}
+
+.edit-modal {
+  background: rgb(10, 22, 42);
+  border: 1px solid rgb(30, 48, 78);
+  border-radius: 16px;
+  width: 100%;
+  max-width: 560px;
+  max-height: 85vh;
+  overflow-y: auto;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.5);
+}
+
+.edit-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-bottom: 1px solid rgb(30, 48, 78);
+}
+
+.edit-modal-header h2 {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: rgb(217, 228, 252);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.edit-modal-header h2 i {
+  color: rgb(80, 140, 255);
+}
+
+.edit-modal-close {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  color: rgb(142, 157, 177);
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: color 0.2s, background 0.2s;
+}
+
+.edit-modal-close:hover {
+  color: rgb(217, 228, 252);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.edit-modal-body {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.edit-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.edit-label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: rgb(142, 157, 177);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.edit-input,
+.edit-textarea {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgb(30, 48, 78);
+  border-radius: 8px;
+  padding: 10px 14px;
+  color: rgb(217, 228, 252);
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.edit-input:focus,
+.edit-textarea:focus {
+  border-color: rgb(80, 140, 255);
+}
+
+.edit-textarea {
+  resize: vertical;
+  min-height: 60px;
+  font-family: inherit;
+}
+
+.edit-char-count {
+  font-size: 0.72rem;
+  color: rgb(90, 112, 148);
+  text-align: right;
+}
+
+/* File upload row */
+.edit-file-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.edit-file-preview {
+  width: 60px;
+  height: 60px;
+  border-radius: 10px;
+  object-fit: cover;
+  border: 1px solid rgb(30, 48, 78);
+  background: rgb(22, 38, 68);
+  flex-shrink: 0;
+}
+
+.edit-banner-preview {
+  width: 120px;
+  height: 60px;
+  border-radius: 10px;
+}
+
+.edit-file-input-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+}
+
+.edit-file-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  background: rgba(80, 140, 255, 0.08);
+  border: 1px solid rgba(80, 140, 255, 0.25);
+  color: rgb(80, 140, 255);
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.edit-file-label:hover {
+  background: rgba(80, 140, 255, 0.15);
+}
+
+.edit-file-name {
+  font-size: 0.75rem;
+  color: rgb(90, 112, 148);
+}
+
+/* Modal footer */
+.edit-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 16px 24px;
+  border-top: 1px solid rgb(30, 48, 78);
+}
+
+.edit-cancel-btn {
+  padding: 10px 20px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgb(30, 48, 78);
+  color: rgb(142, 157, 177);
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.edit-cancel-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: rgb(217, 228, 252);
+}
+
+.edit-save-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 24px;
+  border-radius: 8px;
+  background: rgb(80, 140, 255);
+  border: none;
+  color: white;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.15s;
+}
+
+.edit-save-btn:hover:not(:disabled) {
+  background: rgb(56, 116, 240);
+  transform: translateY(-1px);
+}
+
+.edit-save-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Scrollbar for modal */
+.edit-modal::-webkit-scrollbar {
+  width: 6px;
+}
+
+.edit-modal::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.edit-modal::-webkit-scrollbar-thumb {
+  background: rgb(30, 48, 78);
+  border-radius: 3px;
+}
+
+.edit-modal::-webkit-scrollbar-thumb:hover {
+  background: rgb(50, 78, 118);
+}
+
 
 

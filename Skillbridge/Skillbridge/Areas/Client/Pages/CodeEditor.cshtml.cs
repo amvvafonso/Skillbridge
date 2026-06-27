@@ -20,7 +20,8 @@ namespace Skillbridge.Areas.Client.Pages
     {
         private readonly ApplicationDbContext _context;
         private readonly UserManager<User> _userManager;
-        private readonly IHubContext<NotificationHub> _notificationHub;        
+        private readonly IHubContext<NotificationHub> _notificationHub;   
+        private readonly S3Api s3Api;
         public CodeEditorModel(ApplicationDbContext context, UserManager<User> userManager, IHubContext<NotificationHub> notificationHub)
         {
             _context = context;
@@ -92,8 +93,7 @@ namespace Skillbridge.Areas.Client.Pages
             try
             {
                 //Vai buscar o conteudo atualizado ao S3
-                var s3 = new S3Api();
-                FileContent = await s3.ObterFicheiroAsync("skillbridge", CurrentFile.Path) ?? string.Empty;
+                FileContent = await s3Api.ObterFicheiroAsync("skillbridge", CurrentFile.Path) ?? string.Empty;
             }
             catch (Amazon.Runtime.AmazonServiceException)
             {
@@ -332,8 +332,7 @@ namespace Skillbridge.Areas.Client.Pages
             if (!session.Active || session.Locked) return StatusCode(403);
             
             //Guarda o conteudo no S3, usando o Path do ficheiro da própria sessão
-            var s3 = new S3Api();
-            await s3.EditarFicheiroAsync("skillbridge",session.file.Path, request.Content);
+            await s3Api.EditarFicheiroAsync("skillbridge",session.file.Path, request.Content);
           
             //Devolve 200 OK para o JS saber que correu bem
             return new OkResult();

@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Skillbridge.Data;
 using Skillbridge.Hubs;
 using Skillbridge.Models.Client;
+using Skillbridge.Models.Utils;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,6 +16,8 @@ builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 builder.Services.AddDefaultIdentity<User>(options => options.SignIn.RequireConfirmedAccount = true)
     .AddEntityFrameworkStores<ApplicationDbContext>().AddDefaultTokenProviders();
+
+builder.Services.AddScoped<S3Api>();
 
 builder.Services.ConfigureApplicationCookie(options =>
 {

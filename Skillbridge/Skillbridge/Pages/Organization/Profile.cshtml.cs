@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using Amazon.RuntimeDependencies;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -15,12 +16,13 @@ using Skillbridge.Utilities;
 
 namespace Skillbridge.Pages.Organization;
 
-public class ProfileModel(ApplicationDbContext context, IHubContext<NotificationHub> notificationHub) : PageModel
+public class ProfileModel(ApplicationDbContext context, IHubContext<NotificationHub> notificationHub, S3Api s3Api) : PageModel
 {
     //Limit of posts visible
     private readonly int POST_LIMIT = 3;
     private readonly IHubContext<NotificationHub> notificationHub = notificationHub;
-    
+
+    private readonly S3Api s3Api = s3Api;
     // DB table vars
     public Models.Organization? Organization { get; set; }
     public List<UserInfo> Members { get; set; } = [];
@@ -255,7 +257,6 @@ public class ProfileModel(ApplicationDbContext context, IHubContext<Notification
             // Try to create S3 bucket for the project
             try
             {
-                var s3Api = new Models.Utils.S3Api();
                 await s3Api.CriarBucketAsync(NewProjectName);
             }
             catch
@@ -340,8 +341,7 @@ public class ProfileModel(ApplicationDbContext context, IHubContext<Notification
         if (string.IsNullOrWhiteSpace(key))
             return NotFound();
 
-        var s3 = new S3Api();
-        var result = await s3.GetBinaryAsync("logos", key);
+        var result = await s3Api.GetBinaryAsync("logos", key);
 
         if (result == null)
             return NotFound();
@@ -577,6 +577,86 @@ public class ProfileModel(ApplicationDbContext context, IHubContext<Notification
         catch (Exception e)
         {
             return new JsonResult(new { success = false, message = e.Message });
+        }
+    }
+
+    public async Task<IActionResult> OnPostEditOrganizationAsync(
+        [FromForm] string id,
+        [FromForm] string EditName,
+        [FromForm] string EditAddress,
+        [FromForm] string EditDescription,
+        [FromForm] IFormFile? EditLogo,
+        [FromForm] IFormFile? EditBanner)
+    {
+        try
+        {
+            // Verify user is authenticated
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+                return new JsonResult(new { success = false, message = "Precisas de estar autenticado." });
+
+            // Verify user is Owner of this organization
+            var member = await context.OrganizationMembers
+                .FirstOrDefaultAsync(m => m.Organization == id && m.User == userId);
+
+            if (member == null || member.Role != Role.Owner)
+                return new JsonResult(new { success = false, message = "Apenas o dono pode editar a organização." });
+
+            // Fetch organization
+            var org = await context.Organizations.FirstOrDefaultAsync(o => o.OrganizationId == id);
+            if (org == null)
+                return new JsonResult(new { success = false, message = "Organização não encontrada." });
+
+            // Update text fields
+            if (!string.IsNullOrEmpty(EditName))
+                org.OrganizationName = EditName.Trim();
+            if (!string.IsNullOrEmpty(EditAddress))
+                org.OrganizationAddress = EditAddress.Trim();
+            org.OrganizationDescription = string.IsNullOrEmpty(EditDescription) ? null : EditDescription.Trim();
+
+            // Upload new logo if provided
+            if (EditLogo != null && EditLogo.Length > 0)
+            {
+                var ext = Path.GetExtension(EditLogo.FileName).ToLowerInvariant();
+                if (ext is not ".png" and not ".jpg" and not ".jpeg" and not ".webp")
+                    return new JsonResult(new { success = false, message = "Logo deve ser PNG, JPG ou WebP." });
+
+                using var logoStream = EditLogo.OpenReadStream();
+                var logoData = new byte[EditLogo.Length];
+                await logoStream.ReadAsync(logoData);
+
+                var key = $"{id}_logo_{Guid.NewGuid()}{ext}";
+                var ok = await s3Api.UploadBinaryAsync("logos", key, logoData, EditLogo.ContentType);
+
+                if (ok)
+                    org.LogoPath = key;
+            }
+
+            // Upload new banner if provided
+            if (EditBanner != null && EditBanner.Length > 0)
+            {
+                var ext = Path.GetExtension(EditBanner.FileName).ToLowerInvariant();
+                if (ext is not ".png" and not ".jpg" and not ".jpeg" and not ".webp")
+                    return new JsonResult(new { success = false, message = "Banner deve ser PNG, JPG ou WebP." });
+
+                using var bannerStream = EditBanner.OpenReadStream();
+                var bannerData = new byte[EditBanner.Length];
+                await bannerStream.ReadAsync(bannerData);
+
+                var key = $"{id}_banner_{Guid.NewGuid()}{ext}";
+                var ok = await s3Api.UploadBinaryAsync("logos", key, bannerData, EditBanner.ContentType);
+
+                if (ok)
+                    org.BannerPath = key;
+            }
+
+            await context.SaveChangesAsync();
+
+            return new JsonResult(new { success = true, message = "Organização atualizada com sucesso!" });
+        }
+        catch (Exception ex)
+        {
+            return new JsonResult(new { success = false, message = ex.Message });
         }
     }
 }

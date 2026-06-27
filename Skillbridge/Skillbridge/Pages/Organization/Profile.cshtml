@@ -36,6 +36,9 @@
             @if (User.Identity.IsAuthenticated && Model.UserPerm == Role.Owner)
             {
                 <div class="align-content-center">
+                    <button type="button" class="edit-org-btn" id="btn-edit-org" title="Editar organização">
+                        <i class="bi bi-pencil"></i> Editar
+                    </button>
                     <form method="post" asp-page-handler="DeleteOrganization"
                           onsubmit="event.preventDefault(); openConfirmModal(this, 'Tem a certeza que quer eliminar a organização? Esta operação vai eliminar todos os registos associados a esta organização!', 'Eliminar organização')">
                         @Html.AntiForgeryToken()
@@ -567,5 +570,220 @@
                 }
             });
         </script>
+
+        <!-- Edit Organization Modal -->
+        @if (User.Identity.IsAuthenticated && Model.UserPerm == Role.Owner)
+        {
+            <div class="edit-modal-overlay" id="edit-org-overlay" style="display:none;">
+                <div class="edit-modal">
+                    <div class="edit-modal-header">
+                        <h2><i class="bi bi-pencil-square"></i> Editar Organização</h2>
+                        <button type="button" class="edit-modal-close" id="btn-close-edit">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                    </div>
+                    <form id="form-edit-org" method="post" enctype="multipart/form-data">
+                        @Html.AntiForgeryToken()
+
+                        <div class="edit-modal-body">
+                            <!-- Name -->
+                            <div class="edit-field">
+                                <label class="edit-label">Nome</label>
+                                <input type="text" name="EditName" id="edit-name"
+                                       value="@Model.Organization.OrganizationName"
+                                       class="edit-input" maxlength="100" required/>
+                            </div>
+
+                            <!-- Address -->
+                            <div class="edit-field">
+                                <label class="edit-label">Morada</label>
+                                <input type="text" name="EditAddress" id="edit-address"
+                                       value="@Model.Organization.OrganizationAddress"
+                                       class="edit-input" maxlength="200" required/>
+                            </div>
+
+                            <!-- Description -->
+                            <div class="edit-field">
+                                <label class="edit-label">Descrição</label>
+                                <textarea name="EditDescription" id="edit-description"
+                                          class="edit-textarea" maxlength="1000" rows="3">@Model.Organization.OrganizationDescription</textarea>
+                                <span class="edit-char-count"><span id="edit-desc-count">@Model.Organization.OrganizationDescription?.Length</span> / 1000</span>
+                            </div>
+
+                            <!-- Logo -->
+                            <div class="edit-field">
+                                <label class="edit-label">Logo</label>
+                                <div class="edit-file-row">
+                                    <img src="?handler=Image&key=@Model.Organization.LogoPath" alt="Logo atual"
+                                         class="edit-file-preview" id="preview-logo"/>
+                                    <div class="edit-file-input-wrap">
+                                        <label class="edit-file-label">
+                                            <i class="bi bi-upload"></i> Carregar novo logo
+                                            <input type="file" name="EditLogo" id="edit-logo"
+                                                   accept="image/png,image/jpeg,image/webp" style="display:none;"/>
+                                        </label>
+                                        <span class="edit-file-name" id="logo-filename">Nenhum ficheiro selecionado</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Banner -->
+                            <div class="edit-field">
+                                <label class="edit-label">Banner</label>
+                                <div class="edit-file-row">
+                                    <img src="@Model.Organization.BannerPath" alt="Banner atual"
+                                         class="edit-file-preview edit-banner-preview" id="preview-banner"/>
+                                    <div class="edit-file-input-wrap">
+                                        <label class="edit-file-label">
+                                            <i class="bi bi-upload"></i> Carregar novo banner
+                                            <input type="file" name="EditBanner" id="edit-banner"
+                                                   accept="image/png,image/jpeg,image/webp" style="display:none;"/>
+                                        </label>
+                                        <span class="edit-file-name" id="banner-filename">Nenhum ficheiro selecionado</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="edit-modal-footer">
+                            <button type="button" class="edit-cancel-btn" id="btn-cancel-edit">Cancelar</button>
+                            <button type="submit" class="edit-save-btn" id="btn-save-edit">
+                                <i class="bi bi-check-lg"></i> Guardar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        }
+
+        <script>
+            (function () {
+                const overlay = document.getElementById('edit-org-overlay');
+                const btnEdit = document.getElementById('btn-edit-org');
+                const btnClose = document.getElementById('btn-close-edit');
+                const btnCancel = document.getElementById('btn-cancel-edit');
+                const form = document.getElementById('form-edit-org');
+                const textarea = document.getElementById('edit-description');
+                const descCount = document.getElementById('edit-desc-count');
+
+                const logoInput = document.getElementById('edit-logo');
+                const bannerInput = document.getElementById('edit-banner');
+                const logoPreview = document.getElementById('preview-logo');
+                const bannerPreview = document.getElementById('preview-banner');
+                const logoFilename = document.getElementById('logo-filename');
+                const bannerFilename = document.getElementById('banner-filename');
+
+                // Open modal
+                if (btnEdit && overlay) {
+                    btnEdit.addEventListener('click', () => {
+                        overlay.style.display = 'flex';
+                        document.body.style.overflow = 'hidden';
+                    });
+                }
+
+                // Close modal
+                function closeModal() {
+                    if (overlay) {
+                        overlay.style.display = 'none';
+                        document.body.style.overflow = '';
+                    }
+                }
+
+                if (btnClose) btnClose.addEventListener('click', closeModal);
+                if (btnCancel) btnCancel.addEventListener('click', closeModal);
+
+                // Close on overlay click (outside modal)
+                if (overlay) {
+                    overlay.addEventListener('click', (e) => {
+                        if (e.target === overlay) closeModal();
+                    });
+                }
+
+                // Description character counter
+                if (textarea && descCount) {
+                    textarea.addEventListener('input', () => {
+                        descCount.textContent = textarea.value.length;
+                    });
+                }
+
+                // File preview for logo
+                if (logoInput) {
+                    logoInput.addEventListener('change', () => {
+                        const file = logoInput.files[0];
+                        if (file) {
+                            logoFilename.textContent = file.name;
+                            const reader = new FileReader();
+                            reader.onload = (e) => {
+                                if (logoPreview) logoPreview.src = e.target.result;
+                            };
+                            reader.readAsDataURL(file);
+                        } else {
+                            logoFilename.textContent = 'Nenhum ficheiro selecionado';
+                        }
+                    });
+                }
+
+                // File preview for banner
+                if (bannerInput) {
+                    bannerInput.addEventListener('change', () => {
+                        const file = bannerInput.files[0];
+                        if (file) {
+                            bannerFilename.textContent = file.name;
+                            const reader = new FileReader();
+                            reader.onload = (e) => {
+                                if (bannerPreview) bannerPreview.src = e.target.result;
+                            };
+                            reader.readAsDataURL(file);
+                        } else {
+                            bannerFilename.textContent = 'Nenhum ficheiro selecionado';
+                        }
+                    });
+                }
+
+                // AJAX submit
+                if (form) {
+                    form.addEventListener('submit', async (e) => {
+                        e.preventDefault();
+                        const formData = new FormData(form);
+                        const token = form.querySelector('input[name="__RequestVerificationToken"]').value;
+
+                        const saveBtn = document.getElementById('btn-save-edit');
+                        if (saveBtn) {
+                            saveBtn.disabled = true;
+                            saveBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> A guardar...';
+                        }
+
+                        try {
+                            const response = await fetch(window.location.pathname + '?handler=EditOrganization', {
+                                method: 'POST',
+                                headers: {
+                                    'RequestVerificationToken': token
+                                },
+                                body: formData
+                            });
+
+                            const data = await response.json();
+                            mostrarToast(
+                                data.success ? "Sucesso" : "Erro",
+                                data.message,
+                                data.success ? "success" : "danger"
+                            );
+
+                            if (data.success) {
+                                setTimeout(() => location.reload(), 800);
+                            }
+                        } catch (err) {
+                            mostrarToast("Erro", "Falha ao guardar as alterações.", "danger");
+                        } finally {
+                            if (saveBtn) {
+                                saveBtn.disabled = false;
+                                saveBtn.innerHTML = '<i class="bi bi-check-lg"></i> Guardar';
+                            }
+                        }
+                    });
+                }
+            })();
+        </script>
+
     </div>
 }

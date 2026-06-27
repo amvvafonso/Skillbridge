@@ -10,12 +10,12 @@ using Skillbridge.Models.Utils;
 
 namespace Skillbridge.Pages.Organization;
 
-public class IndexModel(ApplicationDbContext context, UserManager<User> userManager) : PageModel
+public class IndexModel(ApplicationDbContext context, UserManager<User> userManager, S3Api s3Api) : PageModel
 {
-    
+    private readonly S3Api s3Api = s3Api;
     
     public ICollection<Skillbridge.Models.Organization> Organizations { get; set; } = [];
-
+    
     [BindProperty(SupportsGet = true)]
     public string? Q { get; set; }
 
@@ -95,10 +95,9 @@ public class IndexModel(ApplicationDbContext context, UserManager<User> userMana
             using var ms = new System.IO.MemoryStream();
             await NewOrganization.LogoFile.CopyToAsync(ms);
             var bytes = ms.ToArray();
-            var s3 = new S3Api();
             
 
-            var success = await s3.UploadBinaryAsync("logos", $"{guid}.png", bytes, NewOrganization.LogoFile.ContentType);
+            var success = await s3Api.UploadBinaryAsync("logos", $"{guid}.png", bytes, NewOrganization.LogoFile.ContentType);
             if (success) logoPath = $"{guid}.png";
         }
 
@@ -124,8 +123,7 @@ public class IndexModel(ApplicationDbContext context, UserManager<User> userMana
     
     public async Task<IActionResult> OnGetAvatarAsync(string key)
     {
-        var s3 = new S3Api();
-        var image = await s3.GetBinaryAsync("logos", key);
+        var image = await s3Api.GetBinaryAsync("logos", key);
 
         if (image == null)
             return NotFound();

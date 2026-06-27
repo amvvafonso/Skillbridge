@@ -18,7 +18,7 @@ namespace Skillbridge.Areas.Client.Pages
     [Authorize]
     public class IndexModel(ApplicationDbContext context, UserManager<User> userManager) : PageModel
     {
-        
+        private readonly S3Api s3Api;
         //Propriedade que vai ser usada pelo @model no .cshtml
         public IndexViewModel DashboardModel { get; set; } = default!;
         
@@ -93,8 +93,7 @@ namespace Skillbridge.Areas.Client.Pages
         }
         public async Task<IActionResult> OnGetAvatarAsync(string key)
         {
-            var s3 = new S3Api();
-            var image = await s3.GetBinaryAsync("logos", key);
+            var image = await s3Api.GetBinaryAsync("logos", key);
 
             if (image == null)
                 return NotFound();

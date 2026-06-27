@@ -7,17 +7,19 @@ using Amazon.S3.Model;
 public class S3Api
 {
     private readonly AmazonS3Client _s3client;
-    private readonly string S3Url = "http://s3.jaranero.duckdns.org";
-    public S3Api()
+    private readonly IConfiguration _configuration;
+    public S3Api(IConfiguration configuration)
     {
+        _configuration = configuration;
         var config = new AmazonS3Config
         {
-            ServiceURL = S3Url,
+            ServiceURL = _configuration["S3API:Url"],
             ForcePathStyle = true
         };
         
-        _s3client = new  AmazonS3Client("skillbridge", "skillbridge", config);
+        _s3client = new  AmazonS3Client(_configuration["S3API:keyID"], _configuration["S3API:key"], config);
     }
+    
 
     public AmazonS3Client GetS3Client()
     {
