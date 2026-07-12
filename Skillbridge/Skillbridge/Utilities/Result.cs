@@ -8,16 +8,25 @@ public class Result
 {
     public bool Success { get; }
     public string Message { get; }
-    
+    public string Additional { get; }
     public ErrorType ErrorType { get; }
 
-    private Result(bool success, string message, ErrorType errorType = default)
+    private Result(bool success, string message, string? additional, ErrorType errorType = default)
     {
         Success = success;
         Message = message;
+        Additional = additional;
         ErrorType = errorType;
     }
 
-    public static Result Ok(string message = "") => new(true, message);
-    public static Result Fail(string message, ErrorType errorType) => new(false, message, errorType);
+
+
+
+    public static Result Ok(string message = "", string? additional = null) 
+        => new(true, message, additional);
+
+    public static Result Fail(string message, ErrorType errorType = default, string? additional = null) 
+        => new(false, message, additional, errorType);
+
+
 }

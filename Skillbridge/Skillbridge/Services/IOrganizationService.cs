@@ -57,7 +57,7 @@ public class OrganizationService(ApplicationDbContext context, IS3Api iS3Api, IN
         context.OrganizationMembers.Add(new OrganizationMember(Guid.NewGuid().ToString(), newGuid, userId, Role.Owner));
         await context.SaveChangesAsync();
 
-        return Result.Ok("Organização criada com sucesso!");
+        return Result.Ok(message: "Organização criada com sucesso!");
     }
     
     private static readonly string[] AllowedImageExtensions = [".png", ".jpg", ".jpeg", ".webp"];
@@ -94,7 +94,7 @@ public class OrganizationService(ApplicationDbContext context, IS3Api iS3Api, IN
 
         await context.SaveChangesAsync();
 
-        return Result.Ok("Organização atualizada com sucesso!");
+        return Result.Ok(message: "Organização atualizada com sucesso!");
     }
     
     
@@ -148,7 +148,7 @@ public class OrganizationService(ApplicationDbContext context, IS3Api iS3Api, IN
             // Bucket creation not critical
         }
 
-        return Result.Ok("Projeto criado com sucesso!");
+        return Result.Ok(message: "Projeto criado com sucesso!");
     }
     
     public Task<Result> DeleteProjectAsync(string projectId, string userId)
@@ -189,7 +189,7 @@ public class OrganizationService(ApplicationDbContext context, IS3Api iS3Api, IN
 
         await notificationService.NotifyOrganizationInviteAsync(user.Id, organization.OrganizationId, organization.OrganizationName);
         
-        return Result.Ok("Membro convidado com sucesso!");
+        return Result.Ok(message: "Membro convidado com sucesso!");
     }
 
     public async Task<Result> DeleteMemberAsync(string memberId, string organizationId, string userId)
@@ -212,7 +212,7 @@ public class OrganizationService(ApplicationDbContext context, IS3Api iS3Api, IN
             
         await context.SaveChangesAsync();
         
-        return Result.Ok("Membro removido com sucesso!");
+        return Result.Ok(message: "Membro removido com sucesso!");
     }
 
     public async Task<Result> PromoteMemberAsync(string memberId, string organizationId, string userId)
@@ -244,7 +244,7 @@ public class OrganizationService(ApplicationDbContext context, IS3Api iS3Api, IN
        member.Role = newRole;
        await context.SaveChangesAsync();
        
-       return Result.Ok($"Membro promovido a {newRole}!");
+       return Result.Ok(message: $"Membro promovido a {newRole}!");
     }
 
 
@@ -284,7 +284,7 @@ public class OrganizationService(ApplicationDbContext context, IS3Api iS3Api, IN
 
         await context.SaveChangesAsync();
         
-        return Result.Ok("Organização eliminada com sucesso!");
+        return Result.Ok(message: "Organização eliminada com sucesso!");
     }
 
     public async Task<Result> CreatePostAsync(string organizationId, string newPostTitle, string newPostContent, string userId)
@@ -310,7 +310,7 @@ public class OrganizationService(ApplicationDbContext context, IS3Api iS3Api, IN
         
         await context.SaveChangesAsync();
         
-        return Result.Ok("Publicação feita com sucesso!");
+        return Result.Ok(message: "Publicação feita com sucesso!");
     }
 
     public async Task<Result> DeletePostAsync(string postId, string userId)
@@ -322,7 +322,7 @@ public class OrganizationService(ApplicationDbContext context, IS3Api iS3Api, IN
         context.Posts.Remove(post);
         await context.SaveChangesAsync();
 
-        return Result.Ok("Publicação removida com sucesso!");
+        return Result.Ok(message: "Publicação removida com sucesso!");
     }
 
     

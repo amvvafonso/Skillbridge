@@ -8,6 +8,7 @@ using Skillbridge.Models.Client;
 using Skillbridge.Models.Project;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Skillbridge.Models;
 using Skillbridge.Services;
 using File = Skillbridge.Models.Project.File;
 
@@ -15,7 +16,7 @@ namespace Skillbridge.Pages.Project;
 
 
 [Authorize]
-public class Directory(ApplicationDbContext context, IS3Api is3Api) : PageModel
+public class Directory(ApplicationDbContext context, IS3Api is3Api, IProjectService projectService, ISessionService sessionService) : PageModel
 {
 
     public List<Amazon.S3.Model.S3Bucket> Buckets { get; set; } = new();
@@ -146,141 +147,75 @@ public class Directory(ApplicationDbContext context, IS3Api is3Api) : PageModel
     }
 
     public async Task<IActionResult> OnPostCreateFolderAsync([FromForm] string bucket, [FromForm] string prefix,[FromForm] string folderName) {
-        try
-        {
-            
-            // Initiates class
-            // Verifies that the key is not empty and prepares it 
-            var key = string.IsNullOrEmpty(prefix)
-                ? $"{folderName.Trim('/')}/"
-                : $"{prefix}{folderName.Trim('/')}";
 
-            // Create the folder on the S3 api
-            var success = await is3Api.EditarFicheiroAsync(bucket, key, string.Empty);
-            TempData["Message"] = success ? "Pasta criada com sucesso!" : "Erro ao criar pasta.";
-            
-            // Reloads the page
-            return RedirectToPage("Directory", new { bucket, prefix });
-        }
-        catch (Exception ex)
+        var user = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        var result = await projectService.CreateFolderAsync(bucket, prefix, folderName, user, 1);
+        switch (result.ErrorType)
         {
-            TempData["Message"] = ex.Message;
-            return RedirectToPage("Directory", new { bucket });
+            case ErrorType.Denied: return Forbid();
+            case ErrorType.NotFound: return NotFound();
         }
+            
+        TempData["ToastType"] = result.Success ? "success" :  "danger";
+        TempData["Message"] = result.Message;
+            
+        // Reloads the page
+        return RedirectToPage("Directory", new { bucket, prefix });
     }
 
     public async Task<IActionResult> OnPostDeleteFileAsync([FromForm] string bucket, [FromForm] string key) {
-        try
+
+        var user =  User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (user == null) return RedirectToPage("/Account/Login");
+        
+        var result = await projectService.DeleteFileAsync(bucket, key, user);
+
+        switch (result.ErrorType)
         {
-            // Deletes the file from key
-            var success = await is3Api.EliminarFicheiroAsync(bucket, key);
-            TempData["Message"] = success ? "Ficheiro eliminado!" : "Erro ao eliminar ficheiro.";
-            // Reloads the page
-            return RedirectToPage("Directory", new { bucket, prefix = GetPrefixFromKey(key) });
+            case ErrorType.Denied: return Forbid();
+            case ErrorType.NotFound: return NotFound(); 
         }
-        catch (Exception ex)
-        {
-            TempData["Message"] = ex.Message;
-            return RedirectToPage("Directory", new { bucket });
-        }
+                
+        TempData["ToastType"] =  result.Success ? "success" :  "danger";
+        TempData["Message"] = result.Message;
+        return RedirectToPage("Directory", new { bucket, prefix = GetPrefixFromKey(key) });
+
     }
 
+    // Done
     public async Task<IActionResult> OnPostDeleteFolderAsync( [FromForm] string bucket, [FromForm] string folderPath) {
-        try
+        var user =  User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (user == null) return RedirectToPage("/Account/Login");
+        
+        var result = await projectService.DeleteFolderAsync(bucket, folderPath, user);
+
+        switch (result.ErrorType)
         {
-            var files = await is3Api.ListFilesAsync(bucket);
-            // Verifies that the folder is empty, if it's not empty it deletes every file inside
-            if (!files.IsNullOrEmpty())
-            {
-                foreach (var file in files.Where(f => f.Key.StartsWith(folderPath)).ToList())
-                {
-                    await is3Api.EliminarFicheiroAsync(bucket, file.Key);
-                }
-            }
-            
-            // Then deletes the bucket
-            var success = await is3Api.EliminarFicheiroAsync(bucket, folderPath);
-            // Status message
-            TempData["Message"] = success ? "Pasta eliminada!" : "Erro ao eliminar pasta.";
-            // relodas the page
-            return RedirectToPage("Directory", new { bucket });
+            case  ErrorType.Denied: return Forbid();
+            case  ErrorType.NotFound: return NotFound();
         }
-        catch (Exception ex)
-        {
-            TempData["Message"] = ex.Message;
-            return  RedirectToPage("Directory", new { bucket });
-        }
+        TempData["ToastType"] = result.Success ? "success" :  "danger";
+        TempData["Message"] = result.Message;
+        return RedirectToPage("Directory", new { bucket });
     }
 
-    
+    //Done
     public async Task<IActionResult> OnPostCreateSessionAsync([FromForm] string bucket, [FromForm] string prefix, [FromForm] string key, [FromForm] string title, [FromForm] string description, [FromForm] bool isPublic)
     {
-        try
-        {
-            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-            if (string.IsNullOrEmpty(userId))
-                return RedirectToPage("Directory", new { bucket, prefix });
-
-            // Ensure the File exists for the selected S3 key
-            var file = await context.Files.FirstOrDefaultAsync(f => f.Path == key);
-            if (file == null)
-            {
-                var project = await context.Project.FirstOrDefaultAsync(p => p.ProjectDirectory == bucket);
-                if (project == null)
-                    return RedirectToPage("Directory", new { bucket, prefix });
-
-                file = new File
-                {
-                    FileId = Guid.NewGuid().ToString(),
-                    Path = key,
-                    Locked = false,
-                    ProjectId = project.ProjectId
-                };
-                await context.Files.AddAsync(file);
-                await context.SaveChangesAsync();
-            }
-
-            // Verifies that the file has a session already active
-            if (context.Sessions.Any(p => p.Active && p.fileId==file.FileId))
-            {
-                TempData["message"] = "Já existe um sessão ativa com esse ficheiro!";
-                return  RedirectToPage("Directory", new { bucket, prefix });
-            }
-            
-            // Create the session
-            var session = new Session
-            {
-                Id = Guid.NewGuid().ToString(),
-                Title = title.Trim(),
-                Description = description.Trim(),
-                IsPublic = isPublic,
-                fileId = file.FileId,
-                Active = true,
-                Locked = false,
-                CreatedAt = DateTime.UtcNow
-            };
-            await context.Sessions.AddAsync(session);
-            await context.SaveChangesAsync();
-
-            // Grant Mentor access to the current user
-            var access = new SessionAccess
-            {
-                SessionAccessId = Guid.NewGuid().ToString(),
-                SessionId = session.Id,
-                UserId = userId,
-                Role = Models.Client.Role.Mentor
-            };
-            await context.SessionAccesses.AddAsync(access);
-            await context.SaveChangesAsync();
-
-            TempData["Message"] = "Sessão criada com sucesso!";
-            return RedirectToPage("/CodeEditor", new { area = "Client", sessionId = session.Id });
-        }
-        catch (Exception ex)
-        {
-            TempData["Message"] = ex.Message;
+ 
+        var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(userId))
             return RedirectToPage("Directory", new { bucket, prefix });
-        }
+
+        var result = await sessionService.CreateSessionAsync(bucket, key, title, description, isPublic, userId);
+
+        if (result.Success)
+            return RedirectToPage("/CodeEditor",
+                new { area = "Client", sessionId = result.Additional }); // Aditional is the new session id
+            
+        TempData["Message"] = result.Message;
+        TempData["ToastType"] = result.Success ? "success" :  "danger";
+        return Page();
     }
     
     [BindProperty]

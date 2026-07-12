@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -8,13 +9,14 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.SignalR;
 using Skillbridge.Hubs;
+using Skillbridge.Models;
 using Skillbridge.Services;
 using File = Skillbridge.Models.Project.File;
 
 namespace Skillbridge.Areas.Client.Pages
 {
     [Authorize]
-    public class CodeEditorModel(IS3Api is3Api, ApplicationDbContext context, UserManager<User> userManager, IHubContext<NotificationHub> notificationHub) : PageModel
+    public class CodeEditorModel(IS3Api is3Api, ApplicationDbContext context, UserManager<User> userManager, IHubContext<NotificationHub> notificationHub, ISessionService sessionService) : PageModel
     {
         
         // File 
@@ -188,119 +190,27 @@ namespace Skillbridge.Areas.Client.Pages
             }
         }
 
-        public async Task<IActionResult> OnPostAddUserToSessionAsync([FromForm] string? sessionId, [FromForm] string? userEmail)
+        // Done
+        public async Task<IActionResult> OnPostAddUserToSessionAsync([FromForm] string sessionId, [FromForm] string userEmail)
         {
-            try
+  
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userId == null) return LocalRedirect("/Account/Login");
+                
+            var result = await sessionService.AllowEntrance(sessionId, userEmail, userId, Role.Apprentice);
+
+            switch (result.ErrorType)
             {
-                // Verifica que existe uma session id
-                if (sessionId == null) return NotFound();
-                
-                var user = await userManager.GetUserAsync(User);
-
-                //Vai buscar o email do corpo do pedido
-                if (string.IsNullOrWhiteSpace(userEmail))
-                {
-                    InviteError = true;
-                    InviteMessage = "Email é obrigatório.";
-                    await LoadAvailableUsersAsync();
-                    return RedirectToPage("/CodeEditor", new { area = "Client", sessionId = sessionId });
-
-                }
-                
-                var session = await context.Sessions
-                    .Include(s => s.file)
-                    .FirstOrDefaultAsync(s => s.Id == sessionId);
-                // Verifica que existe um ficheiro associado a sessao
-                if (session?.file == null) return NotFound();
-
-                //Verifica se o utilizador é Mentor na sessão
-                var access = await context.SessionAccesses
-                    .FirstOrDefaultAsync(sa => sa.SessionId == session.Id && sa.UserId == user.Id);
-                
-                if (access?.Role != Role.Mentor) return Forbid();
-
-                //Verifica se a sessão ainda está ativa
-                if (!session.Active)
-                {
-                    InviteError = true;
-                    InviteMessage = "A sessão encontra-se inativa.";
-                    await LoadAvailableUsersAsync();
-                    return RedirectToPage("/CodeEditor", new { area = "Client", sessionId = sessionId });
-
-                }
-                
-                //Encontra o utilizador a convidar
-                var invitee = await context.Users
-                    .FirstOrDefaultAsync(u => u.Email == userEmail);
-
-                if (invitee == null)
-                {
-                    InviteError = true;
-                    InviteMessage = "Utilizador não encontrado.";
-                    await LoadAvailableUsersAsync();
-                    return RedirectToPage("/CodeEditor", new { area = "Client", sessionId = sessionId });
-
-                }
-                
-                //Verifica se pertence à organização do projeto
-                var project = await context.Project
-                    .FirstOrDefaultAsync(p => p.ProjectId == session.file.ProjectId);
-
-                if (project == null) return NotFound();
-
-                var isMember = await context.OrganizationMembers
-                    .AnyAsync(om => om.Organization == project.OrganizationId && om.User == invitee.Id);
-
-                if (!isMember)
-                {
-                    InviteError = true;
-                    InviteMessage = "Utilizador não pertence à organização.";
-                    await LoadAvailableUsersAsync();
-                    return RedirectToPage("/CodeEditor", new { area = "Client", sessionId  });
-
-                }
-
-                //Verifica se já tem acesso à sessão
-                var existingAccess = await context.SessionAccesses
-                    .FirstOrDefaultAsync(sa => sa.SessionId == session.Id && sa.UserId == invitee.Id);
-
-                if (existingAccess != null)
-                {
-                    InviteError = true;
-                    InviteMessage = "Utilizador já está na sessão.";
-                    await LoadAvailableUsersAsync();
-                    return RedirectToPage("/CodeEditor", new { area = "Client", sessionId = session.Id });
-
-                }
-
-                //Cria o acesso à sessão como Apprentice
-                var newAccess = new SessionAccess
-                {
-                    SessionAccessId = Guid.NewGuid().ToString(),
-                    SessionId = session.Id,
-                    UserId = invitee.Id,
-                    Role = Role.Apprentice
-                };
-
-                context.SessionAccesses.Add(newAccess);
-                await context.SaveChangesAsync();
-
-                InviteMessage = $"{invitee.Name} foi adicionado à sessão.";
-                InviteError = false;
-
-                await LoadAvailableUsersAsync();
-                
-                await notificationHub.Clients.User(invitee.Id)
-                    .SendAsync("ReceiveNotification", $"Foste adicionado à sessão {session.Title}");
-                
-                return RedirectToPage("/CodeEditor", new { area = "Client", sessionId });
-
+                case ErrorType.Denied: return Forbid();
+                case ErrorType.NotFound: return NotFound();
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine((ex.InnerException != null ? ex.InnerException.Message : ex.Message));
-                return RedirectToPage("/CodeEditor", new { area = "Client", sessionId });
-            }
+            
+            if (result.Success) return RedirectToPage("/CodeEditor", new { area = "Client", sessionId });
+                
+            InviteError = !result.Success;
+            InviteMessage = result.Message;
+            await LoadAvailableUsersAsync();
+            return RedirectToPage("/CodeEditor", new { area = "Client", sessionId = sessionId });
         }
 
         public async Task<IActionResult> OnPostSaveAsync([FromBody] SaveRequest request)

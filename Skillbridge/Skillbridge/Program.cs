@@ -19,7 +19,9 @@ builder.Services.AddDefaultIdentity<User>(options => options.SignIn.RequireConfi
 
 builder.Services.AddScoped<IOrganizationService, OrganizationService>();
 builder.Services.AddScoped<IS3Api, IS3Api.S3Api>();
-builder.Services.AddScoped<INotificationService, INotificationService.NotificationService>();  // ← provavelmente esta falta
+builder.Services.AddScoped<IProjectService, IProjectService.ProjectService>();
+builder.Services.AddScoped<INotificationService, INotificationService.NotificationService>(); 
+builder.Services.AddScoped<ISessionService, ISessionService.SessionService>();
 
 builder.Services.ConfigureApplicationCookie(options =>
 {
