@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Skillbridge.Data;
 using Skillbridge.Hubs;
 using Skillbridge.Models.Client;
-using Skillbridge.Models.Utils;
+using Skillbridge.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,7 +17,9 @@ builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 builder.Services.AddDefaultIdentity<User>(options => options.SignIn.RequireConfirmedAccount = true)
     .AddEntityFrameworkStores<ApplicationDbContext>().AddDefaultTokenProviders();
 
-builder.Services.AddScoped<S3Api>();
+builder.Services.AddScoped<IOrganizationService, OrganizationService>();
+builder.Services.AddScoped<IS3Api, IS3Api.S3Api>();
+builder.Services.AddScoped<INotificationService, INotificationService.NotificationService>();  // ← provavelmente esta falta
 
 builder.Services.ConfigureApplicationCookie(options =>
 {

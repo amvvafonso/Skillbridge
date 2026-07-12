@@ -1,33 +1,22 @@
-using System.Net;
 using System.Security.Claims;
-using Amazon.S3;
-using Amazon.S3.Model;
 using Amazon.S3.Transfer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.IdentityModel.Tokens;
 using Skillbridge.Data;
-using Skillbridge.Models;
 using Skillbridge.Models.Client;
 using Skillbridge.Models.Project;
-using Skillbridge.Models.Utils;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using Skillbridge.Services;
 using File = Skillbridge.Models.Project.File;
 
 namespace Skillbridge.Pages.Project;
 
 
 [Authorize]
-public class Directory : PageModel
+public class Directory(ApplicationDbContext context, IS3Api is3Api) : PageModel
 {
-    private readonly ApplicationDbContext _context;
-    private readonly S3Api s3Api;
-    public Directory(ApplicationDbContext context, S3Api s3Api)
-    {
-        _context = context;
-        this.s3Api = s3Api;
-    }
 
     public List<Amazon.S3.Model.S3Bucket> Buckets { get; set; } = new();
     public List<Amazon.S3.Model.S3Object> Files { get; set; } = new();
@@ -46,8 +35,8 @@ public class Directory : PageModel
 
             var user = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-            UserPerm = _context.OrganizationMembers
-                .Join(_context.Project,
+            UserPerm = context.OrganizationMembers
+                .Join(context.Project,
                     orgM => orgM.Organization,
                     projectM => projectM.OrganizationId,
                     ((orgM, project) => new { orgM, project })
@@ -58,13 +47,13 @@ public class Directory : PageModel
             
             
             // Gets which organization the user belongs to
-            var orgsMember = _context.Users
-                .Join(_context.OrganizationMembers,
+            var orgsMember = context.Users
+                .Join(context.OrganizationMembers,
                     user => user.Id,
                     om => om.User, // ajusta ao nome real da FK para o User
                     (user, om) => new { user, om }
                 )
-                .Join(_context.Organizations,
+                .Join(context.Organizations,
                     uom => uom.om.Organization, // FK no OrganizationMember que aponta para Organization
                     organization => organization.OrganizationId,
                     (uom, organization) => new {organization.OrganizationId, uom.user} // já seleciona diretamente a Organization
@@ -80,8 +69,8 @@ public class Directory : PageModel
                 return Page();
             }
             // Gets each organization's project
-            List<string?> orgProjects = _context.Organizations
-                .Join(_context.Project,
+            List<string?> orgProjects = context.Organizations
+                .Join(context.Project,
                     organization => organization.OrganizationId,
                     project => project.OrganizationId,
                     ((organization, project) => new { project.ProjectDirectory, organization.OrganizationId })
@@ -101,7 +90,7 @@ public class Directory : PageModel
 
             // If all the conditions above meet then it gets the project and files
             // Gets all buckets from the S3
-            var bucketList = s3Api.ListBucketsAsync().Result;
+            var bucketList = is3Api.ListBucketsAsync().Result;
             // Sends it to the Page if not null
             bucketList.ForEach(b =>
             {
@@ -127,7 +116,7 @@ public class Directory : PageModel
             }
 
             // Fetches all files from bucket
-            var filelist = s3Api.ListFilesAsync(CurrentBucket).Result;
+            var filelist = is3Api.ListFilesAsync(CurrentBucket).Result;
             Files = filelist ?? new List<Amazon.S3.Model.S3Object>();
 
             // Extract unique folder names from files that share the current prefix
@@ -144,7 +133,7 @@ public class Directory : PageModel
                 .OrderBy(f => f)
                 .ToList();
 
-            CurrentProject = _context.Project.FirstOrDefault(p => p.ProjectDirectory == bucket);
+            CurrentProject = context.Project.FirstOrDefault(p => p.ProjectDirectory == bucket);
             
             // reloads page
             return Page();
@@ -167,7 +156,7 @@ public class Directory : PageModel
                 : $"{prefix}{folderName.Trim('/')}";
 
             // Create the folder on the S3 api
-            var success = await s3Api.EditarFicheiroAsync(bucket, key, string.Empty);
+            var success = await is3Api.EditarFicheiroAsync(bucket, key, string.Empty);
             TempData["Message"] = success ? "Pasta criada com sucesso!" : "Erro ao criar pasta.";
             
             // Reloads the page
@@ -184,7 +173,7 @@ public class Directory : PageModel
         try
         {
             // Deletes the file from key
-            var success = await s3Api.EliminarFicheiroAsync(bucket, key);
+            var success = await is3Api.EliminarFicheiroAsync(bucket, key);
             TempData["Message"] = success ? "Ficheiro eliminado!" : "Erro ao eliminar ficheiro.";
             // Reloads the page
             return RedirectToPage("Directory", new { bucket, prefix = GetPrefixFromKey(key) });
@@ -199,18 +188,18 @@ public class Directory : PageModel
     public async Task<IActionResult> OnPostDeleteFolderAsync( [FromForm] string bucket, [FromForm] string folderPath) {
         try
         {
-            var files = await s3Api.ListFilesAsync(bucket);
+            var files = await is3Api.ListFilesAsync(bucket);
             // Verifies that the folder is empty, if it's not empty it deletes every file inside
             if (!files.IsNullOrEmpty())
             {
                 foreach (var file in files.Where(f => f.Key.StartsWith(folderPath)).ToList())
                 {
-                    await s3Api.EliminarFicheiroAsync(bucket, file.Key);
+                    await is3Api.EliminarFicheiroAsync(bucket, file.Key);
                 }
             }
             
             // Then deletes the bucket
-            var success = await s3Api.EliminarFicheiroAsync(bucket, folderPath);
+            var success = await is3Api.EliminarFicheiroAsync(bucket, folderPath);
             // Status message
             TempData["Message"] = success ? "Pasta eliminada!" : "Erro ao eliminar pasta.";
             // relodas the page
@@ -233,10 +222,10 @@ public class Directory : PageModel
                 return RedirectToPage("Directory", new { bucket, prefix });
 
             // Ensure the File exists for the selected S3 key
-            var file = await _context.Files.FirstOrDefaultAsync(f => f.Path == key);
+            var file = await context.Files.FirstOrDefaultAsync(f => f.Path == key);
             if (file == null)
             {
-                var project = await _context.Project.FirstOrDefaultAsync(p => p.ProjectDirectory == bucket);
+                var project = await context.Project.FirstOrDefaultAsync(p => p.ProjectDirectory == bucket);
                 if (project == null)
                     return RedirectToPage("Directory", new { bucket, prefix });
 
@@ -247,12 +236,12 @@ public class Directory : PageModel
                     Locked = false,
                     ProjectId = project.ProjectId
                 };
-                await _context.Files.AddAsync(file);
-                await _context.SaveChangesAsync();
+                await context.Files.AddAsync(file);
+                await context.SaveChangesAsync();
             }
 
             // Verifies that the file has a session already active
-            if (_context.Sessions.Any(p => p.Active && p.fileId==file.FileId))
+            if (context.Sessions.Any(p => p.Active && p.fileId==file.FileId))
             {
                 TempData["message"] = "Já existe um sessão ativa com esse ficheiro!";
                 return  RedirectToPage("Directory", new { bucket, prefix });
@@ -264,14 +253,14 @@ public class Directory : PageModel
                 Id = Guid.NewGuid().ToString(),
                 Title = title.Trim(),
                 Description = description.Trim(),
-                isPublic = isPublic,
+                IsPublic = isPublic,
                 fileId = file.FileId,
                 Active = true,
                 Locked = false,
                 CreatedAt = DateTime.UtcNow
             };
-            await _context.Sessions.AddAsync(session);
-            await _context.SaveChangesAsync();
+            await context.Sessions.AddAsync(session);
+            await context.SaveChangesAsync();
 
             // Grant Mentor access to the current user
             var access = new SessionAccess
@@ -281,8 +270,8 @@ public class Directory : PageModel
                 UserId = userId,
                 Role = Models.Client.Role.Mentor
             };
-            await _context.SessionAccesses.AddAsync(access);
-            await _context.SaveChangesAsync();
+            await context.SessionAccesses.AddAsync(access);
+            await context.SaveChangesAsync();
 
             TempData["Message"] = "Sessão criada com sucesso!";
             return RedirectToPage("/CodeEditor", new { area = "Client", sessionId = session.Id });
@@ -309,7 +298,7 @@ public class Directory : PageModel
             
             using var stream = uploadedFile.OpenReadStream();
 
-            var transferUtility = new TransferUtility(s3Api.GetS3Client());
+            var transferUtility = new TransferUtility(is3Api.GetS3Client());
 
             var key = string.IsNullOrEmpty(prefix)
                 ? $"{uploadedFile.FileName.Trim('/')}"
@@ -331,9 +320,9 @@ public class Directory : PageModel
             file.Locked = false;
             file.ProjectId = project;
             
-            await _context.Files.AddAsync(file);
+            await context.Files.AddAsync(file);
             
-            await _context.SaveChangesAsync();
+            await context.SaveChangesAsync();
             
             TempData["Message"] = "Ficheiro enviado com sucesso!";
             

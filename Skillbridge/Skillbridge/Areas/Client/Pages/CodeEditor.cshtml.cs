@@ -1,4 +1,3 @@
-using Amazon.S3.Model;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -8,27 +7,15 @@ using Skillbridge.Models.Client;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.SignalR;
-using Microsoft.VisualBasic;
 using Skillbridge.Hubs;
-using Skillbridge.Models.Utils;
+using Skillbridge.Services;
 using File = Skillbridge.Models.Project.File;
 
 namespace Skillbridge.Areas.Client.Pages
 {
     [Authorize]
-    public class CodeEditorModel : PageModel
+    public class CodeEditorModel(IS3Api is3Api, ApplicationDbContext context, UserManager<User> userManager, IHubContext<NotificationHub> notificationHub) : PageModel
     {
-        private readonly ApplicationDbContext _context;
-        private readonly UserManager<User> _userManager;
-        private readonly IHubContext<NotificationHub> _notificationHub;   
-        private readonly S3Api s3Api;
-        public CodeEditorModel(ApplicationDbContext context, UserManager<User> userManager, IHubContext<NotificationHub> notificationHub, S3Api s3Api)
-        {
-            _context = context;
-            _userManager = userManager;
-            this._notificationHub = notificationHub;
-            this.s3Api = s3Api;
-        }
         
         // File 
         public string FileContent { get; set; }
@@ -59,7 +46,7 @@ namespace Skillbridge.Areas.Client.Pages
         {
             
             //Vai buscar a sessão à BD, incluindo o ficheiro associado
-            CurrentSession = await _context.Sessions
+            CurrentSession = await context.Sessions
                 .Include(s => s.file)
                 .FirstOrDefaultAsync(s => s.Id == sessionId);
 
@@ -78,11 +65,11 @@ namespace Skillbridge.Areas.Client.Pages
             CurrentFile = CurrentSession.file;
             
             //Vai buscar o utilizador autenticado
-            CurrentUser = await _userManager.GetUserAsync(User);
+            CurrentUser = await userManager.GetUserAsync(User);
             
             
             //Vai buscar os acessos do utilizador a esta sessão
-            var sessionAcess = await _context.SessionAccesses
+            var sessionAcess = await context.SessionAccesses
                 .FirstOrDefaultAsync(sa => sa.SessionId == CurrentSession.Id && sa.UserId == CurrentUser.Id);
             
             //Sem acesso a esta sessão, devolve a página 403 (Forbiden)
@@ -92,8 +79,8 @@ namespace Skillbridge.Areas.Client.Pages
             }
 
 
-            string? bucket = _context.Files
-                .Join(_context.Project,
+            string? bucket = context.Files
+                .Join(context.Project,
                     f => f.ProjectId,
                     p => p.ProjectId,
                     (f, p) => new { f, p })
@@ -112,7 +99,7 @@ namespace Skillbridge.Areas.Client.Pages
             try
             {
                 //Vai buscar o conteudo atualizado ao S3
-                FileContent = await s3Api.ObterFicheiroAsync(bucket, CurrentFile.Path) ?? string.Empty;
+                FileContent = await is3Api.ObterFicheiroAsync(bucket, CurrentFile.Path) ?? string.Empty;
             }
             catch (Amazon.Runtime.AmazonServiceException)
             {
@@ -121,7 +108,7 @@ namespace Skillbridge.Areas.Client.Pages
             }
             
             //Carrega as mensagens de chat da sessão
-            ChatMessages = await _context.ChatMessages
+            ChatMessages = await context.ChatMessages
                 .Where(m=>m.SessionId == CurrentSession.Id)
                 .Include(m=>m.User)
                 .OrderBy(m=>m.SentAt)
@@ -138,26 +125,26 @@ namespace Skillbridge.Areas.Client.Pages
             try
             {
                 //Vai buscar a OrganizationId através do File -> Project
-                var project = await _context.Project
+                var project = await context.Project
                     .FirstOrDefaultAsync(p => p.ProjectId == CurrentFile.ProjectId);
                 
                 if (project == null) return;
                 
                 //Vai buscar os membros da organização
-                var orgMembers = await _context.OrganizationMembers
+                var orgMembers = await context.OrganizationMembers
                     .Where(om => om.Organization == project.OrganizationId)
                     .ToListAsync();
                 
                 var orgUserIds = orgMembers.Select(om => om.User).ToList();
                 
                 //Vai buscar os utilizadores que já estão na sessão
-                var sessionAccesses = await _context.SessionAccesses
+                var sessionAccesses = await context.SessionAccesses
                     .Where(sa => sa.SessionId == CurrentSession.Id)
                     .Select(sa => sa.UserId)
                     .ToListAsync();
                 
                 //Filtra: membros da organização que ainda não estão na sessão
-                AvailableUsers = await _context.Users
+                AvailableUsers = await context.Users
                     .Where(u => orgUserIds.Contains(u.Id) && !sessionAccesses.Contains(u.Id))
                     .ToListAsync();
             }
@@ -172,16 +159,16 @@ namespace Skillbridge.Areas.Client.Pages
             try
             {
                 // Vai buscar user logado
-                var user = await _userManager.GetUserAsync(User);
+                var user = await userManager.GetUserAsync(User);
 
                 // Vai buscar a sessão
-                var session = await _context.Sessions
+                var session = await context.Sessions
                     .FirstOrDefaultAsync(s => s.Id == sessionId);
 
                 if (session == null) return NotFound();
 
                 //Verifica se o utilizador tem acesso à sessão
-                var access = await _context.SessionAccesses
+                var access = await context.SessionAccesses
                     .FirstOrDefaultAsync(sa => sa.SessionId == session.Id && sa.UserId == user.Id);
 
                 //Só Mentor pode terminar a sessão
@@ -189,7 +176,7 @@ namespace Skillbridge.Areas.Client.Pages
                 
                 // Atualiza o estado da sessao para inativa
                 session.Active = false;
-                await _context.SaveChangesAsync();
+                await context.SaveChangesAsync();
                 
                 // Redireciona para a area de client
                 return RedirectToPage("/index", new { area = "Client" });
@@ -208,7 +195,7 @@ namespace Skillbridge.Areas.Client.Pages
                 // Verifica que existe uma session id
                 if (sessionId == null) return NotFound();
                 
-                var user = await _userManager.GetUserAsync(User);
+                var user = await userManager.GetUserAsync(User);
 
                 //Vai buscar o email do corpo do pedido
                 if (string.IsNullOrWhiteSpace(userEmail))
@@ -220,14 +207,14 @@ namespace Skillbridge.Areas.Client.Pages
 
                 }
                 
-                var session = await _context.Sessions
+                var session = await context.Sessions
                     .Include(s => s.file)
                     .FirstOrDefaultAsync(s => s.Id == sessionId);
                 // Verifica que existe um ficheiro associado a sessao
                 if (session?.file == null) return NotFound();
 
                 //Verifica se o utilizador é Mentor na sessão
-                var access = await _context.SessionAccesses
+                var access = await context.SessionAccesses
                     .FirstOrDefaultAsync(sa => sa.SessionId == session.Id && sa.UserId == user.Id);
                 
                 if (access?.Role != Role.Mentor) return Forbid();
@@ -243,7 +230,7 @@ namespace Skillbridge.Areas.Client.Pages
                 }
                 
                 //Encontra o utilizador a convidar
-                var invitee = await _context.Users
+                var invitee = await context.Users
                     .FirstOrDefaultAsync(u => u.Email == userEmail);
 
                 if (invitee == null)
@@ -256,12 +243,12 @@ namespace Skillbridge.Areas.Client.Pages
                 }
                 
                 //Verifica se pertence à organização do projeto
-                var project = await _context.Project
+                var project = await context.Project
                     .FirstOrDefaultAsync(p => p.ProjectId == session.file.ProjectId);
 
                 if (project == null) return NotFound();
 
-                var isMember = await _context.OrganizationMembers
+                var isMember = await context.OrganizationMembers
                     .AnyAsync(om => om.Organization == project.OrganizationId && om.User == invitee.Id);
 
                 if (!isMember)
@@ -274,7 +261,7 @@ namespace Skillbridge.Areas.Client.Pages
                 }
 
                 //Verifica se já tem acesso à sessão
-                var existingAccess = await _context.SessionAccesses
+                var existingAccess = await context.SessionAccesses
                     .FirstOrDefaultAsync(sa => sa.SessionId == session.Id && sa.UserId == invitee.Id);
 
                 if (existingAccess != null)
@@ -295,15 +282,15 @@ namespace Skillbridge.Areas.Client.Pages
                     Role = Role.Apprentice
                 };
 
-                _context.SessionAccesses.Add(newAccess);
-                await _context.SaveChangesAsync();
+                context.SessionAccesses.Add(newAccess);
+                await context.SaveChangesAsync();
 
                 InviteMessage = $"{invitee.Name} foi adicionado à sessão.";
                 InviteError = false;
 
                 await LoadAvailableUsersAsync();
                 
-                await _notificationHub.Clients.User(invitee.Id)
+                await notificationHub.Clients.User(invitee.Id)
                     .SendAsync("ReceiveNotification", $"Foste adicionado à sessão {session.Title}");
                 
                 return RedirectToPage("/CodeEditor", new { area = "Client", sessionId });
@@ -319,14 +306,14 @@ namespace Skillbridge.Areas.Client.Pages
         public async Task<IActionResult> OnPostSaveAsync([FromBody] SaveRequest request)
         {
             //Vai buscar o user autenticado
-            var user = await _userManager.GetUserAsync(User);
+            var user = await userManager.GetUserAsync(User);
             
             //Vai buscar o sessionId ao URL, assim não é manipulado pelo body o que protege contra CSRF
             var sessionId = Request.Query["sessionId"].ToString();
             
             
             //Vai buscar a sessao a BD incluindo o ficheiro associado
-            var session = await _context.Sessions
+            var session = await context.Sessions
                 .Include(s => s.file)
                 .FirstOrDefaultAsync(s => s.Id == sessionId);
             
@@ -338,7 +325,7 @@ namespace Skillbridge.Areas.Client.Pages
             
 
             //Vai buscar o acesso do utilizador a esta sessao
-            var access = await _context.SessionAccesses
+            var access = await context.SessionAccesses
                 .FirstOrDefaultAsync(sa => sa.SessionId == session.Id && sa.UserId == user.Id);
 
             //Debug
@@ -351,7 +338,7 @@ namespace Skillbridge.Areas.Client.Pages
             if (!session.Active || session.Locked) return StatusCode(403);
             
             //Guarda o conteudo no S3, usando o Path do ficheiro da própria sessão
-            await s3Api.EditarFicheiroAsync("skillbridge",session.file.Path, request.Content);
+            await is3Api.EditarFicheiroAsync("skillbridge",session.file.Path, request.Content);
           
             //Devolve 200 OK para o JS saber que correu bem
             return new OkResult();

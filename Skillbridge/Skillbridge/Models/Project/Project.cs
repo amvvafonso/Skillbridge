@@ -56,10 +56,6 @@ public class Project
     // ############################################################
     public ICollection<UserProjectAccess> UserProjectAccessList { get; set; } = []; 
     
-    // ############################################################
-    // Relacionamentos 1-N
-    // ############################################################
-    public ICollection<File> FileList { get; set; } = [];
 
     public Project(Project project, Organization organization)
     {

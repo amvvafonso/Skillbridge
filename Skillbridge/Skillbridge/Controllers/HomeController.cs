@@ -1,14 +1,12 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.SignalR;
-using Skillbridge.Hubs;
 using Skillbridge.Models;
 
 namespace Skillbridge.Controllers;
 
 
 
-public class HomeController(IHubContext<NotificationHub> notificationHub) : Controller
+public class HomeController() : Controller
 {
     public async Task<IActionResult> Index()
     {
@@ -18,7 +16,6 @@ public class HomeController(IHubContext<NotificationHub> notificationHub) : Cont
     [HttpPost]
     public async Task<IActionResult> TestNotification()
     {
-        await notificationHub.Clients.All.SendAsync("ReceiveNotification", "Notificação de teste! 🔔");
         return Ok();
     }
     

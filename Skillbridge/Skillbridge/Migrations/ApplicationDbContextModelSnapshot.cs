@@ -297,6 +297,7 @@ namespace Skillbridge.Migrations
                         .HasColumnType("nvarchar(200)");
 
                     b.Property<string>("OrganizationDescription")
+                        .IsRequired()
                         .HasMaxLength(1000)
                         .HasColumnType("nvarchar(1000)");
 
@@ -496,11 +497,11 @@ namespace Skillbridge.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
-                    b.Property<bool>("Locked")
+                    b.Property<bool>("IsPublic")
                         .HasColumnType("bit");
 
-                    b.Property<DateTime>("StartsAt")
-                        .HasColumnType("datetime2");
+                    b.Property<bool>("Locked")
+                        .HasColumnType("bit");
 
                     b.Property<string>("Title")
                         .IsRequired()
@@ -511,9 +512,6 @@ namespace Skillbridge.Migrations
                         .IsRequired()
                         .HasMaxLength(450)
                         .HasColumnType("nvarchar(450)");
-
-                    b.Property<bool>("isPublic")
-                        .HasColumnType("bit");
 
                     b.HasKey("Id");
 
@@ -711,7 +709,7 @@ namespace Skillbridge.Migrations
             modelBuilder.Entity("Skillbridge.Models.Project.File", b =>
                 {
                     b.HasOne("Skillbridge.Models.Project.Project", "Project")
-                        .WithMany("FileList")
+                        .WithMany()
                         .HasForeignKey("ProjectId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -786,8 +784,6 @@ namespace Skillbridge.Migrations
 
             modelBuilder.Entity("Skillbridge.Models.Project.Project", b =>
                 {
-                    b.Navigation("FileList");
-
                     b.Navigation("UserProjectAccessList");
                 });
 #pragma warning restore 612, 618

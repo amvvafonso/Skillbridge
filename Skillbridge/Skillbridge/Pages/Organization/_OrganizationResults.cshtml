@@ -1,4 +1,3 @@
-@using Skillbridge.Models.Utils
 @model Skillbridge.Pages.Organization.IndexModel
 
 @if (Model != null && Model.Count > 0)
@@ -9,7 +8,7 @@
         @foreach (var org in Model.Organizations)
         {
             <a asp-page="/Organization/Profile" asp-route-id="@org.OrganizationId" class="org-result-card">
-                <img style="width: 70px" src="@Url.Page("/Organization/index", "Avatar", new { key = org.LogoPath })"
+                <img style="width: 70px" src="/api/images/@org.LogoPath"
                      alt="@org.OrganizationName"
                      class="org-logo" />
                 <h3 class="org-result-name">@org.OrganizationName</h3>

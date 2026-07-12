@@ -50,7 +50,7 @@ Layout = "_Layout";
                         <div asp-validation-summary="ModelOnly" class="org-validation-summary"></div>
 
                         <div class="org-form-group">
-                            <label asp-for="NewOrganization.LogoFile" class="org-form-label">Logo</label>
+                            <label for="logoFile" class="org-form-label">Logo</label>
                             <div class="upload-zone" id="uploadZone" onclick="document.getElementById('logoInput').click()">
                                 <img id="logoPreview" class="logo-preview" src="" alt="" style="display:none;"/>
                                 <div class="upload-placeholder" id="uploadPlaceholder">
@@ -59,24 +59,22 @@ Layout = "_Layout";
                                     <small>PNG, JPG até 2MB</small>
                                 </div>
                             </div>
-                            <input asp-for="NewOrganization.LogoFile" type="file" accept="image/png,image/jpeg,image/webp" id="logoInput" class="hidden-input"/>
+                            <input name="logoInput" type="file" accept="image/png,image/jpeg,image/webp" id="logoInput" class="hidden-input"/>
                         </div>
 
                         <div class="org-form-group">
-                            <label asp-for="NewOrganization.OrganizationName" class="org-form-label">Nome</label>
-                            <input asp-for="NewOrganization.OrganizationName" class="org-form-input" maxlength="100"/>
-                            <span asp-validation-for="NewOrganization.OrganizationName" class="org-validation-error"></span>
+                            <label for="organizationName" class="org-form-label">Nome</label>
+                            <input name="organizationName" id="organizationName" class="org-form-input" maxlength="100"/>
                         </div>
 
                         <div class="org-form-group">
-                            <label asp-for="NewOrganization.OrganizationAddress" class="org-form-label">Endereço</label>
-                            <input asp-for="NewOrganization.OrganizationAddress" class="org-form-input" maxlength="200"/>
-                            <span asp-validation-for="NewOrganization.OrganizationAddress" class="org-validation-error"></span>
+                            <label for="organizationAddress" class="org-form-label">Endereço</label>
+                            <input id="organizationAddress" name="organizationAddress" class="org-form-input" maxlength="200"/>
                         </div>
 
                         <div class="org-form-group">
-                            <label asp-for="NewOrganization.OrganizationDescription" class="org-form-label">Descrição (opcional)</label>
-                            <textarea asp-for="NewOrganization.OrganizationDescription" class="org-form-input org-textarea" maxlength="1000" rows="3"></textarea>
+                            <label for="organizationDescription" class="org-form-label">Descrição (opcional)</label>
+                            <textarea id="organizationDescription" name="organizationDescription" class="org-form-input org-textarea" maxlength="1000" rows="3"></textarea>
                         </div>
                     </div>
                     <div class="org-modal-footer">
