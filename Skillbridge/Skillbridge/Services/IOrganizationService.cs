@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json.Serialization;
 using Skillbridge.Data;
 using Skillbridge.Hubs;
 using Skillbridge.Models;
@@ -12,8 +13,8 @@ public interface IOrganizationService
 {
     Task<Result> CreateOrganizationAsync(string userId, string organizationName, string organizationAddress, string organizationDescription, IFormFile? logo);
     Task<Result> EditOrganizationAsync(string organizationId, string userId, string? name, string? address,  string? description, IFormFile? logo, IFormFile? banner);
-    Task<Result> CreateProjectAsync(string organizationId, string userId, string projectName, string projectDescription, string? repository, bool isPublic);
     Task<Result> DeleteOrganizationAsync(string orgId, string userId);
+    Task<Result> CreateProjectAsync(string organizationId, string userId, string projectName, string projectDescription, string? repository, bool isPublic);
     Task<Result> DeleteProjectAsync(string projectId, string userId);
     Task<Result> AddMemberAsync(string organizationId, string memberEmail);
     Task<Result> DeleteMemberAsync(string memberId, string organizationId,  string userId);
@@ -42,8 +43,8 @@ public class OrganizationService(ApplicationDbContext context, IS3Api iS3Api, IN
             var bytes = ms.ToArray();
             
             var ext =  Path.GetExtension(logo.FileName);
-            var uploaded = await iS3Api.UploadBinaryAsync("logos",  $"{newGuid}.{ext}" , bytes,  logo.ContentType );
-            if (uploaded) logoPath = $"{newGuid}.{ext}";
+            var uploaded = await iS3Api.UploadBinaryAsync("logos",  $"{newGuid}{ext}" , bytes,  logo.ContentType );
+            if (uploaded) logoPath = $"{newGuid}{ext}";
         }
 
         var organization = new Organization
@@ -51,7 +52,9 @@ public class OrganizationService(ApplicationDbContext context, IS3Api iS3Api, IN
             OrganizationId = newGuid,
             OrganizationName = organizationName,
             OrganizationAddress = organizationAddress,
-            LogoPath = logoPath
+            Owner = userId,
+            LogoPath = logoPath,
+            BannerPath = "default_banner.png",
         };
         context.Organizations.Add(organization);
         context.OrganizationMembers.Add(new OrganizationMember(Guid.NewGuid().ToString(), newGuid, userId, Role.Owner));
@@ -113,7 +116,7 @@ public class OrganizationService(ApplicationDbContext context, IS3Api iS3Api, IN
             return Result.Fail("É obrigatório preencher o nome do projeto e a descrição!", ErrorType.MissingComponent);
         }
 
-        if (await MemberBelongsToOrganization(userId, organizationId) == null)
+        if (await MemberBelongsToOrganization(organizationId, userId) == null)
         {
             return Result.Fail("Membro não tem permissão para a seguinte operação", ErrorType.Denied);
         }
@@ -124,7 +127,8 @@ public class OrganizationService(ApplicationDbContext context, IS3Api iS3Api, IN
             ProjectDescription = projectDescription,
             ProjectName = projectName,
             Public = isPublic,
-            Repository = repository
+            Repository = repository,
+            ProjectDirectory = projectName
         };
 
         context.Project.Add(newProject);
@@ -217,34 +221,37 @@ public class OrganizationService(ApplicationDbContext context, IS3Api iS3Api, IN
 
     public async Task<Result> PromoteMemberAsync(string memberId, string organizationId, string userId)
     {
-       var permission = await MemberBelongsToOrganization(organizationId, userId);
-       if (permission == null || permission.Role != Role.Owner ||  permission.Role != Role.Manager)
-       {
-           return Result.Fail("Não tem permissões para promover membros!", ErrorType.Denied);
-       }
+        if (string.IsNullOrEmpty(organizationId) || string.IsNullOrEmpty(memberId) || string.IsNullOrEmpty(userId))
+        {
+            return Result.Fail("Falta componentes para a operação",  ErrorType.MissingComponent);
+        }
+        
+        var permission = await MemberBelongsToOrganization(organizationId, userId);
+        if (permission == null) return Result.Fail("Ocorreu um erro na autorização!",  ErrorType.Misc);
+        var isOwnerOrManager = permission.Role != Role.Owner || permission.Role != Role.Manager;
+        if (!isOwnerOrManager)
+        {
+            return Result.Fail("Não tem permissões para promover membros!", ErrorType.Misc);
+        }
+        var member = await MemberBelongsToOrganization(organizationId, memberId);
+        if (member == null)
+        {
+            return Result.Fail("O membro não pertence a organização!", ErrorType.Misc);
+        }
+        var newRole = member.Role switch
+        {
+            Role.Apprentice => Role.Mentor,
+            Role.Mentor when permission.Role == Role.Owner => Role.Manager, //Manager não pode promover Mentor para Manager
+            Role.Mentor => Role.Mentor,
+            _ => member.Role
+        };
+        if (newRole == member.Role)
+            return Result.Fail("Este membro já está no papel máximo permitido",  ErrorType.Misc);
        
-       var member = await MemberBelongsToOrganization(organizationId, memberId);
-       if (member == null)
-       {
-           return Result.Fail("O membro não pertence a organização!", ErrorType.Misc);
-       }
+        member.Role = newRole;
+        await context.SaveChangesAsync();
        
-       var newRole = member.Role switch
-       {
-           Role.Apprentice => Role.Mentor,
-           Role.Mentor when member.Role == Role.Owner => Role.Manager,
-           //Manager não pode promover Mentor para Manager
-           Role.Mentor => Role.Mentor,
-           _ => member.Role
-       };
-       
-       if (newRole == member.Role)
-           return Result.Fail("Este membro já está no papel máximo permitido",  ErrorType.Misc);
-       
-       member.Role = newRole;
-       await context.SaveChangesAsync();
-       
-       return Result.Ok(message: $"Membro promovido a {newRole}!");
+        return Result.Ok(message: $"Membro promovido a {newRole}!", newRole.ToString());
     }
 
 

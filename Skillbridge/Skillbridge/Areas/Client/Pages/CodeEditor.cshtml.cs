@@ -20,14 +20,14 @@ namespace Skillbridge.Areas.Client.Pages
     {
         
         // File 
-        public string FileContent { get; set; }
-        public File CurrentFile {get;set; }
+        public string? FileContent { get; set; }
+        public File? CurrentFile {get;set; }
         public Session? CurrentSession { get; set; }
-        public User CurrentUser { get; set; } 
+        public User? CurrentUser { get; set; } 
         public Boolean CanEdit { get; set; }
         
         // Chat
-        public List<ChatMessage> ChatMessages { get; set; }
+        public List<ChatMessage>? ChatMessages { get; set; }
         
         // Adicionar users a sessao
         public List<User> AvailableUsers { get; set; } = new();
@@ -40,7 +40,7 @@ namespace Skillbridge.Areas.Client.Pages
         //Classe que representa os dados recebidos do editor no POST
         public class SaveRequest
         {
-            public string Content { get; set; }
+            public string? Content { get; set; }
             //public string SessionId { get; set; }
         }
         
@@ -156,38 +156,25 @@ namespace Skillbridge.Areas.Client.Pages
             }
         }
 
+        // Done
         public async Task<IActionResult> OnPostEndSessionAsync([FromForm] string sessionId)
         {
-            try
+            
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userId == null) return LocalRedirect("/Account/Login");
+            
+            var result = await sessionService.EndSessionAsync(sessionId, userId);
+
+            switch (result.ErrorType)
             {
-                // Vai buscar user logado
-                var user = await userManager.GetUserAsync(User);
-
-                // Vai buscar a sessão
-                var session = await context.Sessions
-                    .FirstOrDefaultAsync(s => s.Id == sessionId);
-
-                if (session == null) return NotFound();
-
-                //Verifica se o utilizador tem acesso à sessão
-                var access = await context.SessionAccesses
-                    .FirstOrDefaultAsync(sa => sa.SessionId == session.Id && sa.UserId == user.Id);
-
-                //Só Mentor pode terminar a sessão
-                if (access?.Role != Role.Mentor) return Forbid();
-                
-                // Atualiza o estado da sessao para inativa
-                session.Active = false;
-                await context.SaveChangesAsync();
-                
-                // Redireciona para a area de client
-                return RedirectToPage("/index", new { area = "Client" });
-
+                case  ErrorType.Denied: return Forbid();
+                case  ErrorType.NotFound: return NotFound();
             }
-            catch (Exception es)
-            {
-                return RedirectToPage("/CodeEditor", new { area = "Client", sessionId });
-            }
+
+            if (!result.Success) return Page();
+            
+            // Redireciona para a area de client
+            return RedirectToPage("/index", new { area = "Client" });
         }
 
         // Done

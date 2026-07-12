@@ -1,5 +1,7 @@
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Skillbridge.Auth;
 using Skillbridge.Data;
 using Skillbridge.Hubs;
 using Skillbridge.Models.Client;
@@ -22,7 +24,7 @@ builder.Services.AddScoped<IS3Api, IS3Api.S3Api>();
 builder.Services.AddScoped<IProjectService, IProjectService.ProjectService>();
 builder.Services.AddScoped<INotificationService, INotificationService.NotificationService>(); 
 builder.Services.AddScoped<ISessionService, ISessionService.SessionService>();
-
+builder.Services.AddScoped<IApiTokenService, IApiTokenService.ApiTokenService>();
 builder.Services.ConfigureApplicationCookie(options =>
 {
     options.AccessDeniedPath = "/Identity/Account/AccessDenied";
@@ -30,6 +32,8 @@ builder.Services.ConfigureApplicationCookie(options =>
 
 builder.Services.AddControllersWithViews();
 builder.Services.AddSignalR();
+builder.Services.AddAuthentication()
+    .AddScheme<AuthenticationSchemeOptions, ApiKeyAuthentication>("ApiKey", null);
 
 //Aceita o token CSRF via header HTTP
 builder.Services.AddAntiforgery(options => {
@@ -59,11 +63,6 @@ app.UseAuthorization();
     
 app.MapStaticAssets();
 
-app.MapControllerRoute(
-        name: "default",
-        pattern: "{controller=Home}/{action=Index}/{id?}")
-    .WithStaticAssets();
-
 app.MapHub<NotificationHub>("/notificationHub");
 app.MapHub<ChatHub>("/chatHub");
 app.MapHub<CodeEditorHub>("/codeEditorHub");
@@ -71,6 +70,11 @@ app.MapHub<CodeEditorHub>("/codeEditorHub");
 app.MapControllerRoute(
     name: "areas",
     pattern: "{area:exists}/{controller=Client}/{action=Index}/{id?}");
+
+app.MapControllerRoute(
+        name: "default",
+        pattern: "{controller=Home}/{action=Index}/{id?}")
+    .WithStaticAssets();
 
 app.MapRazorPages()
     .WithStaticAssets();

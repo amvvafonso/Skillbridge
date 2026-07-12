@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.EntityFrameworkCore;
 using Skillbridge.Areas.Client.Models;
 using Skillbridge.Data;
@@ -19,7 +18,7 @@ namespace Skillbridge.Areas.Client.Pages
     public class IndexModel(ApplicationDbContext context, UserManager<User> userManager, IS3Api s3Api) : PageModel
     {
         //Propriedade que vai ser usada pelo @model no .cshtml
-        public IndexViewModel DashboardModel { get; set; } = default!;
+        public IndexViewModel DashboardModel { get; set; } = new();
         
         //
         public async Task<IActionResult> OnGetAsync()
@@ -52,6 +51,7 @@ namespace Skillbridge.Areas.Client.Pages
                 var userOrganizations = await context.OrganizationMembers
                     .Where(om => om.User == user.Id)
                     .Select(om => om.IdOrganization)
+                    .Where(org => org != null)
                     .ToListAsync();
 
                 //Vai buscar os projetos atribuidos ao utilizador
@@ -78,8 +78,8 @@ namespace Skillbridge.Areas.Client.Pages
                     ActiveSessions = userSessions.Count(s => s.Active),
                     TotalProjects = userProjects.Count,
                     TotalOrganizations = userOrganizations.Count,
-                    Organizations = userOrganizations,
-                    Projects = userProjects
+                    Organizations = userOrganizations.OfType<Organization>().ToList(),
+                    Projects = userProjects.OfType<Project>().ToList()
                 };
 
                 return Page();

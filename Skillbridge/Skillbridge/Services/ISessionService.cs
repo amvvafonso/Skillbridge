@@ -14,9 +14,10 @@ public interface ISessionService
 {
     Task<Result> CreateSessionAsync(string bucket, string key, string title, string description, bool isPublic, string userId);
     Task<Result> AllowEntrance(string sessionId, string userEmail, string userId, Role role);
-
     
-    public class SessionService(ApplicationDbContext context, IOrganizationService organizationService, NotificationHub notificationHub) : ISessionService
+    Task<Result> EndSessionAsync(string sessionId, string userId);
+    
+    public class SessionService(ApplicationDbContext context, IOrganizationService organizationService, INotificationService notificationHub) : ISessionService
     {
         public async Task<Result> CreateSessionAsync(string bucket, string key, string title, string description, bool isPublic, string userId)
         {
@@ -121,14 +122,31 @@ public interface ISessionService
             
             context.SessionAccesses.Add(newAccess);
             await context.SaveChangesAsync();
-            
-            await notificationHub.Clients.User(userEmail)
-                .SendAsync("ReceiveNotification", $"Foste adicionado à sessão {session.Title}");
+
+            await notificationHub.NotifyAsync(userEmail, $"Foste adicionado à sessão {session.Title}");
             
             return Result.Ok(message: $"{userInvited.Name} foi adicionado com sucesso!");
         }
-        
-        
+
+        public async Task<Result> EndSessionAsync(string sessionId, string userId)
+        {
+            if (string.IsNullOrEmpty(sessionId) || string.IsNullOrEmpty(userId))
+                return Result.Fail("É obrigatório fornecer uma sessão e estar autenticado!",
+                    ErrorType.MissingComponent);
+            if (await GetRoleAsync(sessionId, userId) != Role.Mentor) return Result.Fail("Não tem permissão para terminar a sessão!",  ErrorType.Denied);
+
+            var session = await context.Sessions
+                .FirstOrDefaultAsync(s => s.Id == sessionId);
+
+            if (session == null) return Result.Fail("Não existe a sessão!", ErrorType.NotFound);
+            
+            session.Active = false;
+            await context.SaveChangesAsync();
+
+            return Result.Ok("Sessão terminada com sucesso!");
+        }
+
+
         private async Task<bool> FileAlreadyUsedAsync(File file)
         {
             return await context.Sessions.AnyAsync(s => s.fileId == file.FileId); 
@@ -142,6 +160,12 @@ public interface ISessionService
         private async Task<bool> AlreadyHasAcessAsync(string sessionId, string userId)
         {
             return await context.SessionAccesses .AnyAsync(sa => sa.SessionId == sessionId && sa.UserId == userId);
+        }
+
+        private async Task<Role> GetRoleAsync(string sessionId, string userId)
+        {
+            var role = await context.SessionAccesses.FirstOrDefaultAsync(p => p.UserId == userId && p.SessionId == sessionId);
+            return role?.Role ?? Role.Unknown;
         }
     }
 }

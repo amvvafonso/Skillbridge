@@ -20,10 +20,8 @@ namespace Skillbridge.Pages.Organization;
 public class ProfileModel(ApplicationDbContext context, IHubContext<NotificationHub> notificationHub, IConfiguration configuration, IOrganizationService organizationService) : PageModel
 {
     //Limit of posts visible
-    private readonly int POST_LIMIT = 3;
-    private readonly IHubContext<NotificationHub> notificationHub = notificationHub;
-    private readonly IConfiguration _configuration = configuration;
-    
+    private const int PostLimit = 3;
+
     // DB table vars
     public Models.Organization? Organization { get; set; }
     public List<UserInfo> Members { get; set; } = [];
@@ -88,7 +86,7 @@ public class ProfileModel(ApplicationDbContext context, IHubContext<Notification
         Posts = context.Posts
             .OrderByDescending(p => p.Created)
             .Where(p => p.OrganizationId == Organization.OrganizationId)
-            .Take(POST_LIMIT)
+            .Take(PostLimit)
             .Join(context.Users,
                 p => p.AuthorID,
                 u => u.Id,
@@ -210,7 +208,7 @@ public class ProfileModel(ApplicationDbContext context, IHubContext<Notification
             case ErrorType.NotFound: return NotFound();
         }
         
-        return new JsonResult(new { success = result.Success, message = result.Message });
+        return LocalRedirect("/Organization/Index");
     }
 
     //Done 
@@ -227,22 +225,23 @@ public class ProfileModel(ApplicationDbContext context, IHubContext<Notification
     // Done
     public async Task<IActionResult> OnPostUpgradeMemberAsync(string organizationId, string memberId)
     {
-
         //Obtem o ID do user autenticado
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if(string.IsNullOrEmpty(userId)) return new JsonResult(new { success = false, message = "É preciso estar autenticado"});
-            
-        var result = await organizationService.PromoteMemberAsync(organizationId, memberId, userId);
-
+        var result = await organizationService.PromoteMemberAsync(memberId, organizationId, userId);
+        
         switch (result.ErrorType)
         {
             case  ErrorType.Denied: return Forbid();
             case  ErrorType.NotFound: return NotFound();
         }
-        return new JsonResult(new { success = result.Success, message = result.Message });
+        
+        
+        return new JsonResult(new { success = result.Success, message = result.Message, newRole = result.Additional });
     }
     
 
+    //Done
     public async Task<IActionResult> OnPostEditOrganizationAsync(
         [FromForm] string organizationId,
         [FromForm] string editName,

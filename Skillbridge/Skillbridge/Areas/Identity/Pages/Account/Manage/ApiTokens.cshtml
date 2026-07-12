@@ -1,0 +1,133 @@
+@page
+@model ApiTokensModel
+@{
+    ViewData["Title"] = "API Tokens";
+    ViewData["ActivePage"] = ManageNavPages.ApiTokens;
+}
+
+<h3 class="identity-title"><i class="bi bi-key-fill"></i> @ViewData["Title"]</h3>
+
+<!-- Token recém-criado -->
+@if (!string.IsNullOrEmpty(Model.NewlyCreatedToken))
+{
+    <div class="identity-card mb-4" style="border-color: #198754;">
+        <div class="identity-card-header">
+            <h4 class="identity-card-title"><i class="bi bi-check-circle-fill" style="color: #198754;"></i> Token criado com sucesso!</h4>
+            <p class="identity-card-desc">Copie este token agora. Ele <strong>nunca mais será mostrado</strong>.</p>
+        </div>
+        <div class="d-flex gap-2 align-items-center p-3" style="background-color: rgba(var(--primary), 0.3); border-radius: 8px; font-family: monospace;">
+            <code id="newToken" style="flex: 1; word-break: break-all; color: #198754; font-size: 1rem;)">@Model.NewlyCreatedToken</code>
+            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="copyToken()">
+                <i class="bi bi-clipboard"></i> Copiar
+            </button>
+        </div>
+        <div class="identity-info-box mt-3" style="background: #fff3cd; border-color: #ffc107; color: #664d03;">
+            <strong><i class="bi bi-exclamation-triangle-fill"></i> Atenção:</strong>
+            <p class="mb-0 mt-1">Use este token no header <code>Authorization: Bearer &lt;token&gt;</code> nas suas requisições API.</p>
+        </div>
+    </div>
+}
+
+<!-- Criar novo api token -->
+<div class="identity-card mb-4">
+    <div class="identity-card-header">
+        <h4 class="identity-card-title"><i class="bi bi-plus-circle"></i> Criar novo token</h4>
+        <p class="identity-card-desc">Dê um nome descritivo para identificar o token mais tarde.</p>
+    </div>
+
+    <form id="create-token-form" method="post" asp-page-handler="Create">
+        
+        <div class="identity-field">
+            <div class="form-floating mb-3">
+                <input id="tokenName" name="tokenName" class="form-control identity-field" autocomplete="off" aria-required="true" placeholder="Nome do token"/>
+                <label for="tokenName" class="form-label">Nome do token</label>
+            </div>
+        </div>
+
+        <button type="submit" class="identity-btn identity-btn-primary">
+            <i class="bi bi-plus-lg"></i> Criar
+        </button>
+    </form>
+</div>
+
+<!-- Lista de tokens existentes -->
+<div class="identity-card">
+    <div class="identity-card-header">
+        <h4 class="identity-card-title"><i class="bi bi-list-ul"></i> Tokens ativos</h4>
+        <p class="identity-card-desc">Gerencie os seus tokens API ativos.</p>
+    </div>
+
+    @if (Model.Tokens.Count == 0)
+    {
+        <div class="text-center py-4 text-muted">
+            <i class="bi bi-inbox" style="font-size: 2rem;"></i>
+            <p class="mt-2 mb-0">Nenhum token criado ainda.</p>
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Nome</th>
+                        <th>Criado em</th>
+                        <th>Último uso</th>
+                        <th class="text-end">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var token in Model.Tokens)
+                    {
+                        <tr>
+                            <td>
+                                <i class="bi bi-key" style="color: var(--bs-primary);"></i>
+                                <strong>@token.Name</strong>
+                            </td>
+                            <td>
+                                <span class="text-muted">@token.CreatedAt.ToString("dd/MM/yyyy HH:mm")</span>
+                            </td>
+                            <td>
+                                @if (token.LastUsedAt.HasValue)
+                                {
+                                    <span class="text-muted">@token.LastUsedAt.Value.ToString("dd/MM/yyyy HH:mm")</span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">Nunca</span>
+                                }
+                            </td>
+                            <td class="text-end">
+                                <form method="post" asp-page-handler="Revoke" asp-route-tokenId="@token.Id"
+                                      onsubmit="event.preventDefault(); openConfirmModal(this, 'Tem a certeza que quer eliminar este token?', 'Eliminar token')">
+                                    <button  type="submit" class="btn btn-sm btn-outline-danger" title="Revogar token">
+                                        <i class="bi bi-x-circle"></i> Eliminar
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        function copyToken() {
+            const token = document.getElementById('newToken').textContent;
+            navigator.clipboard.writeText(token).then(() => {
+                const btn = event.currentTarget;
+                const original = btn.innerHTML;
+                btn.innerHTML = '<i class="bi bi-check-lg"></i> Copiado!';
+                btn.disabled = true;
+                setTimeout(() => {
+                    btn.innerHTML = original;
+                    btn.disabled = false;
+                }, 2000);
+            });
+        }
+    </script>
+}

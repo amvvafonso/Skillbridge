@@ -3,20 +3,16 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Skillbridge.Data;
 using Skillbridge.Models;
+using Skillbridge.Services;
 
 namespace Skillbridge.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize]
-public class OrganizationController : ControllerBase
+[Authorize(AuthenticationSchemes = "ApiKey")]
+public class OrganizationController(ApplicationDbContext context, IOrganizationService organizationService) : ControllerBase
 {
-    private readonly ApplicationDbContext _context;
-
-    public OrganizationController(ApplicationDbContext context)
-    {
-        _context = context;
-    }
+    private readonly ApplicationDbContext _context = context;
 
     // GET: api/organization
     [HttpGet]

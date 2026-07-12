@@ -31,9 +31,11 @@
 
     <ItemGroup>
       <_ContentIncludedByDefault Remove="Areas\Client\Views\Client\Index.cshtml" />
+      <_ContentIncludedByDefault Remove="Areas\Client\Views\_ViewImports.cshtml" />
     </ItemGroup>
 
     <ItemGroup>
+      <UpToDateCheckInput Remove="Areas\Client\Views\Client\Index.cshtml" />
       <UpToDateCheckInput Remove="Areas\Client\Views\Client\Index.cshtml" />
     </ItemGroup>
 

@@ -22,6 +22,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<OrganizationMember> OrganizationMembers { get; set; }
     public DbSet<Notification> Notifications { get; set; }
     public DbSet<Post> Posts { get; set; }
+    public DbSet<ApiToken> ApiTokens { get; set; }
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);

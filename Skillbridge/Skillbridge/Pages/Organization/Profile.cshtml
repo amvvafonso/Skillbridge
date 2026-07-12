@@ -520,7 +520,7 @@
                         body: formData
                     });
                     const response = await res.json();
-
+                    console.log(response);
                     //Mostra toast de sucesso ou erro
                     mostrarToast(
                         response.success ? 'Informação' : 'Erro',

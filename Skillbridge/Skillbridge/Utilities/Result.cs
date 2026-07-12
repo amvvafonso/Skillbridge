@@ -11,7 +11,7 @@ public class Result
     public string Additional { get; }
     public ErrorType ErrorType { get; }
 
-    private Result(bool success, string message, string? additional, ErrorType errorType = default)
+    private Result(bool success, string message, string? additional, ErrorType errorType = ErrorType.Misc)
     {
         Success = success;
         Message = message;
@@ -25,7 +25,7 @@ public class Result
     public static Result Ok(string message = "", string? additional = null) 
         => new(true, message, additional);
 
-    public static Result Fail(string message, ErrorType errorType = default, string? additional = null) 
+    public static Result Fail(string message, ErrorType errorType = ErrorType.Misc, string? additional = null) 
         => new(false, message, additional, errorType);
 
 
