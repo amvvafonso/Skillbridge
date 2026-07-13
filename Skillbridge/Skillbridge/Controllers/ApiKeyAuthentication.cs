@@ -1,4 +1,7 @@
 // Auth/ApiKeyAuthenticationHandler.cs
+
+using Skillbridge.Services;
+
 namespace Skillbridge.Auth;
 
 using System.Security.Claims;
@@ -26,7 +29,7 @@ public class ApiKeyAuthentication(
         var token = raw["Bearer ".Length..].Trim();
         var userId = await tokenService.ValidateTokenAsync(token);
 
-        if (userId == null)
+        if (userId.Additional == null)
             return AuthenticateResult.Fail("Token inválido ou revogado");
 
         var claims = new[] { new Claim(ClaimTypes.NameIdentifier, userId.Additional) };

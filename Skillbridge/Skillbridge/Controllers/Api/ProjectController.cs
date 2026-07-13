@@ -1,50 +1,52 @@
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Skillbridge.Data;
 using Skillbridge.Models.Project;
+using Skillbridge.Services;
 
 namespace Skillbridge.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class ProjectController : ControllerBase
+[Authorize(AuthenticationSchemes = "ApiKey")]
+public class ProjectController(ApplicationDbContext context, IProjectService projectService) : ControllerBase
 {
-    private readonly ApplicationDbContext _context;
 
-    public ProjectController(ApplicationDbContext context)
-    {
-        _context = context;
-    }
 
     // GET: api/project
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<Project>>> GetProjects()
+    public async Task<ActionResult<IEnumerable<Project>>> GetAllProjects()
     {
-        return await _context.Project
-            .Include(p => p.Organization)
-            .ToListAsync();
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId == null) return BadRequest();
+        
+        var result = await projectService.GetAllProjectAsync(userId);
+        if (result.IsNullOrEmpty()) return NotFound();
+        
+        return Ok(result);
     }
 
     // GET: api/project/5
     [HttpGet("{id}")]
     public async Task<ActionResult<Project>> GetProject(int id)
     {
-        var project = await _context.Project
-            .Include(p => p.Organization)
-            .Include(p => p.UserProjectAccessList)
-            .FirstOrDefaultAsync(p => p.ProjectId == id);
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId == null) return BadRequest();
 
-        if (project == null)
-            return NotFound();
-
-        return project;
+        var result = await projectService.GetProjectAsync(userId, id);
+        if (result == null) return NotFound();
+        
+        return Ok(result);
     }
 
     // GET: api/project/organization/{organizationId}
     [HttpGet("organization/{organizationId}")]
     public async Task<ActionResult<IEnumerable<Project>>> GetProjectsByOrganization(string organizationId)
     {
-        return await _context.Project
+        return await context.Project
             .Where(p => p.OrganizationId == organizationId)
             .Include(p => p.Organization)
             .ToListAsync();
@@ -54,8 +56,8 @@ public class ProjectController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<Project>> CreateProject(Project project)
     {
-        _context.Project.Add(project);
-        await _context.SaveChangesAsync();
+        context.Project.Add(project);
+        await context.SaveChangesAsync();
 
         return CreatedAtAction(nameof(GetProject),
             new { id = project.ProjectId },
@@ -69,15 +71,15 @@ public class ProjectController : ControllerBase
         if (id != project.ProjectId)
             return BadRequest();
 
-        _context.Entry(project).State = EntityState.Modified;
+        context.Entry(project).State = EntityState.Modified;
 
         try
         {
-            await _context.SaveChangesAsync();
+            await context.SaveChangesAsync();
         }
         catch (DbUpdateConcurrencyException)
         {
-            if (!await _context.Project.AnyAsync(p => p.ProjectId == id))
+            if (!await context.Project.AnyAsync(p => p.ProjectId == id))
                 return NotFound();
 
             throw;
@@ -90,13 +92,13 @@ public class ProjectController : ControllerBase
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteProject(int id)
     {
-        var project = await _context.Project.FindAsync(id);
+        var project = await context.Project.FindAsync(id);
 
         if (project == null)
             return NotFound();
 
-        _context.Project.Remove(project);
-        await _context.SaveChangesAsync();
+        context.Project.Remove(project);
+        await context.SaveChangesAsync();
 
         return NoContent();
     }
