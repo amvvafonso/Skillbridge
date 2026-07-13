@@ -43,9 +43,6 @@
     <ItemGroup>
     </ItemGroup>
     <Target Name="NpmInstall" BeforeTargets="Build">
-      <Exec Command="pwd" />
-      <Exec Command="ls -la" />
-      <Exec Command="cat package.json" />
-      <Exec Command="npm install" />
-    </Target>
+    <Exec WorkingDirectory="$(MSBuildProjectDirectory)/.." Command="npm install" />
+</Target>
 </Project>
