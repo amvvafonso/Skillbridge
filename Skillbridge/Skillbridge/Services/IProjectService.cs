@@ -1,11 +1,13 @@
 using System.Runtime.InteropServices.JavaScript;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages;
 using Skillbridge.Data;
 using Skillbridge.Models;
 using Skillbridge.Models.Client;
 using Skillbridge.Models.Project;
 using Skillbridge.Utilities;
+using File = Skillbridge.Models.Project.File;
 
 namespace Skillbridge.Services;
 
@@ -17,9 +19,41 @@ public interface IProjectService
     Task<Result> DeleteFolderAsync(string bucket, string folderPath, string userId);
     Task<Result> DeleteFileAsync(string bucket, string key, string userId);
     Task<Result> CreateProjectAsync(string organizationId, string userId, string projectName, string projectDescription, string? repository, bool isPublic);
+    Task<Result> DeleteProjectAsync(string userId, int projectId);
     
-    public class ProjectService(ApplicationDbContext context, IS3Api iS3Api, IOrganizationService organizationService, IS3Api is3Api) :  IProjectService
+    public class ProjectService(ApplicationDbContext context, IS3Api iS3Api, IOrganizationService organizationService, IS3Api is3Api, ILogger<IProjectService> logger) :  IProjectService
     {
+        public record FileWithProjectDto(
+            string FileId,
+            string Path,
+            int ProjectId,
+            string ProjectDirectory 
+        );
+        public async Task<List<FileWithProjectDto>> GetAllFileFromProjectAsync(string userId, int projectId)
+        {
+            if (projectId == 0) return [];
+
+            var hasPermission = await context.UserProjectAccesses
+                .AnyAsync(x => x.UserId == userId && x.ProjectId == projectId);
+
+            if (!hasPermission) return [];
+            
+            logger.LogInformation("Getting file from project {ProjectId}", projectId);
+            
+            return await context.Files
+                .Where(f => f.ProjectId == projectId)
+                .Join(context.Project,
+                    f => f.ProjectId,
+                    p => p.ProjectId,
+                    (f, p) => new FileWithProjectDto(
+                        f.FileId,
+                        f.Path,
+                        f.ProjectId,
+                        // ... resto dos campos de f
+                        p.ProjectDirectory
+                    ))
+                .ToListAsync();
+        }
         
         public async Task<List<Project>?> GetAllProjectAsync(string userId)
         {
@@ -40,10 +74,10 @@ public interface IProjectService
             
             if (userProjects.IsNullOrEmpty()) return new List<Project>();
             
-            
+            logger.LogInformation("Fetching all projects from {userId}", userId);
             return userProjects;
         }
-
+        
         public async Task<Project?> GetProjectAsync(string userId, int projectId)
         {
             if (string.IsNullOrWhiteSpace(userId)) return null;
@@ -96,11 +130,11 @@ public interface IProjectService
         
             await context.SaveChangesAsync();
         
-            // Adds every organization member to project 
+            // Adds every organization member to project, 
             context.UserProjectAccesses.AddRange(
                 context.OrganizationMembers
                     .Where(m => m.Organization == organizationId)
-                    .Select(m => new UserProjectAccess(Role.Apprentice, m.User, newProject.ProjectId))
+                    .Select(m => new UserProjectAccess(m.Role, m.User, newProject.ProjectId))
             );
         
             await context.SaveChangesAsync();
@@ -185,7 +219,60 @@ public interface IProjectService
             
             var success = await is3Api.EliminarFicheiroAsync(bucket, key);
 
+            var file = await context.Files.FirstOrDefaultAsync(f => f != null && f.Path == key);
+            
+            if (success || file != null) context.Files.Remove(file);
+            
+            await context.SaveChangesAsync();
+            
             return !success ? Result.Fail("Ocorreu um erro na eliminação do ficheiro!", ErrorType.Misc) : Result.Ok(message: "Pasta eliminada com sucesso!");
+        }
+
+        public async Task<Result> DeleteProjectAsync(string userId, int projectId)
+        {
+            if (projectId == 0) return Result.Fail("Falta componentes cruciais para a operação!", ErrorType.MissingComponent);
+
+            var organization = await context.Organizations
+                .Join(context.Project,
+                    o => o.OrganizationId,
+                    p => p.OrganizationId,
+                    ((organization1, project) => new { Organization = organization1, Project = project }))
+                .Where(p => p.Project.ProjectId == projectId)
+                .FirstOrDefaultAsync();
+            
+            var userRole = await context.OrganizationMembers.FirstOrDefaultAsync(ur => ur.User == userId && ur.Organization == organization.Organization.OrganizationId);
+
+            if (userRole == null || (userRole.Role == Role.Apprentice || userRole.Role == Role.Unknown)) return Result.Fail("Não tem permissão",  ErrorType.Denied);
+            
+            var files = await GetAllFileFromProjectAsync(userId, projectId);
+            
+            foreach (var file in files)
+            {
+                for (int i = 0; i < 3; i++)
+                {
+                    try
+                    {
+                        await DeleteFileAsync(file.ProjectDirectory, file.Path, userId);
+                        logger.LogInformation($"File {file.Path} has been deleted by {userId}.");
+                        break;
+                    }
+                    catch (Exception ex)
+                    {
+                        logger.LogError(ex, $"Error deleting file {file.Path}");
+                        // Logs error and tries again
+                    }
+                }
+            }
+            
+            context.UserProjectAccesses.RemoveRange(context.UserProjectAccesses
+                .Where(upa => upa.ProjectId == projectId)
+                .ToList());
+            
+            context.Remove(context.Project.FirstOrDefaultAsync(upa => upa.ProjectId == projectId));
+            
+            await context.SaveChangesAsync();
+            
+            return Result.Ok("Projeto eliminado com sucesso!");
         }
         
         private async Task<bool> HasPermission(string userId, string bucket)
@@ -205,6 +292,8 @@ public interface IProjectService
 
             return true;
         }
+        
+        
         
     }
 }

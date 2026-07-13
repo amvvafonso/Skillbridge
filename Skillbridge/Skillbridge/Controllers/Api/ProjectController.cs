@@ -4,8 +4,10 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Skillbridge.Data;
+using Skillbridge.Models;
 using Skillbridge.Models.Project;
 using Skillbridge.Services;
+using Skillbridge.Utilities;
 
 namespace Skillbridge.Controllers;
 
@@ -41,65 +43,42 @@ public class ProjectController(ApplicationDbContext context, IProjectService pro
         
         return Ok(result);
     }
-
-    // GET: api/project/organization/{organizationId}
-    [HttpGet("organization/{organizationId}")]
-    public async Task<ActionResult<IEnumerable<Project>>> GetProjectsByOrganization(string organizationId)
-    {
-        return await context.Project
-            .Where(p => p.OrganizationId == organizationId)
-            .Include(p => p.Organization)
-            .ToListAsync();
-    }
-
+    
     // POST: api/project
     [HttpPost]
-    public async Task<ActionResult<Project>> CreateProject(Project project)
+    public async Task<ActionResult<Project>> CreateProject(string organizationId, string userId, string projectName, string projectDescription, string? repository, bool isPublic = true)
     {
-        context.Project.Add(project);
-        await context.SaveChangesAsync();
+        if (string.IsNullOrWhiteSpace(projectName) || string.IsNullOrWhiteSpace(organizationId))  return BadRequest();
 
-        return CreatedAtAction(nameof(GetProject),
-            new { id = project.ProjectId },
-            project);
-    }
+        var result = await projectService.CreateProjectAsync(organizationId, userId, projectName, projectDescription,
+            repository, isPublic);
 
-    // PUT: api/project/5
-    [HttpPut("{id}")]
-    public async Task<IActionResult> UpdateProject(int id, Project project)
-    {
-        if (id != project.ProjectId)
-            return BadRequest();
-
-        context.Entry(project).State = EntityState.Modified;
-
-        try
+        if (result.Success) return Ok(result.Message);
+        
+        switch (result.ErrorType)
         {
-            await context.SaveChangesAsync();
+            case ErrorType.Denied: return Forbid(result.Message);
+            case ErrorType.NotFound: return NotFound(result.Message);
+            default: return BadRequest(result.Message);
         }
-        catch (DbUpdateConcurrencyException)
-        {
-            if (!await context.Project.AnyAsync(p => p.ProjectId == id))
-                return NotFound();
-
-            throw;
-        }
-
-        return NoContent();
     }
-
+    
     // DELETE: api/project/5
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteProject(int id)
     {
-        var project = await context.Project.FindAsync(id);
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId == null) return BadRequest();
+        
+        var result = await projectService.DeleteProjectAsync(userId, id);
 
-        if (project == null)
-            return NotFound();
+        if (result.Success) return Ok(result.Message);
 
-        context.Project.Remove(project);
-        await context.SaveChangesAsync();
-
-        return NoContent();
+        switch (result.ErrorType)
+        {
+            case ErrorType.Denied: return Forbid(result.Message);
+            case ErrorType.NotFound: return NotFound(result.Message);
+            default: return BadRequest(result.Message);
+        }
     }
 }

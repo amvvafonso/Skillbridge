@@ -90,14 +90,5 @@ namespace Skillbridge.Areas.Client.Pages
                 return RedirectToPage("/");
             }
         }
-        public async Task<IActionResult> OnGetAvatarAsync(string key)
-        {
-            var image = await s3Api.GetBinaryAsync("logos", key);
-
-            if (image == null)
-                return NotFound();
-
-            return File(image.Value.Data, image.Value.ContentType);
-        }
     }
 }

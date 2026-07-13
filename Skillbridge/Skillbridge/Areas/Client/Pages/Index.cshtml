@@ -115,7 +115,7 @@
             {
               <a asp-controller="Organization" asp-action="Profile" asp-route-id="@org.OrganizationId" class="org-card">
                 <div class="org-logo-wrapper">
-                  <img src="?handler=Avatar&key=@org.LogoPath" alt="@org.OrganizationName" class="org-logo" />
+                  <img src="/api/images@org.LogoPath" alt="@org.OrganizationName" class="org-logo" />
                 </div>
                 <div class="org-info">
                   <h3 class="org-name">@org.OrganizationName</h3>
