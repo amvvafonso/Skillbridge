@@ -17,7 +17,7 @@ using Skillbridge.Utilities;
 
 namespace Skillbridge.Pages.Organization;
 
-public class ProfileModel(ApplicationDbContext context, IHubContext<NotificationHub> notificationHub, IConfiguration configuration, IOrganizationService organizationService) : PageModel
+public class ProfileModel(ApplicationDbContext context, IOrganizationService organizationService, IProjectService projectService) : PageModel
 {
     //Limit of posts visible
     private const int PostLimit = 3;
@@ -164,7 +164,7 @@ public class ProfileModel(ApplicationDbContext context, IHubContext<Notification
         if (string.IsNullOrEmpty(userId))
             return new JsonResult(new { success = false, message = "Precisas de estar autenticado." });
         
-        var result = await organizationService.CreateProjectAsync(
+        var result = await projectService.CreateProjectAsync(
             id, userId, newProjectName, newProjectDescription, newProjectRepository, NewProjectPublic);
 
         switch (result.ErrorType)

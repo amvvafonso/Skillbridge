@@ -14,7 +14,6 @@ public interface IOrganizationService
     Task<Result> CreateOrganizationAsync(string userId, string organizationName, string organizationAddress, string organizationDescription, IFormFile? logo);
     Task<Result> EditOrganizationAsync(string organizationId, string userId, string? name, string? address,  string? description, IFormFile? logo, IFormFile? banner);
     Task<Result> DeleteOrganizationAsync(string orgId, string userId);
-    Task<Result> CreateProjectAsync(string organizationId, string userId, string projectName, string projectDescription, string? repository, bool isPublic);
     Task<Result> DeleteProjectAsync(string projectId, string userId);
     Task<Result> AddMemberAsync(string organizationId, string memberEmail);
     Task<Result> DeleteMemberAsync(string memberId, string organizationId,  string userId);
@@ -100,60 +99,6 @@ public class OrganizationService(ApplicationDbContext context, IS3Api iS3Api, IN
         return Result.Ok(message: "Organização atualizada com sucesso!");
     }
     
-    
-    
-    
-    public async Task<Result> CreateProjectAsync(string organizationId, string userId, string projectName, string projectDescription, string? repository, bool isPublic)
-    {
-
-        if (string.IsNullOrEmpty(organizationId) || string.IsNullOrEmpty(userId))
-        {
-            return Result.Fail("Nenhuma organização e/ou user colocado!", ErrorType.MissingComponent);   
-        }
-        
-        if (string.IsNullOrEmpty(projectName) || string.IsNullOrEmpty(projectDescription))
-        {
-            return Result.Fail("É obrigatório preencher o nome do projeto e a descrição!", ErrorType.MissingComponent);
-        }
-
-        if (await MemberBelongsToOrganization(organizationId, userId) == null)
-        {
-            return Result.Fail("Membro não tem permissão para a seguinte operação", ErrorType.Denied);
-        }
-
-        var newProject = new Project
-        {
-            OrganizationId = organizationId,
-            ProjectDescription = projectDescription,
-            ProjectName = projectName,
-            Public = isPublic,
-            Repository = repository,
-            ProjectDirectory = projectName
-        };
-
-        context.Project.Add(newProject);
-        
-        await context.SaveChangesAsync();
-        
-        // Adds every organization member to project 
-        context.UserProjectAccesses.AddRange(
-            context.OrganizationMembers
-                .Where(m => m.Organization == organizationId)
-                .Select(m => new UserProjectAccess(Role.Apprentice, m.User, newProject.ProjectId))
-            );
-        
-        await context.SaveChangesAsync();
-        
-        try
-        {
-            await iS3Api.CriarBucketAsync(projectName);
-        }
-        catch {
-            // Bucket creation not critical
-        }
-
-        return Result.Ok(message: "Projeto criado com sucesso!");
-    }
     
     public Task<Result> DeleteProjectAsync(string projectId, string userId)
     {
@@ -332,7 +277,7 @@ public class OrganizationService(ApplicationDbContext context, IS3Api iS3Api, IN
         return Result.Ok(message: "Publicação removida com sucesso!");
     }
 
-    
+
     public async Task<OrganizationMember?> MemberBelongsToOrganization(string organizationId, string userId)
     {
         return await context.OrganizationMembers

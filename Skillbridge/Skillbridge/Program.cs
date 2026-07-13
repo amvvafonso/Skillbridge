@@ -11,6 +11,9 @@ using Skillbridge.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
+
 // Add services to the container.
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ??
                        throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
@@ -48,13 +51,13 @@ builder.Services.AddSwaggerGen(options =>
     {
         Title = "SkillBridge API",
         Version = "v1",
-        Description = "API para gestão de organizações, projetos e shadowing"
+        Description = "API para a plataforma Skillbridge"
     });
 
     options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Description = "Insere o token no formato: Bearer {o-teu-token}",
-        Name = "Bearer",
+        Name = "Authorization",
         In = ParameterLocation.Header,
         Type = SecuritySchemeType.ApiKey,
         Scheme = "Bearer"

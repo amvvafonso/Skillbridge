@@ -14,12 +14,6 @@ namespace Skillbridge.Areas.Identity.Pages.Account.Manage
 {
     public class ApiTokensModel(IApiTokenService tokenService, UserManager<User> userManager) : PageModel
     {
-  
-
-
-
-
-
 
         public string NewlyCreatedToken { get; set; } = string.Empty;
 
