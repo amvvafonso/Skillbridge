@@ -4,15 +4,16 @@ using Skillbridge.Data;
 using Skillbridge.Models;
 using Skillbridge.Utilities;
 using System.ComponentModel.DataAnnotations;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Skillbridge.Models.Client;
-using Skillbridge.Models.Utils;
+using Skillbridge.Services;
 
 namespace Skillbridge.Pages.Organization;
 
-public class IndexModel(ApplicationDbContext context, UserManager<User> userManager, S3Api s3Api) : PageModel
+public class IndexModel(ApplicationDbContext context, IS3Api s3Api, IOrganizationService organizationService) : PageModel
 {
-    private readonly S3Api s3Api = s3Api;
     
     public ICollection<Skillbridge.Models.Organization> Organizations { get; set; } = [];
     
@@ -55,69 +56,23 @@ public class IndexModel(ApplicationDbContext context, UserManager<User> userMana
         Count = Organizations.Count;
     }
     
-    [BindProperty]
-    public CreateOrganizationInput NewOrganization { get; set; }
 
-    public class CreateOrganizationInput
+    
+    public async Task<IActionResult> OnPostCreateOrganizationAsync([FromForm] string organizationName, [FromForm] string organizationAddress,  [FromForm] string organizationDescription, [FromForm] IFormFile logoInput)
     {
-        [Required(ErrorMessage="O nome é obrigatório")]
-        [MaxLength(100)]
-        public string OrganizationName { get; set; }
-        
-        [Required(ErrorMessage="O endereço é obrigatório")]
-        [MaxLength(200)]
-        public string OrganizationAddress { get; set; }
-        
-        [MaxLength(1000)]
-        public string? OrganizationDescription { get; set; }
-
-        public IFormFile? LogoFile { get; set; }
-    }
-
-    public async Task<IActionResult> OnPostCreateOrganizationAsync()
-    {
-        var user = await userManager.GetUserAsync(User);
-        if (user == null) return RedirectToPage("/Index");
-
-        if (!ModelState.IsValid)
-        {
-            //Recarrega os dados do Dashboard para a página não arrebentar ao voltar a renderizar
-            Search();
-            return Page();
-        }
-
-        var guid = Guid.NewGuid().ToString();
-
-        string logoPath = "/default_logo.png";
-        if (NewOrganization.LogoFile != null && NewOrganization.LogoFile.Length > 0)
-        {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId == null) return Forbid();
             
-            using var ms = new System.IO.MemoryStream();
-            await NewOrganization.LogoFile.CopyToAsync(ms);
-            var bytes = ms.ToArray();
-            
+        var result = await organizationService.CreateOrganizationAsync(userId, organizationName, organizationAddress, organizationDescription, logoInput);
 
-            var success = await s3Api.UploadBinaryAsync("logos", $"{guid}.png", bytes, NewOrganization.LogoFile.ContentType);
-            if (success) logoPath = $"{guid}.png";
-        }
-
-        var organization = new Models.Organization
+        switch (result.ErrorType)
         {
-            OrganizationId = guid,
-            OrganizationName = NewOrganization.OrganizationName,
-            OrganizationAddress = NewOrganization.OrganizationAddress,
-            OrganizationDescription = NewOrganization.OrganizationDescription,
-            Owner = user.Id,
-            LogoPath = logoPath
-        };
-
-        context.Organizations.Add(organization);
-
-        var ogm = new OrganizationMember(Guid.NewGuid().ToString(), guid, user.Id, Role.Owner);
-        context.OrganizationMembers.Add(ogm);
+            case ErrorType.Denied: return Forbid();
+            case ErrorType.NotFound: return NotFound();
+        }
         
-        await context.SaveChangesAsync();
-
+        
+        
         return RedirectToPage();
     }
     

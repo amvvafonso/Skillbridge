@@ -32,7 +32,7 @@ public class Session
     /// Determines if session is public or closed
     /// </summary>
     [Required]
-    public bool isPublic  { get; set; }
+    public bool IsPublic  { get; set; }
     
     /// <summary>
     /// Determines if the session is locked, no operation is permited and chat is closed
@@ -44,7 +44,7 @@ public class Session
     /// </summary>
     [Required]
     [MaxLength(200)]
-    public string Description { get; set; }
+    public string? Description { get; set; }
      
     /// <summary>
     /// Foreign key, file of session, content to be displayed

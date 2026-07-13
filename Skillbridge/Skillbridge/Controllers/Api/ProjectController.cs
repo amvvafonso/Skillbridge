@@ -31,7 +31,6 @@ public class ProjectController : ControllerBase
     {
         var project = await _context.Project
             .Include(p => p.Organization)
-            .Include(p => p.FileList)
             .Include(p => p.UserProjectAccessList)
             .FirstOrDefaultAsync(p => p.ProjectId == id);
 

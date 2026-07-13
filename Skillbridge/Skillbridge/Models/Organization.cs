@@ -21,20 +21,21 @@ public class Organization
     /// </summary>
     [Required(ErrorMessage = "Organization name is required")]
     [MaxLength(100)]
-    public string? OrganizationName { get; set; }
+    public string OrganizationName { get; set; } = string.Empty;
     
     /// <summary>
     /// Address of organization
     /// </summary>
     [MaxLength(200)]
     [Required(ErrorMessage = "Organization address is required")]
-    public string? OrganizationAddress { get; set; }
+    public string OrganizationAddress { get; set; } = string.Empty;
     
     /// <summary>
     /// Description of the organization, max 1000 chars 
     /// </summary>
     [MaxLength(1000)]
-    public string? OrganizationDescription { get; set; }
+    [Required(ErrorMessage = "Organization description is required")]
+    public string OrganizationDescription { get; set; }  = string.Empty;
     
     /// <summary>
     /// Path to logo

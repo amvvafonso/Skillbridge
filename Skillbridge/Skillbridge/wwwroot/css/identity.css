@@ -183,6 +183,19 @@
     font-size: 1rem;
 }
 
+.form-label ::after {
+    background: transparent !important;
+}
+.form-floating>.form-control-plaintext~label::after, .form-floating>.form-control:focus~label::after, .form-floating>.form-control:not(:placeholder-shown)~label::after, .form-floating>.form-select~label::after {
+    position: absolute;
+    inset: 1rem 0.375rem;
+    z-index: -1;
+    height: 1.5em;
+    content: "";
+    background-color: transparent !important;
+    border-radius: var(--bs-border-radius);
+}
+
 .identity-field .form-floating > .form-control:focus ~ label,
 .identity-field .form-floating > .form-control:not(:placeholder-shown) ~ label {
     background: transparent !important;
@@ -715,4 +728,215 @@
     display: flex;
     flex-wrap: wrap;
     gap: 12px;
+}
+
+/* ── API Tokens ────────────────────── */
+
+.identity-token-card {
+    background: linear-gradient(180deg, rgba(17, 28, 45, 0.95) 0%, rgba(12, 22, 38, 0.95) 100%);
+    border: 1px solid rgba(80, 200, 120, 0.25);
+    border-radius: 16px;
+    padding: 2rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    margin-bottom: 1.5rem;
+}
+
+.identity-token-card .identity-card-title i {
+    color: rgb(80, 200, 120);
+}
+
+.identity-token-display {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    padding: 1rem 1.25rem;
+    background: rgba(8, 20, 37, 0.8);
+    border: 1px solid rgba(80, 140, 255, 0.15);
+    border-radius: 10px;
+    margin-top: 1rem;
+}
+
+.identity-token-value {
+    flex: 1;
+    font-family: monospace;
+    font-size: 0.95rem;
+    color: rgb(80, 200, 120);
+    word-break: break-all;
+    line-height: 1.5;
+}
+
+.identity-token-copy-btn {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    background: rgba(80, 140, 255, 0.1);
+    border: 1px solid rgba(80, 140, 255, 0.3);
+    color: rgb(217, 228, 252);
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease;
+}
+
+.identity-token-copy-btn:hover {
+    background: rgba(80, 140, 255, 0.18);
+    color: white;
+}
+
+.identity-token-warning {
+    padding: 1rem 1.25rem;
+    background: rgba(255, 193, 7, 0.08);
+    border: 1px solid rgba(255, 193, 7, 0.2);
+    border-radius: 10px;
+    color: rgb(255, 200, 80);
+    margin-top: 1rem;
+    font-size: 0.9rem;
+}
+
+.identity-token-warning strong {
+    color: rgb(255, 200, 80);
+}
+
+.identity-token-warning code {
+    background: rgba(255, 193, 7, 0.1);
+    color: rgb(255, 210, 100);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: monospace;
+    font-size: 0.85rem;
+}
+
+.identity-tokens-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.identity-tokens-table thead th {
+    text-align: left;
+    padding: 0.75rem 1rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: rgb(142, 157, 177);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-bottom: 1px solid rgba(142, 157, 177, 0.12);
+}
+
+.identity-tokens-table thead th.text-end {
+    text-align: right;
+}
+
+.identity-tokens-table tbody td {
+    padding: 1rem;
+    color: rgb(217, 228, 252);
+    font-size: 0.9rem;
+    border-bottom: 1px solid rgba(142, 157, 177, 0.06);
+    vertical-align: middle;
+}
+
+.identity-tokens-table tbody tr:hover {
+    background: rgba(80, 140, 255, 0.04);
+}
+
+.identity-tokens-table .token-name {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.identity-tokens-table .token-name i {
+    color: rgb(80, 140, 255);
+}
+
+.identity-tokens-table .token-date {
+    color: rgb(142, 157, 177);
+    font-size: 0.85rem;
+}
+
+.identity-tokens-table .text-end {
+    text-align: right;
+}
+
+.identity-token-empty {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: rgb(142, 157, 177);
+}
+
+.identity-token-empty i {
+    font-size: 2.5rem;
+    color: rgba(142, 157, 177, 0.3);
+    display: block;
+    margin-bottom: 0.75rem;
+}
+
+.identity-token-empty p {
+    font-size: 0.9rem;
+    margin: 0;
+}
+
+
+.identity-revoke-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    background: rgba(220, 80, 80, 0.1);
+    border: 1px solid rgba(220, 80, 80, 0.3);
+    color: rgb(220, 100, 100);
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease;
+    text-decoration: none;
+}
+
+.identity-revoke-btn:hover {
+    background: rgba(220, 80, 80, 0.2);
+    color: rgb(240, 120, 120);
+}
+
+.table-header {
+    background: rgb(240, 120, 120);
+}
+
+@media (max-width: 767.98px) {
+    .identity-token-card {
+        padding: 1.25rem 1rem;
+    }
+
+    .identity-token-display {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+        padding: 0.75rem 1rem;
+    }
+
+    .identity-token-copy-btn {
+        justify-content: center;
+        width: 100%;
+    }
+
+    .identity-tokens-table {
+        font-size: 0.82rem;
+    }
+
+    .identity-tokens-table thead th,
+    .identity-tokens-table tbody td {
+        padding: 0.6rem 0.5rem;
+    }
+
+    .identity-tokens-table .token-name i {
+        display: none;
+    }
+
+    .identity-revoke-btn {
+        padding: 4px 8px;
+        font-size: 0.75rem;
+    }
 }

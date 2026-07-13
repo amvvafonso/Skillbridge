@@ -13,11 +13,11 @@
     <div class="org-profile">
 
         <!-- Banner -->
-        <img src="?handler=Image&key=@Model.Organization.BannerPath" alt="Banner" class="org-banner"/>
+        <img src="/api/images/@Model.Organization.BannerPath" alt="Banner" class="org-banner"/>
 
         <!-- Header of organization -->
         <div class="org-header">
-            <img src="?handler=Image&key=@Model.Organization.LogoPath" alt="@Model.Organization.OrganizationName"
+            <img src="/api/images/@Model.Organization.LogoPath" alt="@Model.Organization.OrganizationName"
                  class="org-logo"/>
             <div class="org-header-info w-100">
                 <h1 class="org-name">@Model.Organization.OrganizationName</h1>
@@ -95,9 +95,9 @@
                         <form id="form-create-post" method="post" class="create-post-form" style="display:none;">
                             @Html.AntiForgeryToken()
                             <div class="create-post-inner">
-                                <input type="text" asp-for="NewPostTitle" placeholder="Título" class="create-post-title"
+                                <input type="text" id="newPostTitle" name="newPostTitle" placeholder="Título" class="create-post-title"
                                        maxlength="100"/>
-                                <textarea asp-for="NewPostContent" placeholder="Escreve a publicação…"
+                                <textarea id="newPostContent" name="newPostContent" placeholder="Escreve a publicação…"
                                           class="create-post-content" maxlength="500" rows="4"></textarea>
                                 <div class="create-post-footer">
                                     <span class="char-count"><span id="char-current">0</span> / 500</span>
@@ -179,14 +179,15 @@
                         <form id="form-create-project" method="post" class="create-project-form" style="display:none;">
                             @Html.AntiForgeryToken()
                             <div class="create-project-inner">
-                                <input type="text" asp-for="NewProjectName" placeholder="Nome do projeto"
+                                <input type="text" id="newProjectName" name="newProjectName" placeholder="Nome do projeto"
                                        class="create-project-name" maxlength="200"/>
-                                <textarea asp-for="NewProjectDescription" placeholder="Descreve o projeto…"
+                                <textarea id="newProjectDescription" name="newProjectDescription" placeholder="Descreve o projeto…"
                                           class="create-project-description" maxlength="200" rows="3"></textarea>
-                                <input type="text" asp-for="NewProjectRepository"
+                                <input type="text" id="newProjectRepository" name="newProjectRepository"
                                        placeholder="Link do GitHub (opcional)" class="create-project-repository"/>
                                 <div class="create-project-toggle">
                                     <label class="toggle-switch">
+                                        <!-- Required for checkbox behaviour-->
                                         <input type="checkbox" asp-for="NewProjectPublic" checked/>
                                         <span class="toggle-slider"></span>
                                     </label>
@@ -297,7 +298,7 @@
                                 @Html.AntiForgeryToken()
                                 <div class="add-member-input-wrap">
                                     <i class="bi bi-envelope"></i>
-                                    <input asp-for="MemberEmail" placeholder="Email do membro"/>
+                                    <input id="memberEmail" name="memberEmail" placeholder="Email do membro"/>
                                 </div>
                                 <button id="btn-add" type="submit" asp-page-handler="AddMember" class="add-member-btn">
                                     <i class="bi bi-person-plus"></i> Adicionar
@@ -519,7 +520,7 @@
                         body: formData
                     });
                     const response = await res.json();
-
+                    console.log(response);
                     //Mostra toast de sucesso ou erro
                     mostrarToast(
                         response.success ? 'Informação' : 'Erro',
@@ -617,7 +618,7 @@
                             <div class="edit-field">
                                 <label class="edit-label">Logo</label>
                                 <div class="edit-file-row">
-                                    <img src="?handler=Image&key=@Model.Organization.LogoPath" alt="Logo atual"
+                                    <img src="/api/images/@Model.Organization.LogoPath" alt="Logo atual"
                                          class="edit-file-preview" id="preview-logo"/>
                                     <div class="edit-file-input-wrap">
                                         <label class="edit-file-label">
@@ -634,7 +635,7 @@
                             <div class="edit-field">
                                 <label class="edit-label">Banner</label>
                                 <div class="edit-file-row">
-                                    <img src="?handler=Image&key=@Model.Organization.BannerPath" alt="Banner atual"
+                                    <img src="/api/images/@Model.Organization.BannerPath" alt="Banner atual"
                                          class="edit-file-preview edit-banner-preview" id="preview-banner"/>
                                     <div class="edit-file-input-wrap">
                                         <label class="edit-file-label">
