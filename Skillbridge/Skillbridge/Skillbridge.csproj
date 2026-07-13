@@ -22,6 +22,7 @@
         <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.5" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="10.0.4" />
         <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="10.0.2" />
+        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.9.0" />
     </ItemGroup>
 
     <ItemGroup>
@@ -41,8 +42,7 @@
 
     <ItemGroup>
     </ItemGroup>
-    <Target Name="NpmInstall" BeforeTargets="Build"
-        Condition="!Exists('node_modules')">
+    <Target Name="NpmInstall" BeforeTargets="Build" Condition="!Exists('node_modules')">
   <Exec Command="npm install" />
 </Target>
 </Project>

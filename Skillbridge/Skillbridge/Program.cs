@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi;
+using Microsoft.OpenApi.Models;
 using Skillbridge.Auth;
 using Skillbridge.Data;
 using Skillbridge.Hubs;
@@ -39,13 +41,52 @@ builder.Services.AddAuthentication()
 builder.Services.AddAntiforgery(options => {
     options.HeaderName = "RequestVerificationToken";
 });
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(options =>
+{
+    options.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "SkillBridge API",
+        Version = "v1",
+        Description = "API para gestão de organizações, projetos e shadowing"
+    });
 
+    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Description = "Insere o token no formato: Bearer {o-teu-token}",
+        Name = "Bearer",
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.ApiKey,
+        Scheme = "Bearer"
+    });
+
+    // Sintaxe nova, baseada em delegate — resolve o erro que tiveste antes
+    options.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            Array.Empty<string>()
+        }
+    });
+});
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseMigrationsEndPoint();
+    app.UseSwagger();
+    app.UseSwaggerUI(options =>
+    {
+        options.SwaggerEndpoint("/swagger/v1/swagger.json", "SkillBridge API v1");
+    });
 }
 else
 {
@@ -55,14 +96,13 @@ else
 }
 
 app.UseHttpsRedirection();
+
 app.UseStatusCodePagesWithReExecute("/Home/Error", "?statusCode={0}");
 app.UseRouting();
-
 app.UseAuthentication();
 app.UseAuthorization();
-    
+app.MapSwagger().RequireAuthorization();
 app.MapStaticAssets();
-
 app.MapHub<NotificationHub>("/notificationHub");
 app.MapHub<ChatHub>("/chatHub");
 app.MapHub<CodeEditorHub>("/codeEditorHub");
