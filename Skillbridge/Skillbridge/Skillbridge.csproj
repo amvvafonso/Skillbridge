@@ -42,7 +42,10 @@
 
     <ItemGroup>
     </ItemGroup>
-    <Target Name="NpmInstall" BeforeTargets="Build" Condition="!Exists('node_modules')">
-  <Exec Command="npm install" />
-</Target>
+    <Target Name="NpmInstall" BeforeTargets="Build">
+      <Exec Command="pwd" />
+      <Exec Command="ls -la" />
+      <Exec Command="cat package.json" />
+      <Exec Command="npm install" />
+    </Target>
 </Project>
