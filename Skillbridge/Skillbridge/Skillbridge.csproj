@@ -42,7 +42,8 @@
 
     <ItemGroup>
     </ItemGroup>
-    <Target Name="NpmInstall" BeforeTargets="Build">
-    <Exec WorkingDirectory="$(MSBuildProjectDirectory)/.." Command="npm install" />
-</Target>
+    <Target Name="NpmInstall" BeforeTargets="Build"
+        Condition="!Exists('..\node_modules')">
+        <Exec WorkingDirectory=".." Command="npm install" />
+    </Target>
 </Project>
