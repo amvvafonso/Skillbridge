@@ -30,6 +30,7 @@ builder.Services.AddScoped<IProjectService, IProjectService.ProjectService>();
 builder.Services.AddScoped<INotificationService, INotificationService.NotificationService>(); 
 builder.Services.AddScoped<ISessionService, ISessionService.SessionService>();
 builder.Services.AddScoped<IApiTokenService, IApiTokenService.ApiTokenService>();
+builder.Services.AddScoped<IOrganizationMemberService, IOrganizationMemberService>();
 builder.Services.ConfigureApplicationCookie(options =>
 {
     options.AccessDeniedPath = "/Identity/Account/AccessDenied";
