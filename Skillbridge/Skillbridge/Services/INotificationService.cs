@@ -10,7 +10,7 @@ public interface INotificationService
     Task NotifyOrganizationInviteAsync(string userId, string organizationId, string organizationName);
     Task NotifyAsync(string userId, string message); 
 
-    public class NotificationService(IHubContext<NotificationHub> hubContext, ApplicationDbContext context) : INotificationService
+    public class NotificationService(IHubContext<NotificationHub> hubContext, ApplicationDbContext context, ILogger<NotificationService> logger) : INotificationService
     {
         public async Task NotifyOrganizationInviteAsync(string userId, string organizationId, string organizationName)
         {
@@ -25,11 +25,25 @@ public interface INotificationService
             context.Notifications.Add(new Notification(np, userId, NotificationType.OrganizationInvite));
             await context.SaveChangesAsync();
 
-            await hubContext.Clients.User(userId).SendAsync("ReceiveNotification", message);
+            try
+            {
+                await hubContext.Clients.User(userId).SendAsync("ReceiveNotification", message);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Notificação de convite guardada na BD, mas falhou o envio em tempo real ao utilizador {UserId}", userId);
+            }
         }
         public async Task NotifyAsync(string userId, string message)
         {
-            await hubContext.Clients.User(userId).SendAsync("ReceiveNotification", message);
+            try
+            {
+                await hubContext.Clients.User(userId).SendAsync("ReceiveNotification", message);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Falha ao enviar notificação em tempo real ao utilizador {UserId}", userId);
+            }
         }
     }
 }

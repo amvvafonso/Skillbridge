@@ -185,7 +185,7 @@ public class ProfileModel(ApplicationDbContext context, IOrganizationService org
         var  userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (string.IsNullOrEmpty(userId)) return new JsonResult(new { success = false, message = "É preciso estar autenticado para esta operação!" });
         
-        var result = await organizationService.AddMemberAsync(id, memberEmail);
+        var result = await organizationService.AddMemberAsync(id, memberEmail, userId);
 
         switch (result.ErrorType)
         {
