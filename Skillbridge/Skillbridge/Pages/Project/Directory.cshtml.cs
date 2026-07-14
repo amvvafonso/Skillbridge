@@ -91,7 +91,7 @@ public class Directory(ApplicationDbContext context, IS3Api is3Api, IProjectServ
 
             // If all the conditions above meet then it gets the project and files
             // Gets all buckets from the S3
-            var bucketList = is3Api.ListBucketsAsync().Result;
+            var bucketList = is3Api.ListBucketsAsync(user).Result;
             // Sends it to the Page if not null
             bucketList.ForEach(b =>
             {

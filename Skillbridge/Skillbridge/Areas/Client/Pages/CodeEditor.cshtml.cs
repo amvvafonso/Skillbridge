@@ -101,7 +101,7 @@ namespace Skillbridge.Areas.Client.Pages
             try
             {
                 //Vai buscar o conteudo atualizado ao S3
-                FileContent = await is3Api.ObterFicheiroAsync(bucket, CurrentFile.Path) ?? string.Empty;
+                FileContent = await is3Api.ObterFicheiroAsync(bucket, CurrentFile.Path, CurrentUser.Id) ?? string.Empty;
             }
             catch (Amazon.Runtime.AmazonServiceException)
             {

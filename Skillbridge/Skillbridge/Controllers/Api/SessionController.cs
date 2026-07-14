@@ -1,70 +1,99 @@
+using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Skillbridge.Data;
+using Skillbridge.Models;
+using Skillbridge.Models.Client;
 using Skillbridge.Models.Project;
+using Skillbridge.Services;
+using Skillbridge.Utilities;
 
 namespace Skillbridge.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class SessionController : ControllerBase
+public class SessionController(ApplicationDbContext context, ISessionService sessionService) : ControllerBase
 {
-    private readonly ApplicationDbContext _context;
-
-    public SessionController(ApplicationDbContext context)
-    {
-        _context = context;
-    }
-
+  
     // GET: api/session
     [HttpGet]
     public async Task<ActionResult<IEnumerable<Session>>> GetSessions()
     {
-        return await _context.Sessions
-            .Include(s => s.file)
-            .OrderByDescending(s => s.CreatedAt)
-            .ToListAsync();
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId == null) return BadRequest();
+        
+        return await sessionService.GetAllSessionsAsync(userId);
     }
 
     // GET: api/session/{id}
     [HttpGet("{id}")]
-    public async Task<ActionResult<Session>> GetSession(string id)
+    public async Task<ActionResult<Session?>> GetSession(string id)
     {
-        var session = await _context.Sessions
-            .Include(s => s.file)
-            .FirstOrDefaultAsync(s => s.Id == id);
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId == null) return BadRequest();
 
-        if (session == null)
-            return NotFound();
-
-        return session;
-    }
-
-    // GET: api/session/file/{fileId}
-    [HttpGet("file/{fileId}")]
-    public async Task<ActionResult<IEnumerable<Session>>> GetSessionsByFile(string fileId)
-    {
-        return await _context.Sessions
-            .Where(s => s.fileId == fileId)
-            .Include(s => s.file)
-            .ToListAsync();
-    }
-
-    // POST: api/session
-    [HttpPost]
-    public async Task<ActionResult<Session>> CreateSession(Session session)
-    {
-        session.Id = Guid.NewGuid().ToString();
-        session.CreatedAt = DateTime.UtcNow;
-
-        _context.Sessions.Add(session);
-        await _context.SaveChangesAsync();
-
-        return CreatedAtAction(nameof(GetSession),
-            new { id = session.Id },
-            session);
+        return await sessionService.GetSessionAsync(id);
     }
     
 
+    // POST: api/session
+    [HttpPost]
+    public async Task<ActionResult<string>> CreateSession(string bucket, string key, string title, string description, bool isPublic)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId == null) return BadRequest();
+
+        var result = await sessionService.CreateSessionAsync(bucket, key, title, description, isPublic, userId);
+        if (result.Success) return Ok(result.Message);
+
+        switch (result.ErrorType)
+        {
+            case ErrorType.Denied: return Forbid();
+            case ErrorType.NotFound: return NotFound();
+            default:
+                return BadRequest(result.Message);
+        }
+    }
+
+
+    
+    [HttpPost("session/invite/{sessionId}")]
+    public async Task<ActionResult<string>> InviteMember(string sessionId, string userEmail, Role role)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId == null) return BadRequest();
+
+        var result = await sessionService.AllowEntrance(sessionId, userEmail, userId, role);
+        
+        if (result.Success) return Ok(result.Message);
+
+        switch (result.ErrorType)
+        {
+            case ErrorType.Denied: return Forbid();
+            case ErrorType.NotFound: return NotFound(result.Message);
+            default:
+                return BadRequest(result.Message);
+        }
+
+    }
+
+    [HttpPost("session/end/{sessionId}")]
+    public async Task<ActionResult<string>> EndSession(string sessionId)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId == null) return BadRequest();
+        
+        var result = await sessionService.EndSessionAsync(sessionId, userId);
+        
+        if (result.Success) return Ok(result.Message);
+
+        switch (result.ErrorType)
+        {
+            case ErrorType.Denied: return Forbid();
+            case ErrorType.NotFound: return NotFound(result.Message);
+            default:
+                return BadRequest(result.Message);
+        }
+    }
 
 }

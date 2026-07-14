@@ -12,6 +12,8 @@ namespace Skillbridge.Services;
 
 public interface ISessionService
 {
+    Task<List<Session>> GetAllSessionsAsync(string userid);
+    Task<Session?> GetSessionAsync(string sessionId);
     Task<Result> CreateSessionAsync(string bucket, string key, string title, string description, bool isPublic, string userId);
     Task<Result> AllowEntrance(string sessionId, string userEmail, string userId, Role role);
     
@@ -19,6 +21,27 @@ public interface ISessionService
     
     public class SessionService(ApplicationDbContext context, IOrganizationService organizationService, INotificationService notificationHub) : ISessionService
     {
+        public async Task<List<Session>> GetAllSessionsAsync(string userid)
+        {
+            var userSessions = await context.SessionAccesses
+                .Where(sa => sa.UserId == userid)
+                .Include(sa => sa.Session)
+                .ThenInclude(s => s.file)
+                .Select(sa => sa.Session)
+                .OrderByDescending(s => s.CreatedAt)
+                .ToListAsync();
+            
+            return userSessions;
+        }
+
+        public async Task<Session?> GetSessionAsync(string sessionId)
+        {
+            var session = await context.Sessions.FirstOrDefaultAsync(s => s.Id == sessionId);
+            
+            return session;
+        }
+
+
         public async Task<Result> CreateSessionAsync(string bucket, string key, string title, string description, bool isPublic, string userId)
         {
             var file = await context.Files.FirstOrDefaultAsync(f => f.Path == key);
