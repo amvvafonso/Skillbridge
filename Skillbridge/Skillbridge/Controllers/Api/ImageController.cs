@@ -7,6 +7,11 @@ namespace Skillbridge.Controllers;
 [Route("api/images")]
 public class ImagesController(IS3Api s3Api) : ControllerBase
 {
+    /// <summary>
+    /// Retorna uma imagem do S3 (procura sempre no bucket "logo")
+    /// </summary>
+    /// <param name="key">Key da imagem</param>
+    /// <returns>Imagem</returns>
     [HttpGet("{key}")]
     public async Task<IActionResult> Get(string key)
     {

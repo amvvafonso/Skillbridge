@@ -42,7 +42,7 @@ public class OrganizationService(ApplicationDbContext context, IS3Api iS3Api, IN
             var bytes = ms.ToArray();
             
             var ext =  Path.GetExtension(logo.FileName);
-            var uploaded = await iS3Api.UploadBinaryAsync("logos",  $"{newGuid}{ext}" , bytes,  logo.ContentType );
+            var uploaded = await iS3Api.UploadBinaryAsync("logos",  $"{newGuid}{ext}" , bytes,  logo.ContentType);
             if (uploaded) logoPath = $"{newGuid}{ext}";
         }
 

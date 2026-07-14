@@ -9,6 +9,7 @@ namespace Skillbridge.Services;
 
 public interface IApiTokenService
 {
+
     Task<Result> CreateTokenAsync(string userId, string name);
     Task<Result?> ValidateTokenAsync(string rawToken); // devolve o userId, ou null se inválido
     Task<List<ApiToken>> GetUserTokensAsync(string userId);
@@ -31,7 +32,7 @@ public interface IApiTokenService
 
             await context.SaveChangesAsync();
 
-            return Result.Ok("Sucesso", rawToken); // única vez que o valor em claro existe
+            return Result.Ok("Sucesso", rawToken); // valor original, ultima vez apresentado
         }
 
         public async Task<Result?> ValidateTokenAsync(string rawToken)

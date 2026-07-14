@@ -166,7 +166,7 @@ public interface IProjectService
                 ? $"{folderName.Trim('/')}/"
                 : $"{prefix}{folderName.Trim('/')}";
 
-            var success = await is3Api.EditarFicheiroAsync(bucket, key, string.Empty);
+            var success = await is3Api.EditarFicheiroAsync(bucket, key, string.Empty, userId);
             return !success ? Result.Fail("Error ao criar a pasta", ErrorType.Misc) : Result.Ok(message: "Pasta criada com sucesso!");
         }
 
@@ -182,17 +182,17 @@ public interface IProjectService
 
             for (var attempt = 1; attempt <= maxAttempts; attempt++)
             {
-                var files = await is3Api.ListFilesAsync(bucket);
+                var files = await is3Api.ListFilesAsync(bucket, userId);
 
                 if (files is { Count: > 0 })
                 {
                     foreach (var file in files.Where(f => f.Key.StartsWith(folderPath)))
                     {
-                        await is3Api.EliminarFicheiroAsync(bucket, file.Key);
+                        await is3Api.EliminarFicheiroAsync(bucket, file.Key, userId);
                     }
                 }
 
-                var folderDeleted = await is3Api.EliminarFicheiroAsync(bucket, folderPath);
+                var folderDeleted = await is3Api.EliminarFicheiroAsync(bucket, folderPath, userId);
 
                 if (folderDeleted)
                     return Result.Ok(message: "Pasta eliminada com sucesso!");
@@ -217,12 +217,14 @@ public interface IProjectService
                 return Result.Fail("Não tem permissão!", ErrorType.Denied);
             }
             
-            var success = await is3Api.EliminarFicheiroAsync(bucket, key);
+            var success = await is3Api.EliminarFicheiroAsync(bucket, key, userId);
 
-            var file = await context.Files.FirstOrDefaultAsync(f => f != null && f.Path == key);
+            var file = await context.Files.FirstOrDefaultAsync(f => f.Path == key);
             
-            if (success || file != null) context.Files.Remove(file);
-            
+            if (success || file != null)
+                if (file != null)
+                    context.Files.Remove(file);
+
             await context.SaveChangesAsync();
             
             return !success ? Result.Fail("Ocorreu um erro na eliminação do ficheiro!", ErrorType.Misc) : Result.Ok(message: "Pasta eliminada com sucesso!");

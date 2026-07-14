@@ -13,6 +13,10 @@ namespace Skillbridge.Controllers.Api;
 [Authorize(AuthenticationSchemes = "ApiKey")]
 public class OrganizationController(ApplicationDbContext context, IOrganizationService organizationService) : ControllerBase
 {
+    /// <summary>
+    /// Retorna todas as organizações
+    /// </summary>
+    /// <returns>LÇista de organizações</returns>
     // GET: api/organization
     [HttpGet]
     public async Task<ActionResult<IEnumerable<Organization>>> GetOrganizations()
@@ -20,6 +24,11 @@ public class OrganizationController(ApplicationDbContext context, IOrganizationS
         return await context.Organizations.ToListAsync();
     }
 
+    /// <summary>
+    /// Devolve a organização 
+    /// </summary>
+    /// <param name="id">Id da organização</param>
+    /// <returns>Retorna organização</returns>
     // GET: api/organization/{id}
     [HttpGet("{id}")]
     public async Task<ActionResult<Organization>> GetOrganization(string id)
@@ -32,6 +41,14 @@ public class OrganizationController(ApplicationDbContext context, IOrganizationS
         return organization;
     }
 
+    /// <summary>
+    /// Criar uma organização
+    /// </summary>
+    /// <param name="organizationName">Nome</param>
+    /// <param name="organizationAddress">Morada</param>
+    /// <param name="organizationDescription">Descrição</param>
+    /// <param name="logo">Logotipo</param>
+    /// <returns>Retorna se a operação foi bem sucedida</returns>
     // POST: api/organization
     [HttpPost]
     public async Task<ActionResult<Organization>> CreateOrganization(string organizationName, string organizationAddress, string organizationDescription, IFormFile? logo)
@@ -52,7 +69,17 @@ public class OrganizationController(ApplicationDbContext context, IOrganizationS
         }
   
     }
-
+    
+    /// <summary>
+    /// Atualizar a organização
+    /// </summary>
+    /// <param name="id">Id da organização</param>
+    /// <param name="organizationName">Novo nome</param>
+    /// <param name="organizationAddress">Nova mroada</param>
+    /// <param name="organizationDescription">Nova descrição</param>
+    /// <param name="logo">Novo logotipo</param>
+    /// <param name="banner">"Banner" (apenas pode ser alterada no update)</param>
+    /// <returns></returns>
     // PUT: api/organization/{id}
     [HttpPut("{id}")]
     public async Task<IActionResult> UpdateOrganization(string id, string organizationName, string organizationAddress, string organizationDescription, IFormFile? logo, IFormFile? banner)
@@ -72,7 +99,12 @@ public class OrganizationController(ApplicationDbContext context, IOrganizationS
                 return BadRequest(result.Message);
         }
     }
-
+    
+    /// <summary>
+    /// Eliminar organização e todos os dados/ficheiros associados
+    /// </summary>
+    /// <param name="id">Id da organização</param>
+    /// <returns></returns>
     // DELETE: api/organization/{id}
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteOrganization(string id)

@@ -11,6 +11,11 @@ namespace Skillbridge.Controllers;
 [Route("api/[controller]")]
 public class OrganizationMemberController(ApplicationDbContext context, IOrganizationMemberService organizationMemberService, IOrganizationService organizationService) : ControllerBase
 {
+    /// <summary>
+    /// Listar todos os membros de uma organização
+    /// </summary>
+    /// <param name="organizationId">Id da organização</param>
+    /// <returns>Lista de membros</returns>
     // GET: api/organizationmember/organization/{organizationId}
     [HttpGet("organization/{organizationId}")]
     public async Task<ActionResult<IEnumerable<OrganizationMember>>> GetMembersByOrganization(string organizationId)
@@ -22,7 +27,12 @@ public class OrganizationMemberController(ApplicationDbContext context, IOrganiz
     }
     
     
-    
+    /// <summary>
+    /// Promover um membro da organização
+    /// </summary>
+    /// <param name="organizationId">Id da organização</param>
+    /// <param name="memberId">Id do membro</param>
+    /// <returns></returns>
     [HttpPost("organization/{organizationId}/promote/{memberId}")]
     public async Task<ActionResult<IEnumerable<OrganizationMember>>> PromoteMember(string organizationId, string memberId)
     {
@@ -41,7 +51,12 @@ public class OrganizationMemberController(ApplicationDbContext context, IOrganiz
         }
     }
     
-
+    /// <summary>
+    /// Remover membro da organização
+    /// </summary>
+    /// <param name="organizationId">Id da organização</param>
+    /// <param name="memberId">Id do membro a remover</param>
+    /// <returns></returns>
     // DELETE: api/organizationmember/{id}
     [HttpDelete("organization/{organizationId}/member/{memberId}")]
     public async Task<IActionResult> RemoveMember(string organizationId, string memberId)

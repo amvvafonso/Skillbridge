@@ -117,7 +117,7 @@ public class Directory(ApplicationDbContext context, IS3Api is3Api, IProjectServ
             }
 
             // Fetches all files from bucket
-            var filelist = is3Api.ListFilesAsync(CurrentBucket).Result;
+            var filelist = is3Api.ListFilesAsync(CurrentBucket, user).Result;
             Files = filelist ?? new List<Amazon.S3.Model.S3Object>();
 
             // Extract unique folder names from files that share the current prefix

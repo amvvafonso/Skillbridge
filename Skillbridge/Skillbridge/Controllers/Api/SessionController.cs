@@ -15,6 +15,10 @@ namespace Skillbridge.Controllers;
 public class SessionController(ApplicationDbContext context, ISessionService sessionService) : ControllerBase
 {
   
+    /// <summary>
+    /// Listar todas as sessões que o utilizador tem acesso
+    /// </summary>
+    /// <returns>Lista de sessões (ativas!)</returns>
     // GET: api/session
     [HttpGet]
     public async Task<ActionResult<IEnumerable<Session>>> GetSessions()
@@ -25,6 +29,11 @@ public class SessionController(ApplicationDbContext context, ISessionService ses
         return await sessionService.GetAllSessionsAsync(userId);
     }
 
+    /// <summary>
+    /// Vai buscar a sessão especificada
+    /// </summary>
+    /// <param name="id">Id da sessão</param>
+    /// <returns>Sessão</returns>
     // GET: api/session/{id}
     [HttpGet("{id}")]
     public async Task<ActionResult<Session?>> GetSession(string id)
@@ -35,7 +44,15 @@ public class SessionController(ApplicationDbContext context, ISessionService ses
         return await sessionService.GetSessionAsync(id);
     }
     
-
+    /// <summary>
+    /// Criar uma sessão
+    /// </summary>
+    /// <param name="bucket">Bucket</param>
+    /// <param name="key">Key do ficheiro</param>
+    /// <param name="title">Nome da sessão</param>
+    /// <param name="description">Descrição da sessão</param>
+    /// <param name="isPublic">Pública</param>
+    /// <returns></returns>
     // POST: api/session
     [HttpPost]
     public async Task<ActionResult<string>> CreateSession(string bucket, string key, string title, string description, bool isPublic)
@@ -56,7 +73,13 @@ public class SessionController(ApplicationDbContext context, ISessionService ses
     }
 
 
-    
+    /// <summary>
+    /// Convidar utilizador para a sessão
+    /// </summary>
+    /// <param name="sessionId">Id da sessão</param>
+    /// <param name="userEmail">Email do utilizador a adicionar</param>
+    /// <param name="role">A sua role (1 - Mentor, 2 - Apprentice, 3 - Unknown, 4 - Manager, 5 - Owner)</param>
+    /// <returns></returns>
     [HttpPost("session/invite/{sessionId}")]
     public async Task<ActionResult<string>> InviteMember(string sessionId, string userEmail, Role role)
     {
@@ -76,7 +99,12 @@ public class SessionController(ApplicationDbContext context, ISessionService ses
         }
 
     }
-
+    
+    /// <summary>
+    /// Terminar sessão ativa
+    /// </summary>
+    /// <param name="sessionId">Id da sessão</param>
+    /// <returns></returns>
     [HttpPost("session/end/{sessionId}")]
     public async Task<ActionResult<string>> EndSession(string sessionId)
     {
