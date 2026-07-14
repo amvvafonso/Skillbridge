@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using Skillbridge.Models;
 
@@ -6,7 +7,7 @@ namespace Skillbridge.Controllers;
 
 
 
-public class HomeController() : Controller
+public class HomeController(ILogger<HomeController> logger) : Controller
 {
     public async Task<IActionResult> Index()
     {
@@ -27,6 +28,13 @@ public class HomeController() : Controller
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
     public IActionResult Error(int? statusCode)
     {
+        var exceptionFeature = HttpContext.Features.Get<IExceptionHandlerFeature>();
+        if (exceptionFeature?.Error != null)
+        {
+            logger.LogError(exceptionFeature.Error,
+                "Erro não tratado em {Path} (StatusCode: {StatusCode})",
+                exceptionFeature.Path, statusCode);
+        }
         //Aplica o códito HTTP correto à resposta
         if (statusCode.HasValue) Response.StatusCode = statusCode.Value;
 
