@@ -17,7 +17,7 @@ using Skillbridge.Utilities;
 
 namespace Skillbridge.Pages.Organization;
 
-public class ProfileModel(ApplicationDbContext context, IOrganizationService organizationService, IProjectService projectService) : PageModel
+public class ProfileModel(ApplicationDbContext context, IOrganizationService organizationService, IProjectService projectService, IOrganizationMemberService organizationMemberService) : PageModel
 {
     //Limit of posts visible
     private const int PostLimit = 3;
@@ -219,7 +219,7 @@ public class ProfileModel(ApplicationDbContext context, IOrganizationService org
             
         var result = await organizationService.DeleteMemberAsync(memberId ,organizationId, user);
             
-        return new JsonResult(new { success = true, message = "Membro removido com sucesso da organização" });
+        return new JsonResult(new { success = result.Success, message = result.Message });
     }
 
     // Done

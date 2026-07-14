@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -15,7 +16,9 @@ public class S3Controller(IS3Api is3Api) : ControllerBase
     [HttpGet("buckets")]
     public async Task<IActionResult> GetBuckets()
     {
-        var buckets = await is3Api.ListBucketsAsync();
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId == null) return BadRequest();
+        var buckets = await is3Api.ListBucketsAsync(userId);
 
         if (buckets == null)
             return BadRequest("Erro ao obter buckets.");
