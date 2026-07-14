@@ -10,7 +10,7 @@ namespace Skillbridge.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
-public class S3Controller(IS3Api is3Api) : ControllerBase
+public class S3Controller(IS3Api is3Api, ApplicationDbContext _context, ILogger<S3Controller> logger) : ControllerBase
 {
     
     [HttpGet("buckets")]
@@ -40,10 +40,25 @@ public class S3Controller(IS3Api is3Api) : ControllerBase
     [HttpGet("download")]
     public async Task<IActionResult> Download(string bucket, string key)
     {
-        var file = await is3Api.GetBinaryAsync(bucket, key);
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId == null) return Unauthorized();
 
-        if (file == null)
-            return NotFound();
+        if (bucket != "logos" && bucket != "banners")
+        {
+            var hasAccess = await _context.Files
+                .Where(f => f.FileId == key)
+                .Join(_context.UserProjectAccesses, f => f.ProjectId, upa => upa.ProjectId, (f, upa) => upa)
+                .AnyAsync(upa => upa.UserId == userId);
+
+            if (!hasAccess)
+            {
+                logger.LogWarning("Utilizador {UserId} tentou aceder ao ficheiro {Key} sem permissão", userId, key);
+                return Forbid();
+            }
+        }
+
+        var file = await is3Api.GetBinaryAsync(bucket, key);
+        if (file == null) return NotFound();
 
         return File(file.Value.Data, file.Value.ContentType);
     }
