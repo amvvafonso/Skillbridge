@@ -15,7 +15,7 @@ public interface IOrganizationService
     Task<Result> EditOrganizationAsync(string organizationId, string userId, string? name, string? address,  string? description, IFormFile? logo, IFormFile? banner);
     Task<Result> DeleteOrganizationAsync(string orgId, string userId);
     Task<Result> DeleteProjectAsync(string projectId, string userId);
-    Task<Result> AddMemberAsync(string organizationId, string memberEmail);
+    Task<Result> AddMemberAsync(string organizationId, string memberEmail, string userId);
     Task<Result> DeleteMemberAsync(string memberId, string organizationId,  string userId);
     Task<Result> PromoteMemberAsync(string memberId, string organizationId, string userId);
     Task<Result> CreatePostAsync(string organizationId, string newPostTitle, string newPostContent, string userId);
@@ -25,7 +25,7 @@ public interface IOrganizationService
 }
 
 
-public class OrganizationService(ApplicationDbContext context, IS3Api iS3Api, INotificationService notificationService) : IOrganizationService
+public class OrganizationService(ApplicationDbContext context, IS3Api iS3Api, INotificationService notificationService, ILogger<OrganizationService> logger) : IOrganizationService
 {
     public async Task<Result> CreateOrganizationAsync(string userId, string organizationName, string organizationAddress, string organizationDescription, IFormFile? logo) {
         if (string.IsNullOrEmpty(organizationName) || string.IsNullOrEmpty(organizationAddress) ||
@@ -66,7 +66,11 @@ public class OrganizationService(ApplicationDbContext context, IS3Api iS3Api, IN
     public async Task<Result> EditOrganizationAsync(string organizationId, string userId, string? name, string? address, string? description, IFormFile? logo, IFormFile? banner)
     {
         var permission = await MemberBelongsToOrganization(organizationId, userId);
-        if (permission == null || permission.Role != Role.Owner) return Result.Fail("Apenas o dono pode editar a organização.", ErrorType.Denied);
+        if (permission == null || permission.Role != Role.Owner)
+        {
+            logger.LogWarning("Utilizador {UserId} tentou editar a organização {OrganizationId} sem ser dono", userId, organizationId);
+            return Result.Fail("Apenas o dono pode editar a organização.", ErrorType.Denied);
+        }
 
         var organization = await GetOrganization(organizationId);
         if (organization == null) return Result.Fail("Organização não encontrada.", ErrorType.NotFound);
@@ -106,35 +110,30 @@ public class OrganizationService(ApplicationDbContext context, IS3Api iS3Api, IN
     }
 
     
-    
-    public async Task<Result> AddMemberAsync(string organizationId, string memberEmail)
+    public async Task<Result> AddMemberAsync(string organizationId, string memberEmail, string userId)
     {
         if (string.IsNullOrEmpty(organizationId) || string.IsNullOrEmpty(memberEmail))
+            return Result.Fail("Nenhuma organização e/ou user colocado!", ErrorType.MissingComponent);
+
+        var requester = await MemberBelongsToOrganization(organizationId, userId);
+        if (requester == null || (requester.Role != Role.Owner && requester.Role != Role.Manager))
         {
-            return Result.Fail("Nenhuma organização e/ou user colocado!", ErrorType.MissingComponent);   
-        }
-        
-        var organization = await GetOrganization(organizationId);
-        
-        if (organization == null)
-        {
-            return Result.Fail("Não existe a organização!", ErrorType.NotFound);
+            logger.LogWarning("Utilizador {UserId} tentou convidar {Email} para a organização {OrganizationId} sem permissão", userId, memberEmail, organizationId);
+            return Result.Fail("Não tem permissão para convidar membros!", ErrorType.Denied);
         }
 
+        var organization = await GetOrganization(organizationId);
+        if (organization == null) return Result.Fail("Não existe a organização!", ErrorType.NotFound);
+
         if (await OrganizationMember.IsMember(context, memberEmail, organizationId))
-        {
             return Result.Fail("O membro já pertence à organização", ErrorType.Misc);
-        }
         
         var user = await context.Users
             .Where(u => u.Email == memberEmail)
             .Select(u => new {u.Id, u.Email})
             .FirstOrDefaultAsync();
         
-        if (user == null)
-        {
-            return Result.Fail("Não existe utilizador com esse email", ErrorType.Misc);
-        }
+        if (user == null) return Result.Fail("Não existe utilizador com esse email", ErrorType.Misc);
 
         await notificationService.NotifyOrganizationInviteAsync(user.Id, organization.OrganizationId, organization.OrganizationName);
         
@@ -145,13 +144,12 @@ public class OrganizationService(ApplicationDbContext context, IS3Api iS3Api, IN
     {
         if (!context.OrganizationMembers.Any(p => p.User == userId && p.Organization == organizationId && p.Role == Role.Owner))
         {
+            logger.LogWarning("Utilizador {UserId} tentou remover um membro da organização {OrganizationId} sem ser dono", userId, organizationId);
             return Result.Fail("Não tem permissão para remover membros!", ErrorType.Denied);
         }
 
         if (context.OrganizationMembers.Any(p => p.User == memberId && p.Organization == organizationId && p.Role == Role.Owner))
-        {
             return Result.Fail("Não pode remover o dono da organização!", ErrorType.Misc);
-        }
             
         context.OrganizationMembers.RemoveRange(
             context.OrganizationMembers
@@ -167,22 +165,21 @@ public class OrganizationService(ApplicationDbContext context, IS3Api iS3Api, IN
     public async Task<Result> PromoteMemberAsync(string memberId, string organizationId, string userId)
     {
         if (string.IsNullOrEmpty(organizationId) || string.IsNullOrEmpty(memberId) || string.IsNullOrEmpty(userId))
-        {
             return Result.Fail("Falta componentes para a operação",  ErrorType.MissingComponent);
-        }
         
         var permission = await MemberBelongsToOrganization(organizationId, userId);
         if (permission == null) return Result.Fail("Ocorreu um erro na autorização!",  ErrorType.Misc);
-        var isOwnerOrManager = permission.Role != Role.Owner || permission.Role != Role.Manager;
+
+        var isOwnerOrManager = permission.Role == Role.Owner || permission.Role == Role.Manager;
         if (!isOwnerOrManager)
         {
-            return Result.Fail("Não tem permissões para promover membros!", ErrorType.Misc);
+            logger.LogWarning("Utilizador {UserId} tentou promover um membro na organização {OrganizationId} sem ser Owner/Manager", userId, organizationId);
+            return Result.Fail("Não tem permissões para promover membros!", ErrorType.Denied);
         }
+
         var member = await MemberBelongsToOrganization(organizationId, memberId);
-        if (member == null)
-        {
-            return Result.Fail("O membro não pertence a organização!", ErrorType.Misc);
-        }
+        if (member == null) return Result.Fail("O membro não pertence a organização!", ErrorType.Misc);
+
         var newRole = member.Role switch
         {
             Role.Apprentice => Role.Mentor,
@@ -203,13 +200,12 @@ public class OrganizationService(ApplicationDbContext context, IS3Api iS3Api, IN
     public async Task<Result> DeleteOrganizationAsync(string organizationId, string userId)
     {
         if (string.IsNullOrEmpty(organizationId) || string.IsNullOrEmpty(userId))
-        {
-            return Result.Fail("Nenhuma organização e/ou user colocado!", ErrorType.MissingComponent);            
-        }
+            return Result.Fail("Nenhuma organização e/ou user colocado!", ErrorType.MissingComponent);
         
         var permission = await MemberBelongsToOrganization(organizationId, userId);
         if (permission == null || permission.Role != Role.Owner)
         {
+            logger.LogWarning("Utilizador {UserId} tentou eliminar a organização {OrganizationId} sem ser dono", userId, organizationId);
             return Result.Fail("Apenas o dono pode eliminar a organização", ErrorType.Denied);
         }
         
@@ -235,19 +231,24 @@ public class OrganizationService(ApplicationDbContext context, IS3Api iS3Api, IN
         context.Organizations.Remove(organization);
 
         await context.SaveChangesAsync();
-        
+
+        // Log informativo — não é uma tentativa negada, mas vale a pena ter rasto de eliminações (ação destrutiva e irreversível)
+        logger.LogInformation("Organização {OrganizationId} eliminada pelo dono {UserId}", organizationId, userId);
+
         return Result.Ok(message: "Organização eliminada com sucesso!");
     }
 
     public async Task<Result> CreatePostAsync(string organizationId, string newPostTitle, string newPostContent, string userId)
     {
         if (string.IsNullOrEmpty(newPostTitle) || string.IsNullOrEmpty(newPostContent))
-        {
             return Result.Fail("É obrigatório preencher os campos todos", ErrorType.MissingComponent);
-        }
         
         var permission =  await MemberBelongsToOrganization(organizationId, userId);
-        if (permission == null) return Result.Fail("Não tem permissão para criar publicações", ErrorType.Denied);
+        if (permission == null)
+        {
+            logger.LogWarning("Utilizador {UserId} tentou criar uma publicação na organização {OrganizationId} sem pertencer a ela", userId, organizationId);
+            return Result.Fail("Não tem permissão para criar publicações", ErrorType.Denied);
+        }
         
         context.Posts.Add(new Post
         {
@@ -267,10 +268,22 @@ public class OrganizationService(ApplicationDbContext context, IS3Api iS3Api, IN
 
     public async Task<Result> DeletePostAsync(string postId, string userId)
     {
-        if (string.IsNullOrEmpty(postId)) return Result.Fail("Nenhuma organização especificada!", ErrorType.MissingComponent);
+        if (string.IsNullOrEmpty(postId)) return Result.Fail("Nenhuma publicação especificada!", ErrorType.MissingComponent);
+
         var post = await context.Posts.FirstOrDefaultAsync(p => p.PostId == postId);
         if (post == null) return Result.Fail("A publicação selecionada não existe!", ErrorType.Misc);
-        
+
+        // Só o autor ou um Owner/Manager da organização pode apagar
+        var isAuthor = post.AuthorID == userId;
+        var permission = await MemberBelongsToOrganization(post.OrganizationId, userId);
+        var isOwnerOrManager = permission != null && (permission.Role == Role.Owner || permission.Role == Role.Manager);
+
+        if (!isAuthor && !isOwnerOrManager)
+        {
+            logger.LogWarning("Utilizador {UserId} tentou apagar a publicação {PostId} sem ser autor nem Owner/Manager", userId, postId);
+            return Result.Fail("Não tem permissão para apagar esta publicação!", ErrorType.Denied);
+        }
+
         context.Posts.Remove(post);
         await context.SaveChangesAsync();
 

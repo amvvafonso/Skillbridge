@@ -1,5 +1,6 @@
 using System.Security.Cryptography;
 using System.Text;
+using Microsoft.Extensions.Logging;
 using Microsoft.EntityFrameworkCore;
 using Skillbridge.Data;
 using Skillbridge.Models;
@@ -14,7 +15,7 @@ public interface IApiTokenService
     Task<List<ApiToken>> GetUserTokensAsync(string userId);
     Task RevokeTokenAsync(int tokenId, string userId);
     
-    public class ApiTokenService(ApplicationDbContext context) : IApiTokenService
+    public class ApiTokenService(ApplicationDbContext context, ILogger<ApiTokenService> logger) : IApiTokenService
     {
         public async Task<Result> CreateTokenAsync(string userId, string name)
         {
@@ -31,6 +32,8 @@ public interface IApiTokenService
 
             await context.SaveChangesAsync();
 
+            logger.LogInformation("Token API '{Name}' criado para o utilizador {UserId}", name, userId);
+            
             return Result.Ok("Sucesso", rawToken); // única vez que o valor em claro existe
         }
 
@@ -41,7 +44,11 @@ public interface IApiTokenService
             var token = await context.ApiTokens
                 .FirstOrDefaultAsync(t => t.TokenHash == hash && !t.IsRevoked);
 
-            if (token == null) return Result.Fail("Token não encontrado!", ErrorType.Denied);
+            if (token == null)
+            {
+                logger.LogWarning("Tentativa de validação com token inválido ou revogado");
+                return Result.Fail("Token não encontrado!", ErrorType.Denied);
+            }
 
             token.LastUsedAt = DateTime.UtcNow;
             await context.SaveChangesAsync();
@@ -64,6 +71,11 @@ public interface IApiTokenService
             {
                 token.IsRevoked = true;
                 await context.SaveChangesAsync();
+                logger.LogInformation("Token {TokenId} revogado pelo utilizador {UserId}", tokenId, userId);
+            }
+            else
+            {
+                logger.LogWarning("Utilizador {UserId} tentou revogar o token {TokenId} que não lhe pertence ou não existe", userId, tokenId);
             }
         }
 
