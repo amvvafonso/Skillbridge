@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Options;
 using Skillbridge.Services;
 
+/// <inheritdoc />
 public class ApiKeyAuthentication(
     IOptionsMonitor<AuthenticationSchemeOptions> options,
     ILoggerFactory logger,
@@ -17,6 +18,10 @@ public class ApiKeyAuthentication(
     IApiTokenService tokenService)
     : AuthenticationHandler<AuthenticationSchemeOptions>(options, logger, encoder)
 {
+    /// <summary>
+    /// Authenticates the token key provided
+    /// </summary>
+    /// <returns>Sets user id the id linked to the token</returns>
     protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
     {
         if (!Request.Headers.TryGetValue("Authorization", out var authHeader))
@@ -29,8 +34,8 @@ public class ApiKeyAuthentication(
         var token = raw["Bearer ".Length..].Trim();
         var userId = await tokenService.ValidateTokenAsync(token);
 
-        if (userId.Additional == null)
-            return AuthenticateResult.Fail("Token inválido ou revogado");
+        if (userId?.Additional == null)
+            return AuthenticateResult.Fail("Token inválido");
 
         var claims = new[] { new Claim(ClaimTypes.NameIdentifier, userId.Additional) };
         var identity = new ClaimsIdentity(claims, Scheme.Name);

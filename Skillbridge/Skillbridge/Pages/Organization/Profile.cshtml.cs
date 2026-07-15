@@ -61,6 +61,23 @@ public class ProfileModel(ApplicationDbContext context, IOrganizationService org
                 .Select(u => new UserInfo(u.User.Id ,u.User.Name ?? string.Empty, u.User.Email ?? string.Empty, u.Role))
                 .ToList();
         
+        // Fetch authenticade user id to compare to db
+        string? userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        if (User.Identity is { IsAuthenticated: true })
+        {
+            // Information of user entering the profile
+            var roleNullable = context.OrganizationMembers
+                .Where(o => o.Organization == id && o.User == userId) // filtra nas propriedades reais
+                .Select(p => (Role?)p.Role)
+                .FirstOrDefault();
+            
+            UserPerm = roleNullable ?? Role.Unknown;
+        }
+        else
+        {
+            UserPerm = Role.Unknown;
+        }
         // Projets that are owned by the organization that are public
         // Switches between what to show in the project section
         switch (UserPerm)
@@ -93,23 +110,6 @@ public class ProfileModel(ApplicationDbContext context, IOrganizationService org
                 (p, u) => new PostInfo(p.PostId, p.Title, p.Content, p.Created, u.Name ?? string.Empty))
             .ToList();
         
-        // Fetch authenticade user id to compare to db
-        string? userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-        if (User.Identity is { IsAuthenticated: true })
-        {
-            // Information of user entering the profile
-            var roleNullable = context.OrganizationMembers
-                .Where(o => o.Organization == id && o.User == userId) // filtra nas propriedades reais
-                .Select(p => (Role?)p.Role)
-                .FirstOrDefault();
-            
-            UserPerm = roleNullable ?? Role.Unknown;
-        }
-        else
-        {
-            UserPerm = Role.Unknown;
-        }
 
         return Page();
     }
@@ -218,7 +218,13 @@ public class ProfileModel(ApplicationDbContext context, IOrganizationService org
         if (user == null) return new JsonResult(new { success = false, message = "Não tem permissão para remover membros!" });
             
         var result = await organizationService.DeleteMemberAsync(memberId ,organizationId, user);
-            
+        
+        switch (result.ErrorType)
+        {
+            case  ErrorType.Denied: return Forbid();
+            case  ErrorType.NotFound: return NotFound();
+        }    
+        
         return new JsonResult(new { success = result.Success, message = result.Message });
     }
 
