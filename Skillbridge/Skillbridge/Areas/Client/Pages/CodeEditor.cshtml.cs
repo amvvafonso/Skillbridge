@@ -235,7 +235,7 @@ namespace Skillbridge.Areas.Client.Pages
             if (!session.Active || session.Locked) return StatusCode(403);
             
             //Guarda o conteudo no S3, usando o Path do ficheiro da própria sessão
-            await is3Api.EditarFicheiroAsync("skillbridge",session.file.Path, request.Content);
+            await is3Api.EditarFicheiroAsync("skillbridge",session.file.Path, request.Content, user.Id);
           
             //Devolve 200 OK para o JS saber que correu bem
             return new OkResult();

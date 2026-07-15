@@ -17,7 +17,10 @@ namespace Skillbridge.Controllers;
 public class ProjectController(ApplicationDbContext context, IProjectService projectService) : ControllerBase
 {
 
-
+    /// <summary>
+    /// Listar todos os projetos que o utilizador tem acesso
+    /// </summary>
+    /// <returns>Lista de projetos</returns>
     // GET: api/project
     [HttpGet]
     public async Task<ActionResult<IEnumerable<Project>>> GetAllProjects()
@@ -30,7 +33,12 @@ public class ProjectController(ApplicationDbContext context, IProjectService pro
         
         return Ok(result);
     }
-
+    
+    /// <summary>
+    /// Lista o projeto requerido
+    /// </summary>
+    /// <param name="id">Id do projeto</param>
+    /// <returns>Retorna projeto</returns>
     // GET: api/project/5
     [HttpGet("{id}")]
     public async Task<ActionResult<Project>> GetProject(int id)
@@ -44,12 +52,24 @@ public class ProjectController(ApplicationDbContext context, IProjectService pro
         return Ok(result);
     }
     
+    /// <summary>
+    /// Criar novo projeto
+    /// </summary>
+    /// <param name="organizationId">Id da organização</param>
+    /// <param name="projectName">Nome do projeto</param>
+    /// <param name="projectDescription">Descrição do projeto</param>
+    /// <param name="repository">Repositório (opcional)</param>
+    /// <param name="isPublic">Se é publico</param>
+    /// <returns></returns>
     // POST: api/project
     [HttpPost]
-    public async Task<ActionResult<Project>> CreateProject(string organizationId, string userId, string projectName, string projectDescription, string? repository, bool isPublic = true)
+    public async Task<ActionResult<Project>> CreateProject(string organizationId, string projectName, string projectDescription, string? repository, bool isPublic = true)
     {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId == null) return BadRequest();
+        
         if (string.IsNullOrWhiteSpace(projectName) || string.IsNullOrWhiteSpace(organizationId))  return BadRequest();
-
+        
         var result = await projectService.CreateProjectAsync(organizationId, userId, projectName, projectDescription,
             repository, isPublic);
 
@@ -63,6 +83,11 @@ public class ProjectController(ApplicationDbContext context, IProjectService pro
         }
     }
     
+    /// <summary>
+    /// Eliminar projeto
+    /// </summary>
+    /// <param name="id">Id do projeto a eliminar</param>
+    /// <returns></returns>
     // DELETE: api/project/5
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteProject(int id)

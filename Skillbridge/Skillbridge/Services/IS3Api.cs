@@ -10,21 +10,21 @@ namespace Skillbridge.Services;
 public interface IS3Api
 {
     Task<string?> ObterFicheiroAsync(string bucket, string key, string userId);
-    Task<bool> EditarFicheiroAsync(string bucket, string key, string editar);
+    Task<bool> EditarFicheiroAsync(string bucket, string key, string editar, string userId);
     Task<bool> CriarBucketAsync(string bucket);
-    Task<bool> EliminarFicheiroAsync(string bucket, string key);
-    Task<bool> EliminarBucketAsync(string bucket, string key);
+    Task<bool> EliminarFicheiroAsync(string bucket, string key, string userId);
+    Task<bool> EliminarBucketAsync(string bucket, string key, string userId);
     Task<List<S3Bucket>?> ListBucketsAsync(string userId);
     Task<bool> UploadBinaryAsync(string bucket, string key, byte[] data, string contentType);
     Task<(byte[] Data, string ContentType)?> GetBinaryAsync(string bucket, string key);
-    Task<List<S3Object>?> ListFilesAsync(string bucket);
+    Task<List<S3Object>?> ListFilesAsync(string bucket, string userId);
     AmazonS3Client GetS3Client();
     
     public class S3Api : IS3Api
     {
-        private ILogger<S3Api> _logger;
+        private readonly ILogger<S3Api> _logger;
         private readonly AmazonS3Client _s3Client;
-        private ApplicationDbContext _context;
+        private readonly ApplicationDbContext _context;
         public S3Api(IConfiguration configuration, ILogger<S3Api> logger, ApplicationDbContext context)
         {
             _logger = logger;
@@ -73,12 +73,15 @@ public interface IS3Api
             return string.Empty;
         }
 
-        public async Task<bool> EditarFicheiroAsync(string bucket, string key, string editar)
+        public async Task<bool> EditarFicheiroAsync(string bucket, string key, string editar, string userId)
         {
             for (int i = 0; i < 3; i++)
             {
                 try
                 {
+                    var allowedBuckets = await BucketAllowed(userId);
+                    if (!allowedBuckets.Contains(bucket)) return false;
+                    
                     var request = await _s3Client.PutObjectAsync(new PutObjectRequest
                     {
                         BucketName = bucket,
@@ -100,7 +103,7 @@ public interface IS3Api
 
         public async Task<bool> CriarBucketAsync(string bucket)
         {
-            for (int i = 0; i < 3; i++)
+            for (var i = 0; i < 3; i++)
             {
                 try
                 {
@@ -117,18 +120,21 @@ public interface IS3Api
                 }
                 catch (AmazonS3Exception e)
                 {
-                    _logger.LogError(e, $"Error creating bucket {bucket}");
+                    _logger.LogError(e, "Error creating bucket {Bucket}", bucket);
                 }
             }
             return false;
         }
 
-        public async Task<bool> EliminarFicheiroAsync(string bucket, string key)
+        public async Task<bool> EliminarFicheiroAsync(string bucket, string key, string userId)
         {
-            for (int i = 0; i < 3; i++)
+            for (var i = 0; i < 3; i++)
             {
                 try
                 {
+                    var allowedBuckets = await BucketAllowed(userId);
+                    if (!allowedBuckets.Contains(bucket)) return false;
+                    
                     var request = new DeleteObjectRequest
                     {
                         BucketName = bucket,
@@ -146,12 +152,15 @@ public interface IS3Api
             return false;
         }
 
-        public async Task<bool> EliminarBucketAsync(string bucket, string key)
+        public async Task<bool> EliminarBucketAsync(string bucket, string key, string userId)
         {
             for (int i = 0; i < 3; i++)
             {
                 try
                 {
+                    var allowedBuckets = await BucketAllowed(userId);
+                    if (!allowedBuckets.Contains(bucket)) return false;
+                    
                     var request = await _s3Client.DeleteBucketAsync(bucket);
                     return request.HttpStatusCode == System.Net.HttpStatusCode.OK;
                 }
@@ -164,7 +173,7 @@ public interface IS3Api
             return false;
         }
 
-        public async Task<List<S3Bucket>> ListBucketsAsync(string userId)
+        public async Task<List<S3Bucket>?> ListBucketsAsync(string userId)
         {
             try
             {
@@ -201,7 +210,7 @@ public interface IS3Api
                 }
                 catch (AmazonS3Exception e)
                 {
-                    _logger.LogError(e, $"Error uploading binary {key} to S3");
+                    _logger.LogError(e, "Error uploading binary {Key} to S3", key);
                 }
             }
 
@@ -210,7 +219,7 @@ public interface IS3Api
 
         public async Task<(byte[] Data, string ContentType)?> GetBinaryAsync(string bucket, string key)
         {
-            for (int i = 0; i < 3; i++)
+            for (var i = 0; i < 3; i++)
             {
                 try
                 {
@@ -235,12 +244,15 @@ public interface IS3Api
         }
 
 
-        public async Task<List<S3Object>> ListFilesAsync(string bucket)
+        public async Task<List<S3Object>?> ListFilesAsync(string bucket, string userId)
         {
             try
             {
+                var allowedBuckets = await BucketAllowed(userId);
+                if (!allowedBuckets.Contains(bucket)) return null;
+                
                 string continuationToken = null;
-                var All = new List<S3Object>();
+                var all = new List<S3Object>();
                 do
                 {
                     var request = await _s3Client.ListObjectsV2Async(new ListObjectsV2Request
@@ -249,13 +261,13 @@ public interface IS3Api
                         ContinuationToken = continuationToken
                     });
 
-                    All.AddRange(request.S3Objects);
+                    all.AddRange(request.S3Objects);
 
                     continuationToken = (bool)request.IsTruncated ? request.NextContinuationToken : null;
 
                 } while (continuationToken != null);
 
-                return All;
+                return all;
             }
             catch (Exception e)
             {

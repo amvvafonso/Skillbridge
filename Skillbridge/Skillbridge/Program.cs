@@ -54,7 +54,11 @@ builder.Services.AddSwaggerGen(options =>
         Version = "v1",
         Description = "API para a plataforma Skillbridge"
     });
-
+    
+    var xmlFile = $"{System.Reflection.Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+    options.IncludeXmlComments(xmlPath);
+    
     options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Description = "Insere o token no formato: Bearer {o-teu-token}",
@@ -79,6 +83,7 @@ builder.Services.AddSwaggerGen(options =>
             Array.Empty<string>()
         }
     });
+    
 });
 var app = builder.Build();
 

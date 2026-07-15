@@ -1,14 +1,20 @@
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.EntityFrameworkCore;
 using Skillbridge.Data;
 using Skillbridge.Hubs;
 using Skillbridge.Models;
+using Skillbridge.Models.Client;
+using Skillbridge.Utilities;
 
 namespace Skillbridge.Services;
 
 public interface INotificationService
 {
     Task NotifyOrganizationInviteAsync(string userId, string organizationId, string organizationName);
-    Task NotifyAsync(string userId, string message); 
+    Task NotifyAsync(string userId, string message);
+    Task<Result> AcceptOrganizationInviteAsync(string notificationId, string userId);
+    Task<Result> DeclineOrganizationInviteAsync(string notificationId, string userId);
+    Task<List<Notification>> GetNotificationAsync(string userId);
 
     public class NotificationService(IHubContext<NotificationHub> hubContext, ApplicationDbContext context, ILogger<NotificationService> logger) : INotificationService
     {
@@ -44,6 +50,62 @@ public interface INotificationService
             {
                 logger.LogError(ex, "Falha ao enviar notificação em tempo real ao utilizador {UserId}", userId);
             }
+        }
+
+        public async Task<Result> AcceptOrganizationInviteAsync(string notificationId, string userId)
+        {
+            if (string.IsNullOrEmpty(notificationId) || string.IsNullOrEmpty(userId)) return Result.Fail("Falta componentes crucais", ErrorType.MissingComponent);
+
+            var notif = await context.Notifications.FindAsync(notificationId);
+            if (notif == null)
+                return Result.Fail("Não existe nenhuma notificação", ErrorType.NotFound);
+            
+            string param = notif.Param;
+
+            if (notif.Type != NotificationType.OrganizationInvite)
+                return Result.Fail("Tipo de notificação não é adequada");
+
+            var alreadyMember = await context.OrganizationMembers
+                .AnyAsync(m => m.Organization == param && m.User == userId);
+    
+            if (!alreadyMember)
+            {
+                await context.OrganizationMembers.AddAsync(new OrganizationMember(Guid.NewGuid().ToString(),param, userId, Role.Apprentice));
+            }
+                    
+            notif.Hidden = true;
+                    
+            await context.SaveChangesAsync(); 
+            
+            return Result.Ok("Convite aceitado!");
+        }
+
+        public async Task<Result> DeclineOrganizationInviteAsync(string notificationId, string userId)
+        {
+            if (string.IsNullOrEmpty(notificationId) || string.IsNullOrEmpty(userId)) return Result.Fail("Falta componentes crucais", ErrorType.MissingComponent);
+
+            var notif = await context.Notifications.FindAsync(notificationId);
+            
+            if (notif == null)
+                return Result.Fail("Não existe nenhuma notificação", ErrorType.NotFound);
+            
+            notif.Hidden = true;
+            context.Notifications.Update(notif);
+            await context.SaveChangesAsync();
+            
+            return Result.Ok("Convite negado com sucesso!");
+        }
+
+        public async Task<List<Notification>> GetNotificationAsync(string userId)
+        {
+            if (string.IsNullOrEmpty(userId))
+                return [];
+
+            var notifications = await context.Notifications
+                .Where(p => p.UserId == userId && !p.Hidden)
+                .ToListAsync();
+
+            return notifications;
         }
     }
 }

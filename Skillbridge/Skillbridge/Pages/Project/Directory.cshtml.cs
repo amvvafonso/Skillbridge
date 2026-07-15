@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using Amazon.S3.Model;
 using Amazon.S3.Transfer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -19,8 +20,8 @@ namespace Skillbridge.Pages.Project;
 public class Directory(ApplicationDbContext context, IS3Api is3Api, IProjectService projectService, ISessionService sessionService) : PageModel
 {
 
-    public List<Amazon.S3.Model.S3Bucket> Buckets { get; set; } = new();
-    public List<Amazon.S3.Model.S3Object> Files { get; set; } = new();
+    public List<S3Bucket> Buckets { get; set; } = new();
+    public List<S3Object> Files { get; set; } = new();
     public string CurrentBucket { get; set; } = string.Empty;
     public string CurrentPrefix { get; set; } = string.Empty;
     public List<string> Folders { get; set; } = new();
@@ -117,7 +118,7 @@ public class Directory(ApplicationDbContext context, IS3Api is3Api, IProjectServ
             }
 
             // Fetches all files from bucket
-            var filelist = is3Api.ListFilesAsync(CurrentBucket).Result;
+            var filelist = is3Api.ListFilesAsync(CurrentBucket, user).Result;
             Files = filelist ?? new List<Amazon.S3.Model.S3Object>();
 
             // Extract unique folder names from files that share the current prefix

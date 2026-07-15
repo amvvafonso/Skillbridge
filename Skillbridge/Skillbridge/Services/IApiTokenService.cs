@@ -10,6 +10,7 @@ namespace Skillbridge.Services;
 
 public interface IApiTokenService
 {
+
     Task<Result> CreateTokenAsync(string userId, string name);
     Task<Result?> ValidateTokenAsync(string rawToken); // devolve o userId, ou null se inválido
     Task<List<ApiToken>> GetUserTokensAsync(string userId);
