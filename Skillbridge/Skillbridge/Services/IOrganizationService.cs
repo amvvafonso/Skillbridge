@@ -9,18 +9,104 @@ using Skillbridge.Utilities;
 
 namespace Skillbridge.Services;
 
+
+/// <summary>
+/// Serviço responsável pela gestão de organizações, incluindo criação, edição,
+/// remoção, gestão de membros e publicações associadas
+/// </summary>
 public interface IOrganizationService
 {
+    /// <summary>
+    /// Cria uma nova organização e define o utilizador criador como Owner
+    /// </summary>
+    /// <param name="userId">Identificador do user que cria a organização</param>
+    /// <param name="organizationName">Nome da organização</param>
+    /// <param name="organizationAddress">Endereço da organização</param>
+    /// <param name="organizationDescription">Descrição da organização</param>
+    /// <param name="logo">Ficheiro de imagem opcional para o logotipo</param>
+    /// <returns>Um <see cref="Result"/> indicando sucesso ou falha da operação</returns>
     Task<Result> CreateOrganizationAsync(string userId, string organizationName, string organizationAddress, string organizationDescription, IFormFile? logo);
+    
+    /// <summary>
+    /// Edita os dados de uma organização existente. Apenas o Owner pode realizar esta operação
+    /// </summary>
+    /// <param name="organizationId">Identificador da organização a editar</param>
+    /// <param name="userId">Identificador do user que solicita a edição</param>
+    /// <param name="name">Novo nome da organização se fornecido</param>
+    /// <param name="address">Novo endereço da organização se fornecido</param>
+    /// <param name="description">Nova descrição da organização</param>
+    /// <param name="logo">Novo logotipo se fornecido</param>
+    /// <param name="banner">Novo banner se fornecido</param>
+    /// <returns>Um <see cref="Result"/> indicando sucesso ou falha da operação</returns>
     Task<Result> EditOrganizationAsync(string organizationId, string userId, string? name, string? address,  string? description, IFormFile? logo, IFormFile? banner);
+    
+    /// <summary>
+    /// Elimina uma organização e todos os dados associados (projetos, ficheiros, sessões, publicações e membros) em cascata
+    /// Apenas o Owner pode realizar esta operação este ação é irreversível
+    /// </summary>
+    /// <param name="orgId">Identificador da organização a eliminar</param>
+    /// <param name="userId">Identificador do user que solicita a eliminação</param>
+    /// <returns>Um <see cref="Result"/> indicando sucesso ou falha da operação</returns>
     Task<Result> DeleteOrganizationAsync(string orgId, string userId);
+    
+    /// <summary>
+    /// Elimina um projeto, este método ainda não implementado, lança <see cref="NotImplementedException"/>.
+    /// </summary>
+    /// <param name="projectId">Identificador do projeto a eliminar</param>
+    /// <param name="userId">Identificador do user que solicita a eliminação</param>
     Task<Result> DeleteProjectAsync(string projectId, string userId);
+    
+    /// <summary>
+    /// Convida um novo membro para a organização através do email, apenas Owner ou Manager podem convidar
+    /// </summary>
+    /// <param name="organizationId">Identificador da organização</param>
+    /// <param name="memberEmail">Email do utilizador a convidar</param>
+    /// <param name="userId">Identificador do user que envia o convite</param>
+    /// <returns>Um <see cref="Result"/> indicando sucesso ou falha da operação</returns>
     Task<Result> AddMemberAsync(string organizationId, string memberEmail, string userId);
+    
+    /// <summary>
+    /// Remove um membro da organização, apenas o Owner pode remover membros e o mesmo não pode ser removido
+    /// </summary>
+    /// <param name="memberId">Identificador do membro a remover</param>
+    /// <param name="organizationId">Identificador da organização</param>
+    /// <param name="userId">Identificador do user que solicita a remoção</param>
+    /// <returns>Um <see cref="Result"/> indicando sucesso ou falha da operação</returns>
     Task<Result> DeleteMemberAsync(string memberId, string organizationId,  string userId);
+    
+    /// <summary>
+    /// Promove um membro para o papel seguinte na hierarquia da organização, apenas Owner ou Manager podem promover, e apenas o Owner pode promover Mentor a Manager
+    /// </summary>
+    /// <param name="memberId">Identificador do membro a promover</param>
+    /// <param name="organizationId">Identificador da organização</param>
+    /// <param name="userId">Identificador do user que solicita a promoção</param>
+    /// <returns>Um <see cref="Result"/> indicando sucesso ou falha, incluindo o novo papel do membro</returns>
     Task<Result> PromoteMemberAsync(string memberId, string organizationId, string userId);
+    
+    /// <summary>
+    /// Cria uma nova publicação na organização, requer que o utilizador seja membro da organização
+    /// </summary>
+    /// <param name="organizationId">Identificador da organização</param>
+    /// <param name="newPostTitle">Título da publicação</param>
+    /// <param name="newPostContent">Conteúdo da publicação</param>
+    /// <param name="userId">Identificador do utilizuserador autor da publicação</param>
+    /// <returns>Um <see cref="Result"/> indicando sucesso ou falha da operação</returns>
     Task<Result> CreatePostAsync(string organizationId, string newPostTitle, string newPostContent, string userId);
+    
+    /// <summary>
+    /// Elimina uma publicação, apenas o autor ou um Owner/Manager da organização pode eliminar
+    /// </summary>
+    /// <param name="postId">Identificador da publicação a eliminar</param>
+    /// <param name="userId">Identificador do user que solicita a eliminação</param>
+    /// <returns>Um <see cref="Result"/> indicando sucesso ou falha da operação</returns>
     Task<Result> DeletePostAsync(string postId, string userId);
-    // Utils
+    
+    /// <summary>
+    /// Verifica se um utilizador pertence a uma determinada organização e devolve o seu registo de membro
+    /// </summary>
+    /// <param name="orgId">Identificador da organização</param>
+    /// <param name="userId">Identificador do user</param>
+    /// <returns>O <see cref="OrganizationMember"/> correspondente, ou <c>null</c> se não pertencer</returns>
     Task<OrganizationMember?> MemberBelongsToOrganization(string orgId, string userId);
 }
 

@@ -8,12 +8,53 @@ using Skillbridge.Utilities;
 
 namespace Skillbridge.Services;
 
+/// <summary>
+/// Serviço responsável pela gestão de notificações, incluindo convites para
+/// organizações, envio em tempo real via SignalR e persistência na base de dados
+/// </summary>
 public interface INotificationService
 {
+    /// <summary>
+    /// Regista na base de dados e envia em tempo real um convite de organização
+    /// a um utilizador se o envio em tempo real falhar, a notificação
+    /// permanece guardada e visível quando o user consultar as notificações
+    /// </summary>
+    /// <param name="userId">Identificador do utilizador convidado</param>
+    /// <param name="organizationId">Identificador da organização que enviou o convite</param>
+    /// <param name="organizationName">Nome da organização, usado na mensagem da notificação</param>
     Task NotifyOrganizationInviteAsync(string userId, string organizationId, string organizationName);
+   
+    /// <summary>
+    /// Envia uma notificação genérica em tempo real a um user via SignalR,
+    /// sem a persistir na base de dados
+    /// </summary>
+    /// <param name="userId">Identificador do user a notificar</param>
+    /// <param name="message">Conteúdo da mensagem a enviar</param>
     Task NotifyAsync(string userId, string message);
+    
+    /// <summary>
+    /// Aceita um convite de organização, adicionando o utilizador como membro
+    /// com o papel de Apprentice, caso ainda não seja membro. Marca a notificação como oculta.
+    /// </summary>
+    /// <param name="notificationId">Identificador da notificação de convite</param>
+    /// <param name="userId">Identificador do user que aceita o convite</param>
+    /// <returns>Um <see cref="Result"/> indicando sucesso ou falha da operação</returns>
     Task<Result> AcceptOrganizationInviteAsync(string notificationId, string userId);
+    
+    /// <summary>
+    /// Rejeita um convite de organização, marcando a notificação como oculta
+    /// sem adicionar o user como membro
+    /// </summary>
+    /// <param name="notificationId">Identificador da notificação de convite</param>
+    /// <param name="userId">Identificador do user que rejeita o convite</param>
+    /// <returns>Um <see cref="Result"/> indicando sucesso ou falha da operação</returns>
     Task<Result> DeclineOrganizationInviteAsync(string notificationId, string userId);
+    
+    /// <summary>
+    /// Obtém todas as notificações não ocultas pertencentes a um user
+    /// </summary>
+    /// <param name="userId">Identificador do user</param>
+    /// <returns>Lista de <see cref="Notification"/> visíveis</returns>
     Task<List<Notification>> GetNotificationAsync(string userId);
 
     public class NotificationService(IHubContext<NotificationHub> hubContext, ApplicationDbContext context, ILogger<NotificationService> logger) : INotificationService

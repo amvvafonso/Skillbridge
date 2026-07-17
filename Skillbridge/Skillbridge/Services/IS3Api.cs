@@ -7,17 +7,102 @@ using Skillbridge.Models.Project;
 
 namespace Skillbridge.Services;
 
+/// <summary>
+/// Serviço de acesso ao armazenamento de objetos S3, todas as operações de leitura,
+/// escrita e eliminação validam que o utilizador tem acesso ao bucket através do
+/// projeto associado, exceto <see cref="UploadBinaryAsync"/> e <see cref="GetBinaryAsync"/>,
+/// que devem ser protegidos pela camada chamadora (ex: controller)
+/// </summary>
 public interface IS3Api
 {
+    /// <summary>
+    /// Obtém o conteúdo em texto de um ficheiro armazenado num bucket S3,
+    /// desde que o utilizador tenha acesso ao bucket
+    /// </summary>
+    /// <param name="bucket">Nome do bucket onde o ficheiro está armazenado</param>
+    /// <param name="key">Chave (nome) do ficheiro a obter</param>
+    /// <param name="userId">Identificador do utilizador que solicita o acesso</param>
+    /// <returns>O conteúdo do ficheiro em texto, ou uma string vazia se não houver permissão ou o ficheiro não existir</returns>
     Task<string?> ObterFicheiroAsync(string bucket, string key, string userId);
+    
+    /// <summary>
+    /// Cria ou substitui o conteúdo de texto de um ficheiro num bucket S3,
+    /// desde que o utilizador tenha acesso ao bucket
+    /// </summary>
+    /// <param name="bucket">Nome do bucket de destino</param>
+    /// <param name="key">Chave (nome) do ficheiro a editar</param>
+    /// <param name="editar">Novo conteúdo do ficheiro</param>
+    /// <param name="userId">Identificador do utilizador que solicita a edição</param>
+    /// <returns><c>true</c> se a operação for concluída com sucesso, caso contrário => <c>false</c>.</returns>
     Task<bool> EditarFicheiroAsync(string bucket, string key, string editar, string userId);
+    
+    /// <summary>
+    /// Cria um novo bucket S3. Não valida permissões, uma vez que é chamado
+    /// apenas durante a criação de um projeto
+    /// </summary>
+    /// <param name="bucket">Nome do bucket a criar</param>
+    /// <returns><c>true</c> se o bucket for criado com sucesso, caso contrário => <c>false</c>.</returns>
     Task<bool> CriarBucketAsync(string bucket);
+    
+    /// <summary>
+    /// Elimina um ficheiro de um bucket S3, desde que o utilizador tenha acesso ao bucket
+    /// </summary>
+    /// <param name="bucket">Nome do bucket onde o ficheiro está armazenado</param>
+    /// <param name="key">Chave (nome) do ficheiro a eliminar</param>
+    /// <param name="userId">Identificador do utilizador que solicita a eliminação</param>
+    /// <returns><c>true</c> se o ficheiro for eliminado com sucesso, caso contrário => <c>false</c>.</returns>
     Task<bool> EliminarFicheiroAsync(string bucket, string key, string userId);
+    
+    /// <summary>
+    /// Elimina um bucket S3 na sua totalidade, desde que o utilizador tenha acesso ao bucket
+    /// </summary>
+    /// <param name="bucket">Nome do bucket a eliminar</param>
+    /// <param name="key">Parâmetro não utilizado na eliminação do bucket</param>
+    /// <param name="userId">Identificador do utilizador que solicita a eliminação</param>
+    /// <returns><c>true</c> se o bucket for eliminado com sucesso, caso contrário => <c>false</c>.</returns>
     Task<bool> EliminarBucketAsync(string bucket, string key, string userId);
+    
+    /// <summary>
+    /// Lista os buckets S3 existentes aos quais o utilizador tem acesso através
+    /// dos projetos em que participa
+    /// </summary>
+    /// <param name="userId">Identificador do user</param>
+    /// <returns>Lista de <see cref="S3Bucket"/> acessíveis pelo utilizador, ou <c>null</c> em caso de erro.</returns>
     Task<List<S3Bucket>?> ListBucketsAsync(string userId);
+    
+    /// <summary>
+    /// Faz upload de dados binários para um bucket S3, não valida permissões
+    /// internamente, a camada chamadora deve garantir o controlo de acesso
+    /// </summary>
+    /// <param name="bucket">Nome do bucket de destino</param>
+    /// <param name="key">Chave (nome) do ficheiro a criar</param>
+    /// <param name="data">Conteúdo binário do ficheiro</param>
+    /// <param name="contentType">Tipo de conteúdo (MIME type) do ficheiro</param>
+    /// <returns><c>true</c> se o upload for concluído com sucesso, caso contrário => <c>false</c>.</returns>
     Task<bool> UploadBinaryAsync(string bucket, string key, byte[] data, string contentType);
+    
+    /// <summary>
+    /// Obtém o conteúdo binário de um ficheiro armazenado num bucket S3 não valida
+    /// permissões internamente, a camada chamadora deve garantir o controlo de acesso
+    /// </summary>
+    /// <param name="bucket">Nome do bucket onde o ficheiro está armazenado</param>
+    /// <param name="key">Chave (nome) do ficheiro a obter</param>
+    /// <returns>Os dados binários e o tipo de conteúdo, ou <c>null</c> se o ficheiro não existir.</returns>
     Task<(byte[] Data, string ContentType)?> GetBinaryAsync(string bucket, string key);
+    
+    /// <summary>
+    /// Lista todos os ficheiros existentes num bucket S3, percorrendo a paginação
+    /// automaticamente, desde que o utilizador tenha acesso ao bucket
+    /// </summary>
+    /// <param name="bucket">Nome do bucket a listar</param>
+    /// <param name="userId">Identificador do utilizador que solicita a listagem</param>
+    /// <returns>Lista de <see cref="S3Object"/> encontrados no bucket, ou <c>null</c> se não houver permissão.</returns>
     Task<List<S3Object>?> ListFilesAsync(string bucket, string userId);
+    
+    /// <summary>
+    /// Expõe diretamente o cliente <see cref="AmazonS3Client"/> configurado.
+    /// </summary>
+    /// <returns>A instância do cliente S3 utilizada internamente pelo serviço.</returns>
     AmazonS3Client GetS3Client();
     
     public class S3Api : IS3Api

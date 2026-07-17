@@ -8,12 +8,43 @@ using Skillbridge.Utilities;
 
 namespace Skillbridge.Services;
 
+/// <summary>
+/// Serviço responsável pela criação, validação e revogação de tokens de acesso à API
+/// Os tokens são armazenados como hash SHA-256, nunca em plain-text
+/// </summary>
 public interface IApiTokenService
 {
-
+    /// <summary>
+    /// Gera um novo token de API para o user. O valor em plain-text do token
+    /// só é devolvido nesta chamada e nunca mais fica acessível
+    /// </summary>
+    /// <param name="userId">Identificador do user proprietário do token</param>
+    /// <param name="name">Nome descritivo do token</param>
+    /// <returns>Um <see cref="Result"/> contendo o token gerado em plain-text</returns>
     Task<Result> CreateTokenAsync(string userId, string name);
+   
+    /// <summary>
+    /// Valida um token de API fornecido, verificando se existe e não foi revogado.
+    /// Atualiza a data de última utilização em caso de sucesso
+    /// </summary>
+    /// <param name="rawToken">Token em plain-text a validar</param>
+    /// <returns>Um <see cref="Result"/> com o identificador do utilizador associado, ou falha se inválido</returns>
     Task<Result?> ValidateTokenAsync(string rawToken); // devolve o userId, ou null se inválido
+   
+    /// <summary>
+    /// Obtém a lista de tokens ativos (não revogados) pertencentes a um utilizador,
+    /// ordenados por data de criação descendente.
+    /// </summary>
+    /// <param name="userId">Identificador do user</param>
+    /// <returns>Lista de <see cref="ApiToken"/> ativos</returns>
     Task<List<ApiToken>> GetUserTokensAsync(string userId);
+  
+    /// <summary>
+    /// Revoga um token de API pertencente ao utilizador, tornando-o inválido
+    /// para futuras autenticações
+    /// </summary>
+    /// <param name="tokenId">Identificador do token a revogar</param>
+    /// <param name="userId">Identificador do utilizador proprietário do token</param>
     Task RevokeTokenAsync(int tokenId, string userId);
     
     public class ApiTokenService(ApplicationDbContext context, ILogger<ApiTokenService> logger) : IApiTokenService

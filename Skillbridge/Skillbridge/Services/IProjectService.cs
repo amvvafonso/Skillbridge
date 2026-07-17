@@ -11,14 +11,79 @@ using File = Skillbridge.Models.Project.File;
 
 namespace Skillbridge.Services;
 
+/// <summary>
+/// Serviço responsável pela gestão de projetos dentro de uma organização,
+/// incluindo criação, eliminação e gestão de pastas/ficheiros associados no S3
+/// </summary>
 public interface IProjectService
 {
+    /// <summary>
+    /// Obtém todos os projetos a que o utilizador tem acesso, incluindo dados da organização respetiva
+    /// </summary>
+    /// <param name="userId">Identificador do utilizador</param>
+    /// <returns>Lista de <see cref="Project"/>, ou <c>null</c> se o userId for inválido</returns>
     Task<List<Project>?> GetAllProjectAsync(string userId);
+    
+    /// <summary>
+    /// Obtém um projeto específico, desde que o utilizador tenha acesso a ele
+    /// </summary>
+    /// <param name="userId">Identificador do utilizador</param>
+    /// <param name="projectId">Identificador do projeto</param>
+    /// <returns>O <see cref="Project"/> correspondente, ou <c>null</c> se não existir ou não houver acesso</returns>
     Task<Project?> GetProjectAsync(string userId, int projectId);
+    
+    /// <summary>
+    /// Cria uma nova pasta num bucket S3, associada a um projeto
+    /// Requer que o utilizador tenha acesso ao bucket do projeto
+    /// </summary>
+    /// <param name="bucket">Nome do bucket S3 onde a pasta será criada</param>
+    /// <param name="prefix">Prefixo do caminho, se a pasta estiver dentro de outra pasta</param>
+    /// <param name="folderName">Nome da nova pasta</param>
+    /// <param name="userId">Identificador do utilizador que solicita a criação</param>
+    /// <param name="projectId">Identificador do projeto associado</param>
+    /// <returns>Um <see cref="Result"/> indicando sucesso ou falha da operação</returns>
     Task<Result> CreateFolderAsync(string bucket, string prefix, string folderName, string userId, int projectId);
+    
+    /// <summary>
+    /// Elimina uma pasta e todos os ficheiros contidos nela num bucket S3, com nova tentativa
+    /// automática em caso de falha (até 3 tentativas, com espera progressiva entre elas)
+    /// </summary>
+    /// <param name="bucket">Nome do bucket S3</param>
+    /// <param name="folderPath">Caminho da pasta a eliminar</param>
+    /// <param name="userId">Identificador do user que solicita a eliminação</param>
+    /// <returns>Um <see cref="Result"/> indicando sucesso ou falha da operação</returns>
     Task<Result> DeleteFolderAsync(string bucket, string folderPath, string userId);
+    
+    /// <summary>
+    /// Elimina um ficheiro do bucket S3 e remove o respetivo registo da base de dados, se existir
+    /// </summary>
+    /// <param name="bucket">Nome do bucket S3</param>
+    /// <param name="key">Chave (path) do ficheiro a eliminar</param>
+    /// <param name="userId">Identificador do utilizador que solicita a eliminação</param>
+    /// <returns>Um <see cref="Result"/> indicando sucesso ou falha da operação</returns>
     Task<Result> DeleteFileAsync(string bucket, string key, string userId);
+    
+    /// <summary>
+    /// Cria um novo projeto numa organização e concede acesso a todos os membros existentes
+    /// da organização, com o mesmo papel que já tinham. Tenta criar um bucket S3 dedicado,
+    /// mas a falha desta criação não impede o sucesso da operação
+    /// </summary>
+    /// <param name="organizationId">Identificador da organização proprietária do projeto</param>
+    /// <param name="userId">Identificador do utilizador que cria o projeto</param>
+    /// <param name="projectName">Nome do projeto, também usado como diretório do bucket S3</param>
+    /// <param name="projectDescription">Descrição do projeto</param>
+    /// <param name="repository">URL do repositório associado, se aplicável</param>
+    /// <param name="isPublic">Indica se o projeto é visível publicamente</param>
+    /// <returns>Um <see cref="Result"/> indicando sucesso ou falha da operação</returns>
     Task<Result> CreateProjectAsync(string organizationId, string userId, string projectName, string projectDescription, string? repository, bool isPublic);
+    
+    /// <summary>
+    /// Elimina um projeto, incluindo todos os ficheiros associados no S3 e os acessos de utilizadores
+    /// Requer que o utilizador tenha um papel superior a Apprentice na organização
+    /// </summary>
+    /// <param name="userId">Identificador do utilizador que solicita a eliminação</param>
+    /// <param name="projectId">Identificador do projeto a eliminar</param>
+    /// <returns>Um <see cref="Result"/> indicando sucesso ou falha da operação</returns>
     Task<Result> DeleteProjectAsync(string userId, int projectId);
     
     public class ProjectService(ApplicationDbContext context, IS3Api iS3Api, IOrganizationService organizationService, IS3Api is3Api, ILogger<IProjectService> logger) :  IProjectService
