@@ -5,9 +5,9 @@ using Microsoft.EntityFrameworkCore;
 using Skillbridge.Data;
 using Skillbridge.Services;
 
-namespace Skillbridge.Controllers;
+namespace Skillbridge.Controllers.Api;
 
-
+/// <inheritdoc />
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]

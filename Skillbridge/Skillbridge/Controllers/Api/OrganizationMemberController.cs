@@ -1,12 +1,12 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Skillbridge.Data;
 using Skillbridge.Models;
 using Skillbridge.Services;
 
-namespace Skillbridge.Controllers;
+namespace Skillbridge.Controllers.Api;
 
+/// <inheritdoc />
 [ApiController]
 [Route("api/[controller]")]
 public class OrganizationMemberController(ApplicationDbContext context, IOrganizationMemberService organizationMemberService, IOrganizationService organizationService) : ControllerBase

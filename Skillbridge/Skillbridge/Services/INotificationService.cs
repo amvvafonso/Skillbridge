@@ -57,8 +57,10 @@ public interface INotificationService
     /// <returns>Lista de <see cref="Notification"/> visíveis</returns>
     Task<List<Notification>> GetNotificationAsync(string userId);
 
+    /// <inheritdoc />
     public class NotificationService(IHubContext<NotificationHub> hubContext, ApplicationDbContext context, ILogger<NotificationService> logger) : INotificationService
     {
+        /// <inheritdoc />
         public async Task NotifyOrganizationInviteAsync(string userId, string organizationId, string organizationName)
         {
             var message = $"Foste convidado para a organização {organizationName}";
@@ -81,6 +83,7 @@ public interface INotificationService
                 logger.LogError(ex, "Notificação de convite guardada na BD, mas falhou o envio em tempo real ao utilizador {UserId}", userId);
             }
         }
+        /// <inheritdoc />
         public async Task NotifyAsync(string userId, string message)
         {
             try
@@ -93,6 +96,7 @@ public interface INotificationService
             }
         }
 
+        /// <inheritdoc />
         public async Task<Result> AcceptOrganizationInviteAsync(string notificationId, string userId)
         {
             if (string.IsNullOrEmpty(notificationId) || string.IsNullOrEmpty(userId)) return Result.Fail("Falta componentes crucais", ErrorType.MissingComponent);
@@ -137,6 +141,7 @@ public interface INotificationService
             return Result.Ok("Convite negado com sucesso!");
         }
 
+        /// <inheritdoc />
         public async Task<List<Notification>> GetNotificationAsync(string userId)
         {
             if (string.IsNullOrEmpty(userId))

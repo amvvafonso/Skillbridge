@@ -8,49 +8,52 @@ using Skillbridge.Models.Client;
 
 namespace Skillbridge.Models;
 
+/// <summary>
+/// Classe modelo da organização
+/// </summary>
 public class Organization
 {
     /// <summary>
-    /// Identifier of the organization (PK)
+    /// Id da organização
     /// </summary>
     [Key]
     public string OrganizationId { get; set; }
     
     /// <summary>
-    /// Name of organization
+    /// Nome da organização
     /// </summary>
     [Required(ErrorMessage = "Organization name is required")]
     [MaxLength(100)]
     public string OrganizationName { get; set; } = string.Empty;
     
     /// <summary>
-    /// Address of organization
+    /// Morada da organização
     /// </summary>
     [MaxLength(200)]
     [Required(ErrorMessage = "Organization address is required")]
     public string OrganizationAddress { get; set; } = string.Empty;
     
     /// <summary>
-    /// Description of the organization, max 1000 chars 
+    /// Descrição da organização (max 1000)
     /// </summary>
     [MaxLength(1000)]
     [Required(ErrorMessage = "Organization description is required")]
     public string OrganizationDescription { get; set; }  = string.Empty;
     
     /// <summary>
-    /// Path to logo
+    /// Path para o logo
     /// </summary>
     [MaxLength(1000)]
     public string LogoPath { get; set; } = "/default_logo.png";
     
     /// <summary>
-    /// Path to banner
+    /// Path para a banner
     /// </summary>
     [MaxLength(1000)]
     public string BannerPath { get; set; } = "/default_banner.png";
     
     /// <summary>
-    /// Foreign key, link to owner of organization
+    /// Foreign key, liga ao dono 
     /// </summary>
     public string Owner { get; set; }
     

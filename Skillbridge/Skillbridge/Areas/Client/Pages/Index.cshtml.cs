@@ -10,85 +10,101 @@ using Skillbridge.Models.Client;
 using Skillbridge.Models.Project;
 using Skillbridge.Services;
 
+namespace Skillbridge.Areas.Client.Pages;
 
-namespace Skillbridge.Areas.Client.Pages
+/// <summary>
+/// Model para a pagina
+/// </summary>
+/// <param name="context"></param>
+/// <param name="userManager"></param>
+/// <param name="s3Api"></param>
+/// <param name="logger"></param>
+[Authorize]
+public class IndexModel(
+    ApplicationDbContext context,
+    UserManager<User> userManager,
+    ILogger<IndexModel> logger) : PageModel
 {
+    /// <summary>
+    /// Propriedade usada pelo @model no .cshtml.
+    /// </summary>
+    public IndexViewModel DashboardModel { get; set; } = new();
 
-    [Authorize]
-    public class IndexModel(ApplicationDbContext context, UserManager<User> userManager, IS3Api s3Api) : PageModel
+    public async Task<IActionResult> OnGetAsync()
     {
-        //Propriedade que vai ser usada pelo @model no .cshtml
-        public IndexViewModel DashboardModel { get; set; } = new();
-        
-        //
-        public async Task<IActionResult> OnGetAsync()
+        var user = await userManager.GetUserAsync(User);
+        if (user == null)
+            return RedirectToPage("/Index");
+
+        try
         {
-            try
+            var sessions = await GetUserSessionsAsync(user.Id);
+            var organizations = await GetUserOrganizationsAsync(user.Id);
+            var projects = await GetUserProjectsAsync(user.Id);
+
+            DashboardModel = new IndexViewModel
             {
-                //Vai buscar o user
-                var user = await userManager.GetUserAsync(User);
+                User = user,
+                Sessions = sessions,
+                ActiveSessions = sessions.Count(s => s.Active),
+                Organizations = organizations,
+                TotalOrganizations = organizations.Count,
+                Projects = projects,
+                TotalProjects = projects.Count
+            };
 
-
-                //Se o user não estiver autenticado redireciona para Home
-                if (user == null)
-                    return RedirectToPage("/Index");
-
-                //Vai buscar todas as sessões com o ficheiro associado, ordenadas por data
-                var userSessions = await context.SessionAccesses
-                    //So as sessões do user autenticado
-                    .Where(sa => sa.UserId == user.Id)
-                    //Inclui a sessão de cada acesso
-                    .Include(sa => sa.Session)
-                    //Inlcui o ficheiro de cada sessão
-                    .ThenInclude(s => s.file)
-                    //Vai buscar o objeto Session
-                    .Select(sa => sa.Session)
-                    //Ordena da mais recente para a mais antiga
-                    .OrderByDescending(s => s.CreatedAt)
-                    .ToListAsync();
-
-                //Vai buscar as organizações a que o user pertence
-                var userOrganizations = await context.OrganizationMembers
-                    .Where(om => om.User == user.Id)
-                    .Select(om => om.IdOrganization)
-                    .Where(org => org != null)
-                    .ToListAsync();
-
-                //Vai buscar os projetos atribuidos ao utilizador
-                var userProjects = await context.UserProjectAccesses
-                    .Join(context.Project,
-                        pj => pj.ProjectId,
-                        usp => usp.ProjectId,
-                        (usp, pj) => new { pj, usp })
-                    .Join(context.Organizations,
-                        prev => prev.pj.OrganizationId,
-                        org => org.OrganizationId,
-                        (prev, org) => new { prev.pj, prev.usp, org })
-                    .Where(upa => upa.usp.UserId == user.Id)
-                    .Select(upa => new Project(upa.pj, upa.org))
-                    .ToListAsync();
-                
-                
-                
-                //Preenche o ViewModel com os dados recolhidos
-                DashboardModel = new IndexViewModel
-                {
-                    User = user,
-                    Sessions = userSessions,
-                    ActiveSessions = userSessions.Count(s => s.Active),
-                    TotalProjects = userProjects.Count,
-                    TotalOrganizations = userOrganizations.Count,
-                    Organizations = userOrganizations.OfType<Organization>().ToList(),
-                    Projects = userProjects.OfType<Project>().ToList()
-                };
-
-                return Page();
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e.Message);
-                return RedirectToPage("/");
-            }
+            return Page();
         }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Erro ao carregar o dashboard do utilizador {UserId}", user.Id);
+            return RedirectToPage("/Index");
+        }
+    }
+
+    /// <summary>
+    /// Sessões do utilizador (com ficheiro associado), mais recentes primeiro.
+    /// </summary>
+    private async Task<List<Session>> GetUserSessionsAsync(string userId)
+    {
+        return await context.SessionAccesses
+            .Where(sa => sa.UserId == userId)
+            .Include(sa => sa.Session)
+            .ThenInclude(s => s.file)
+            .Select(sa => sa.Session)
+            .OrderByDescending(s => s.CreatedAt)
+            .ToListAsync();
+    }
+
+    /// <summary>
+    /// Organizações a que o utilizador pertence.
+    /// </summary>
+    private async Task<List<Organization>> GetUserOrganizationsAsync(string userId)
+    {
+        return await context.OrganizationMembers
+            .Where(om => om.User == userId && om.IdOrganization != null)
+            .Join(context.Organizations,
+                om => om.Organization,
+                org => org.OrganizationId,
+                (om, org) => org)
+            .ToListAsync();
+    }
+
+    /// <summary>
+    /// Projetos atribuídos ao utilizador, com a respetiva organização.
+    /// </summary>
+    private async Task<List<Project>> GetUserProjectsAsync(string userId)
+    {
+        return await context.UserProjectAccesses
+            .Where(upa => upa.UserId == userId)
+            .Join(context.Project,
+                upa => upa.ProjectId,
+                pj => pj.ProjectId,
+                (upa, pj) => pj)
+            .Join(context.Organizations,
+                pj => pj.OrganizationId,
+                org => org.OrganizationId,
+                (pj, org) => new Project(pj, org))
+            .ToListAsync();
     }
 }

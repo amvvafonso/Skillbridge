@@ -19,9 +19,9 @@ public class ApiKeyAuthentication(
     : AuthenticationHandler<AuthenticationSchemeOptions>(options, logger, encoder)
 {
     /// <summary>
-    /// Authenticates the token key provided
+    /// Autentica o token forneceido
     /// </summary>
-    /// <returns>Sets user id the id linked to the token</returns>
+    /// <returns>Coloca o userid como o user a qual o token corresponde</returns>
     protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
     {
         if (!Request.Headers.TryGetValue("Authorization", out var authHeader))

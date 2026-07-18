@@ -37,7 +37,7 @@ public interface IS3Api
     Task<bool> EditarFicheiroAsync(string bucket, string key, string editar, string userId);
     
     /// <summary>
-    /// Cria um novo bucket S3. Não valida permissões, uma vez que é chamado
+    /// Cria um bucket S3. Não valida permissões, uma vez que é chamado
     /// apenas durante a criação de um projeto
     /// </summary>
     /// <param name="bucket">Nome do bucket a criar</param>
@@ -57,10 +57,9 @@ public interface IS3Api
     /// Elimina um bucket S3 na sua totalidade, desde que o utilizador tenha acesso ao bucket
     /// </summary>
     /// <param name="bucket">Nome do bucket a eliminar</param>
-    /// <param name="key">Parâmetro não utilizado na eliminação do bucket</param>
     /// <param name="userId">Identificador do utilizador que solicita a eliminação</param>
     /// <returns><c>true</c> se o bucket for eliminado com sucesso, caso contrário => <c>false</c>.</returns>
-    Task<bool> EliminarBucketAsync(string bucket, string key, string userId);
+    Task<bool> EliminarBucketAsync(string bucket, string userId);
     
     /// <summary>
     /// Lista os buckets S3 existentes aos quais o utilizador tem acesso através
@@ -104,12 +103,16 @@ public interface IS3Api
     /// </summary>
     /// <returns>A instância do cliente S3 utilizada internamente pelo serviço.</returns>
     AmazonS3Client GetS3Client();
-    
+
+
+    /// <inheritdoc />
     public class S3Api : IS3Api
     {
         private readonly ILogger<S3Api> _logger;
         private readonly AmazonS3Client _s3Client;
         private readonly ApplicationDbContext _context;
+        
+        
         public S3Api(IConfiguration configuration, ILogger<S3Api> logger, ApplicationDbContext context)
         {
             _logger = logger;
@@ -124,12 +127,14 @@ public interface IS3Api
         }
 
 
+        /// <inheritdoc />
         public AmazonS3Client GetS3Client()
         {
             return _s3Client;
         }
 
 
+        /// <inheritdoc />
         public async Task<string?> ObterFicheiroAsync(string bucket, string key, string userId)
         {
             var buckets =  await BucketAllowed(userId);
@@ -158,6 +163,8 @@ public interface IS3Api
             return string.Empty;
         }
 
+  
+        /// <inheritdoc />
         public async Task<bool> EditarFicheiroAsync(string bucket, string key, string editar, string userId)
         {
             for (int i = 0; i < 3; i++)
@@ -178,7 +185,7 @@ public interface IS3Api
                 }
                 catch (AmazonS3Exception e)
                 {
-                    _logger.LogError(e, $"Error editing file {key} from S3");
+                    _logger.LogError(e, "Error editing file {Key} from S3", key);
                     
                 }
             }
@@ -186,6 +193,8 @@ public interface IS3Api
             return false;
         }
 
+
+        /// <inheritdoc />
         public async Task<bool> CriarBucketAsync(string bucket)
         {
             for (var i = 0; i < 3; i++)
@@ -196,7 +205,7 @@ public interface IS3Api
                     {
                         BucketName = bucket,
                         UseClientRegion = true,
-                        ObjectLockEnabledForBucket = true,
+                        ObjectLockEnabledForBucket = true
                     };
 
                     var response = await _s3Client.PutBucketAsync(request);
@@ -211,6 +220,8 @@ public interface IS3Api
             return false;
         }
 
+   
+        /// <inheritdoc />
         public async Task<bool> EliminarFicheiroAsync(string bucket, string key, string userId)
         {
             for (var i = 0; i < 3; i++)
@@ -237,7 +248,9 @@ public interface IS3Api
             return false;
         }
 
-        public async Task<bool> EliminarBucketAsync(string bucket, string key, string userId)
+  
+        /// <inheritdoc />
+        public async Task<bool> EliminarBucketAsync(string bucket, string userId)
         {
             for (int i = 0; i < 3; i++)
             {
@@ -258,6 +271,7 @@ public interface IS3Api
             return false;
         }
 
+        /// <inheritdoc />
         public async Task<List<S3Bucket>?> ListBucketsAsync(string userId)
         {
             try
@@ -276,6 +290,7 @@ public interface IS3Api
             }
         }
 
+        /// <inheritdoc />
         public async Task<bool> UploadBinaryAsync(string bucket, string key, byte[] data, string contentType)
         {
             for (int i = 0; i < 3; i++)
@@ -286,7 +301,7 @@ public interface IS3Api
                     {
                         BucketName = bucket,
                         Key = key,
-                        InputStream = new System.IO.MemoryStream(data),
+                        InputStream = new MemoryStream(data),
                         ContentType = contentType
 
                     };
@@ -302,6 +317,7 @@ public interface IS3Api
             return false;
         }
 
+        /// <inheritdoc />
         public async Task<(byte[] Data, string ContentType)?> GetBinaryAsync(string bucket, string key)
         {
             for (var i = 0; i < 3; i++)
@@ -329,6 +345,7 @@ public interface IS3Api
         }
 
 
+        /// <inheritdoc />
         public async Task<List<S3Object>?> ListFilesAsync(string bucket, string userId)
         {
             try
@@ -336,7 +353,7 @@ public interface IS3Api
                 var allowedBuckets = await BucketAllowed(userId);
                 if (!allowedBuckets.Contains(bucket)) return null;
                 
-                string continuationToken = null;
+                string? continuationToken = string.Empty;
                 var all = new List<S3Object>();
                 do
                 {
@@ -348,7 +365,9 @@ public interface IS3Api
 
                     all.AddRange(request.S3Objects);
 
-                    continuationToken = (bool)request.IsTruncated ? request.NextContinuationToken : null;
+                    var check = request.IsTruncated ?? false;
+                    
+                    continuationToken = check ? request.NextContinuationToken : null;
 
                 } while (continuationToken != null);
 

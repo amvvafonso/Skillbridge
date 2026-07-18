@@ -1,10 +1,7 @@
 using Microsoft.EntityFrameworkCore;
-using Newtonsoft.Json.Serialization;
 using Skillbridge.Data;
-using Skillbridge.Hubs;
 using Skillbridge.Models;
 using Skillbridge.Models.Client;
-using Skillbridge.Models.Project;
 using Skillbridge.Utilities;
 
 namespace Skillbridge.Services;
@@ -110,9 +107,10 @@ public interface IOrganizationService
     Task<OrganizationMember?> MemberBelongsToOrganization(string orgId, string userId);
 }
 
-
+/// <inheritdoc />
 public class OrganizationService(ApplicationDbContext context, IS3Api iS3Api, INotificationService notificationService, ILogger<OrganizationService> logger) : IOrganizationService
 {
+    /// <inheritdoc />
     public async Task<Result> CreateOrganizationAsync(string userId, string organizationName, string organizationAddress, string organizationDescription, IFormFile? logo) {
         if (string.IsNullOrEmpty(organizationName) || string.IsNullOrEmpty(organizationAddress) ||
             string.IsNullOrEmpty(organizationDescription))
@@ -139,7 +137,7 @@ public class OrganizationService(ApplicationDbContext context, IS3Api iS3Api, IN
             OrganizationAddress = organizationAddress,
             Owner = userId,
             LogoPath = logoPath,
-            BannerPath = "default_banner.png",
+            BannerPath = "default_banner.png"
         };
         context.Organizations.Add(organization);
         context.OrganizationMembers.Add(new OrganizationMember(Guid.NewGuid().ToString(), newGuid, userId, Role.Owner));
@@ -149,6 +147,8 @@ public class OrganizationService(ApplicationDbContext context, IS3Api iS3Api, IN
     }
     
     private static readonly string[] AllowedImageExtensions = [".png", ".jpg", ".jpeg", ".webp"];
+
+    /// <inheritdoc />
     public async Task<Result> EditOrganizationAsync(string organizationId, string userId, string? name, string? address, string? description, IFormFile? logo, IFormFile? banner)
     {
         var permission = await MemberBelongsToOrganization(organizationId, userId);
@@ -170,7 +170,7 @@ public class OrganizationService(ApplicationDbContext context, IS3Api iS3Api, IN
         if (logo is { Length: > 0 })
         {
             var (key, error) = await UploadOrganizationImageAsync(logo, organizationId, "logo");
-            if (error != null || key == null) return Result.Fail(error ?? "Erro no upload da imagem", ErrorType.Misc);
+            if (error != null || key == null) return Result.Fail(error ?? "Erro no upload da imagem");
 
             organization.LogoPath = key;
         }
@@ -179,7 +179,7 @@ public class OrganizationService(ApplicationDbContext context, IS3Api iS3Api, IN
         {
             var (key, error) = await UploadOrganizationImageAsync(banner, organizationId, "banner");
             if (error != null || key == null)
-                return Result.Fail(error ?? "Erro no upload da imagem", ErrorType.Misc);
+                return Result.Fail(error ?? "Erro no upload da imagem");
 
             organization.BannerPath = key;
         }
@@ -195,7 +195,8 @@ public class OrganizationService(ApplicationDbContext context, IS3Api iS3Api, IN
         throw new NotImplementedException();
     }
 
-    
+
+    /// <inheritdoc />
     public async Task<Result> AddMemberAsync(string organizationId, string memberEmail, string userId)
     {
         if (string.IsNullOrEmpty(organizationId) || string.IsNullOrEmpty(memberEmail))
@@ -212,20 +213,21 @@ public class OrganizationService(ApplicationDbContext context, IS3Api iS3Api, IN
         if (organization == null) return Result.Fail("Não existe a organização!", ErrorType.NotFound);
 
         if (await OrganizationMember.IsMember(context, memberEmail, organizationId))
-            return Result.Fail("O membro já pertence à organização", ErrorType.Misc);
+            return Result.Fail("O membro já pertence à organização");
         
         var user = await context.Users
             .Where(u => u.Email == memberEmail)
             .Select(u => new {u.Id, u.Email})
             .FirstOrDefaultAsync();
         
-        if (user == null) return Result.Fail("Não existe utilizador com esse email", ErrorType.Misc);
+        if (user == null) return Result.Fail("Não existe utilizador com esse email");
 
         await notificationService.NotifyOrganizationInviteAsync(user.Id, organization.OrganizationId, organization.OrganizationName);
         
         return Result.Ok(message: "Membro convidado com sucesso!");
     }
 
+    /// <inheritdoc />
     public async Task<Result> DeleteMemberAsync(string memberId, string organizationId, string userId)
     {
         if (!context.OrganizationMembers.Any(p => p.User == userId && p.Organization == organizationId && p.Role == Role.Owner))
@@ -235,7 +237,7 @@ public class OrganizationService(ApplicationDbContext context, IS3Api iS3Api, IN
         }
 
         if (context.OrganizationMembers.Any(p => p.User == memberId && p.Organization == organizationId && p.Role == Role.Owner))
-            return Result.Fail("Não pode remover o dono da organização!", ErrorType.Misc);
+            return Result.Fail("Não pode remover o dono da organização!");
             
         context.OrganizationMembers.RemoveRange(
             context.OrganizationMembers
@@ -248,13 +250,14 @@ public class OrganizationService(ApplicationDbContext context, IS3Api iS3Api, IN
         return Result.Ok(message: "Membro removido com sucesso!");
     }
 
+    /// <inheritdoc />
     public async Task<Result> PromoteMemberAsync(string memberId, string organizationId, string userId)
     {
         if (string.IsNullOrEmpty(organizationId) || string.IsNullOrEmpty(memberId) || string.IsNullOrEmpty(userId))
             return Result.Fail("Falta componentes para a operação",  ErrorType.MissingComponent);
         
         var permission = await MemberBelongsToOrganization(organizationId, userId);
-        if (permission == null) return Result.Fail("Ocorreu um erro na autorização!",  ErrorType.Misc);
+        if (permission == null) return Result.Fail("Ocorreu um erro na autorização!");
 
         var isOwnerOrManager = permission.Role == Role.Owner || permission.Role == Role.Manager;
         if (!isOwnerOrManager)
@@ -264,7 +267,7 @@ public class OrganizationService(ApplicationDbContext context, IS3Api iS3Api, IN
         }
 
         var member = await MemberBelongsToOrganization(organizationId, memberId);
-        if (member == null) return Result.Fail("O membro não pertence a organização!", ErrorType.Misc);
+        if (member == null) return Result.Fail("O membro não pertence a organização!");
 
         var newRole = member.Role switch
         {
@@ -274,7 +277,7 @@ public class OrganizationService(ApplicationDbContext context, IS3Api iS3Api, IN
             _ => member.Role
         };
         if (newRole == member.Role)
-            return Result.Fail("Este membro já está no papel máximo permitido",  ErrorType.Misc);
+            return Result.Fail("Este membro já está no papel máximo permitido");
        
         member.Role = newRole;
         await context.SaveChangesAsync();
@@ -283,6 +286,7 @@ public class OrganizationService(ApplicationDbContext context, IS3Api iS3Api, IN
     }
 
 
+    /// <inheritdoc />
     public async Task<Result> DeleteOrganizationAsync(string organizationId, string userId)
     {
         if (string.IsNullOrEmpty(organizationId) || string.IsNullOrEmpty(userId))
@@ -324,6 +328,7 @@ public class OrganizationService(ApplicationDbContext context, IS3Api iS3Api, IN
         return Result.Ok(message: "Organização eliminada com sucesso!");
     }
 
+    /// <inheritdoc />
     public async Task<Result> CreatePostAsync(string organizationId, string newPostTitle, string newPostContent, string userId)
     {
         if (string.IsNullOrEmpty(newPostTitle) || string.IsNullOrEmpty(newPostContent))
@@ -352,12 +357,13 @@ public class OrganizationService(ApplicationDbContext context, IS3Api iS3Api, IN
         return Result.Ok(message: "Publicação feita com sucesso!");
     }
 
+    /// <inheritdoc />
     public async Task<Result> DeletePostAsync(string postId, string userId)
     {
         if (string.IsNullOrEmpty(postId)) return Result.Fail("Nenhuma publicação especificada!", ErrorType.MissingComponent);
 
         var post = await context.Posts.FirstOrDefaultAsync(p => p.PostId == postId);
-        if (post == null) return Result.Fail("A publicação selecionada não existe!", ErrorType.Misc);
+        if (post == null) return Result.Fail("A publicação selecionada não existe!");
 
         // Só o autor ou um Owner/Manager da organização pode apagar
         var isAuthor = post.AuthorID == userId;
@@ -377,6 +383,7 @@ public class OrganizationService(ApplicationDbContext context, IS3Api iS3Api, IN
     }
 
 
+    /// <inheritdoc />
     public async Task<OrganizationMember?> MemberBelongsToOrganization(string organizationId, string userId)
     {
         return await context.OrganizationMembers

@@ -1,8 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
 using Skillbridge.Services;
 
-namespace Skillbridge.Controllers;
+namespace Skillbridge.Controllers.Api;
 
+/// <inheritdoc />
 [ApiController]
 [Route("api/images")]
 public class ImagesController(IS3Api s3Api) : ControllerBase

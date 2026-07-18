@@ -46,9 +46,11 @@ public interface IApiTokenService
     /// <param name="tokenId">Identificador do token a revogar</param>
     /// <param name="userId">Identificador do utilizador proprietário do token</param>
     Task RevokeTokenAsync(int tokenId, string userId);
-    
+
+    /// <inheritdoc />
     public class ApiTokenService(ApplicationDbContext context, ILogger<ApiTokenService> logger) : IApiTokenService
     {
+        /// <inheritdoc />
         public async Task<Result> CreateTokenAsync(string userId, string name)
         {
             var rawToken = "sb_" + Convert.ToBase64String(RandomNumberGenerator.GetBytes(32))
@@ -69,6 +71,7 @@ public interface IApiTokenService
             return Result.Ok("Sucesso", rawToken); // única vez que o valor em claro existe
         }
 
+        /// <inheritdoc />
         public async Task<Result?> ValidateTokenAsync(string rawToken)
         {
             var hash = HashToken(rawToken);
@@ -87,13 +90,15 @@ public interface IApiTokenService
 
             return Result.Ok("Token validado com sucesso!", token.UserId);
         }
-
+        
+        /// <inheritdoc />
         public async Task<List<ApiToken>> GetUserTokensAsync(string userId) =>
             await context.ApiTokens
                 .Where(t => t.UserId == userId && !t.IsRevoked)
                 .OrderByDescending(t => t.CreatedAt)
                 .ToListAsync();
 
+        /// <inheritdoc />
         public async Task RevokeTokenAsync(int tokenId, string userId)
         {
             var token = await context.ApiTokens

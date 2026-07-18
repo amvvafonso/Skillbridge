@@ -1,15 +1,14 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Skillbridge.Data;
 using Skillbridge.Models;
 using Skillbridge.Models.Client;
 using Skillbridge.Models.Project;
 using Skillbridge.Services;
-using Skillbridge.Utilities;
 
-namespace Skillbridge.Controllers;
+namespace Skillbridge.Controllers.Api;
 
+/// <inheritdoc />
 [ApiController]
 [Route("api/[controller]")]
 public class SessionController(ApplicationDbContext context, ISessionService sessionService) : ControllerBase

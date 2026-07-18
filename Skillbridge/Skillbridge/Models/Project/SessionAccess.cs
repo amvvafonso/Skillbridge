@@ -5,15 +5,18 @@ using Skillbridge.Models.Client;
 
 namespace Skillbridge.Models.Project;
 
+
 public class SessionAccess
 {
+
+
     /// <summary>
     /// PK of Access
     /// </summary>
     [Key]
     public string SessionAccessId { get; set; }
-    
-    
+
+
     /// <summary>
     /// Foreign key to link access to session
     /// </summary>

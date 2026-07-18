@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Skillbridge.Data;
 using Skillbridge.Hubs;
 using Skillbridge.Models;
@@ -32,7 +33,7 @@ public interface ISessionService
     Task<Session?> GetSessionAsync(string sessionId);
     
     /// <summary>
-    /// Cria uma nova sessão de colaboração associada a um ficheiro, se o ficheiro ainda
+    /// Cria uma sessão de colaboração associada a um ficheiro, se o ficheiro ainda
     /// não existir na base de dados, é criado automaticamente.
     /// O utilizador criador recebe automaticamente o papel de Mentor na sessão
     /// </summary>
@@ -63,11 +64,12 @@ public interface ISessionService
     /// <param name="userId">Identificador do utilizador que solicita o encerramento</param>
     /// <returns>Um <see cref="Result"/> indicando sucesso ou falha da operação</returns>
     Task<Result> EndSessionAsync(string sessionId, string userId);
-    
-    
-    
+
+
+    /// <inheritdoc />
     public class SessionService(ApplicationDbContext context, IOrganizationService organizationService, INotificationService notificationHub) : ISessionService
     {
+        /// <inheritdoc />
         public async Task<List<Session>> GetAllSessionsAsync(string userid)
         {
             var userSessions = await context.SessionAccesses
@@ -81,6 +83,7 @@ public interface ISessionService
             return userSessions;
         }
 
+        /// <inheritdoc />
         public async Task<Session?> GetSessionAsync(string sessionId)
         {
             var session = await context.Sessions.FirstOrDefaultAsync(s => s.Id == sessionId);
@@ -89,6 +92,7 @@ public interface ISessionService
         }
 
 
+        /// <inheritdoc />
         public async Task<Result> CreateSessionAsync(string bucket, string key, string title, string description, bool isPublic, string userId)
         {
             var file = await context.Files.FirstOrDefaultAsync(f => f.Path == key);
@@ -102,7 +106,7 @@ public interface ISessionService
                     FileId = Guid.NewGuid().ToString(),
                     Path = key,
                     Locked = false,
-                    ProjectId = project.ProjectId,
+                    ProjectId = project.ProjectId
                 };
                 
                 context.Files.Add(file);
@@ -112,14 +116,14 @@ public interface ISessionService
 
             if (await FileAlreadyUsedAsync(file))
             {
-                return Result.Fail("Já existe uma sessão ativa deste ficheiro!", ErrorType.Misc);
+                return Result.Fail("Já existe uma sessão ativa deste ficheiro!");
             }
             
-            string newSesionId = Guid.NewGuid().ToString();
+            string newSessionId = Guid.NewGuid().ToString();
             
             var newSession = new Session
             {
-                Id = newSesionId,
+                Id = newSessionId,
                 Title = title.Trim(),
                 Description = description.Trim(),
                 IsPublic = isPublic,
@@ -138,17 +142,17 @@ public interface ISessionService
                 SessionAccessId = Guid.NewGuid().ToString(),
                 UserId = userId,
                 Role = Role.Mentor, // If not mentor, no one can alter the properties of the session
-                SessionId = newSession.Id,
+                SessionId = newSession.Id
             };
             
             context.SessionAccesses.Add(initialAccess);
             await context.SaveChangesAsync();
 
-            return Result.Ok(message: "Sessão criada com sucesso!", additional: newSesionId);
+            return Result.Ok(message: "Sessão criada com sucesso!", additional: newSessionId);
         }
 
 
-
+        /// <inheritdoc />
         public async Task<Result> AllowEntrance(string sessionId, string userEmail, string userId, Role role)
         {
             if (string.IsNullOrEmpty(sessionId)) return Result.Fail("Não foi selecionado uma sessão!", ErrorType.NotFound);
@@ -177,21 +181,24 @@ public interface ISessionService
             if (project == null) return Result.Fail("O projeto não existe!", ErrorType.NotFound);
 
             if (await organizationService.MemberBelongsToOrganization(project.OrganizationId, userId) == null) 
-                return Result.Fail("O utilizador não pertence à organização",  ErrorType.Misc);
+                return Result.Fail("O utilizador não pertence à organização");
             
-            if (await AlreadyHasAcessAsync(sessionId, userId)) return Result.Fail("O utilizador já tem acesso!",  ErrorType.Misc);
+            if (await AlreadyHasAcessAsync(sessionId, userId)) return Result.Fail("O utilizador já tem acesso!");
 
 
-
-            var newAccess = new SessionAccess
+            if (session.Id != null)
             {
-                SessionAccessId = Guid.NewGuid().ToString(),
-                UserId = userInvited.Id,
-                Role = role,
-                SessionId = session.Id,
-            };
+                var newAccess = new SessionAccess
+                {
+                    SessionAccessId = Guid.NewGuid().ToString(),
+                    UserId = userInvited.Id,
+                    Role = role,
+                    SessionId = session.Id
+                };
             
-            context.SessionAccesses.Add(newAccess);
+                context.SessionAccesses.Add(newAccess);
+            }
+
             await context.SaveChangesAsync();
 
             await notificationHub.NotifyAsync(userEmail, $"Foste adicionado à sessão {session.Title}");
@@ -199,6 +206,7 @@ public interface ISessionService
             return Result.Ok(message: $"{userInvited.Name} foi adicionado com sucesso!");
         }
 
+        /// <inheritdoc />
         public async Task<Result> EndSessionAsync(string sessionId, string userId)
         {
             if (string.IsNullOrEmpty(sessionId) || string.IsNullOrEmpty(userId))
@@ -221,11 +229,6 @@ public interface ISessionService
         private async Task<bool> FileAlreadyUsedAsync(File file)
         {
             return await context.Sessions.AnyAsync(s => s.fileId == file.FileId); 
-        }
-
-        private async Task<bool> SessionExistsAsync(string sessionId)
-        {
-            return await context.Sessions.AnyAsync(s => s.Id == sessionId);
         }
 
         private async Task<bool> AlreadyHasAcessAsync(string sessionId, string userId)

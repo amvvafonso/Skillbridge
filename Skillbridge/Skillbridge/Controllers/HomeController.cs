@@ -5,8 +5,7 @@ using Skillbridge.Models;
 
 namespace Skillbridge.Controllers;
 
-
-
+/// <inheritdoc />
 public class HomeController(ILogger<HomeController> logger) : Controller
 {
     public async Task<IActionResult> Index()
@@ -25,6 +24,11 @@ public class HomeController(ILogger<HomeController> logger) : Controller
         return View();
     }
 
+    /// <summary>
+    /// Lida com os erros da aplicação
+    /// </summary>
+    /// <param name="statusCode"></param>
+    /// <returns></returns>
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
     public IActionResult Error(int? statusCode)
     {

@@ -8,6 +8,7 @@ using Skillbridge.Services;
 
 namespace Skillbridge.Controllers.Api;
 
+/// <inheritdoc />
 [ApiController]
 [Route("api/[controller]")]
 [Authorize(AuthenticationSchemes = "ApiKey")]

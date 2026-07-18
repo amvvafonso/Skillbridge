@@ -12,10 +12,16 @@ using Skillbridge.Utilities;
 
 namespace Skillbridge.Controllers;
 
+/// <inheritdoc />
 [Authorize]
 public class NotificationController(ApplicationDbContext context, INotificationService notificationService) : Controller
 {
   
+    /// <summary>
+    /// Aceita o convite da organização
+    /// </summary>
+    /// <param name="notificationId"></param>
+    /// <returns></returns>
     [HttpPost]
     public async Task<IActionResult> AcceptInvite([FromForm] string notificationId)
     {
@@ -34,7 +40,11 @@ public class NotificationController(ApplicationDbContext context, INotificationS
         return LocalRedirect("/");
     }
 
-    
+    /// <summary>
+    /// Recusa o convite da organização
+    /// </summary>
+    /// <param name="notificationId"></param>
+    /// <returns></returns>
     [HttpPost]
     public async Task<IActionResult> Decline([FromForm] string notificationId)
     {

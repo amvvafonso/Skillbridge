@@ -1,15 +1,19 @@
 namespace Skillbridge.Utilities;
 
-public class Levenshtein
+/// <summary>
+/// Algortimo levenshtein, para determinar quantas letras podem estar erradas na pesquisa
+/// </summary>
+public static class Levenshtein
 {
-    private readonly static int _LIMIT = 3;
+    private const int Limit = 3;
+
     public static bool Contem(string texto, string pesquisa)
     {
         if (texto.Contains(pesquisa, StringComparison.OrdinalIgnoreCase))
             return true;
 
         var palavras = texto.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-        return palavras.Any(p => Verify(p.ToLower(), pesquisa.ToLower()) <= _LIMIT);
+        return palavras.Any(p => Verify(p.ToLower(), pesquisa.ToLower()) <= Limit);
     }
 
     private static int Verify(string a, string b)

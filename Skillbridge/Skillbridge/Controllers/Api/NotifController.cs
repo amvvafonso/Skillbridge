@@ -1,17 +1,13 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using NuGet.Protocol;
 using Skillbridge.Data;
 using Skillbridge.Models;
-using Skillbridge.Models.Client;
 using Skillbridge.Services;
-using Skillbridge.Utilities;
 
-namespace Skillbridge.Controllers;
+namespace Skillbridge.Controllers.Api;
 
+/// <inheritdoc />
 [Authorize]
 public class NotifController(ApplicationDbContext context, INotificationService notificationService) : ControllerBase
 {

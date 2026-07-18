@@ -85,15 +85,26 @@ public interface IProjectService
     /// <param name="projectId">Identificador do projeto a eliminar</param>
     /// <returns>Um <see cref="Result"/> indicando sucesso ou falha da operação</returns>
     Task<Result> DeleteProjectAsync(string userId, int projectId);
-    
+
+    /// <inheritdoc />
     public class ProjectService(ApplicationDbContext context, IS3Api iS3Api, IOrganizationService organizationService, IS3Api is3Api, ILogger<IProjectService> logger) :  IProjectService
     {
+        
+        /// <summary>
+        /// Classe auxiliar
+        /// </summary>
+        /// <param name="FileId"></param>
+        /// <param name="Path"></param>
+        /// <param name="ProjectId"></param>
+        /// <param name="ProjectDirectory"></param>
         public record FileWithProjectDto(
             string FileId,
             string Path,
             int ProjectId,
-            string ProjectDirectory 
+            string ProjectDirectory
         );
+
+        /// <inheritdoc cref="GetAllFileFromProjectAsync" />
         public async Task<List<FileWithProjectDto>> GetAllFileFromProjectAsync(string userId, int projectId)
         {
             if (projectId == 0) return [];
@@ -112,14 +123,14 @@ public interface IProjectService
                     p => p.ProjectId,
                     (f, p) => new FileWithProjectDto(
                         f.FileId,
-                        f.Path,
+                        f.Path ?? "",
                         f.ProjectId,
-                        // ... resto dos campos de f
-                        p.ProjectDirectory
+                        p.ProjectDirectory ?? "" 
                     ))
                 .ToListAsync();
         }
         
+        /// <inheritdoc />
         public async Task<List<Project>?> GetAllProjectAsync(string userId)
         {
             if (string.IsNullOrWhiteSpace(userId)) return null;
@@ -143,6 +154,7 @@ public interface IProjectService
             return userProjects;
         }
         
+        /// <inheritdoc />
         public async Task<Project?> GetProjectAsync(string userId, int projectId)
         {
             if (string.IsNullOrWhiteSpace(userId)) return null;
@@ -163,6 +175,7 @@ public interface IProjectService
             return project;
         }
 
+        /// <inheritdoc />
         public async Task<Result> CreateProjectAsync(string organizationId, string userId, string projectName, string projectDescription, string? repository, bool isPublic)
         {
 
@@ -215,6 +228,7 @@ public interface IProjectService
             return Result.Ok(message: "Projeto criado com sucesso!");
         }
 
+        /// <inheritdoc />
         public async Task<Result> CreateFolderAsync(string bucket, string prefix, string folderName, string userId, int projectId)
         {
             if (string.IsNullOrWhiteSpace(folderName) || string.IsNullOrWhiteSpace(folderName))
@@ -232,9 +246,10 @@ public interface IProjectService
                 : $"{prefix}{folderName.Trim('/')}";
 
             var success = await is3Api.EditarFicheiroAsync(bucket, key, string.Empty, userId);
-            return !success ? Result.Fail("Error ao criar a pasta", ErrorType.Misc) : Result.Ok(message: "Pasta criada com sucesso!");
+            return !success ? Result.Fail("Error ao criar a pasta") : Result.Ok(message: "Pasta criada com sucesso!");
         }
 
+        /// <inheritdoc />
         public async Task<Result> DeleteFolderAsync(string bucket, string folderPath, string userId)
         {
             if (string.IsNullOrWhiteSpace(bucket) || string.IsNullOrWhiteSpace(folderPath))
@@ -267,9 +282,10 @@ public interface IProjectService
                     await Task.Delay(300 * attempt);
             }
 
-            return Result.Fail("Não foi possível eliminar a pasta — pode haver ficheiros a ser adicionados em simultâneo.", ErrorType.Misc);
+            return Result.Fail("Não foi possível eliminar a pasta — pode haver ficheiros a ser adicionados em simultâneo.");
         }
 
+        /// <inheritdoc />
         public async Task<Result> DeleteFileAsync(string bucket, string key, string userId)
         {
             if (string.IsNullOrWhiteSpace(bucket) || string.IsNullOrWhiteSpace(key))
@@ -292,9 +308,10 @@ public interface IProjectService
 
             await context.SaveChangesAsync();
             
-            return !success ? Result.Fail("Ocorreu um erro na eliminação do ficheiro!", ErrorType.Misc) : Result.Ok(message: "Pasta eliminada com sucesso!");
+            return !success ? Result.Fail("Ocorreu um erro na eliminação do ficheiro!") : Result.Ok(message: "Pasta eliminada com sucesso!");
         }
 
+        /// <inheritdoc />
         public async Task<Result> DeleteProjectAsync(string userId, int projectId)
         {
             if (projectId == 0) return Result.Fail("Falta componentes cruciais para a operação!", ErrorType.MissingComponent);
@@ -303,13 +320,16 @@ public interface IProjectService
                 .Join(context.Project,
                     o => o.OrganizationId,
                     p => p.OrganizationId,
-                    ((organization1, project) => new { Organization = organization1, Project = project }))
+                    (organization1, project) => new { Organization = organization1, Project = project })
                 .Where(p => p.Project.ProjectId == projectId)
                 .FirstOrDefaultAsync();
+
+            if (organization == null) return Result.Fail("Projeto não pertence a nenhuma organização!");
+            
             
             var userRole = await context.OrganizationMembers.FirstOrDefaultAsync(ur => ur.User == userId && ur.Organization == organization.Organization.OrganizationId);
 
-            if (userRole == null || (userRole.Role == Role.Apprentice || userRole.Role == Role.Unknown)) return Result.Fail("Não tem permissão",  ErrorType.Denied);
+            if (userRole == null || userRole.Role == Role.Apprentice || userRole.Role == Role.Unknown) return Result.Fail("Não tem permissão",  ErrorType.Denied);
             
             var files = await GetAllFileFromProjectAsync(userId, projectId);
             
@@ -348,7 +368,7 @@ public interface IProjectService
                 .Join(context.UserProjectAccesses,
                     p => p.ProjectId,
                     upa => upa.ProjectId,
-                    ((project, access) => new { Project = project, Access = access }))
+                    (project, access) => new { Project = project, Access = access })
                 .Where(p => p.Access.UserId == userId)
                 .Select(p => p.Project.ProjectDirectory)
                 .ToListAsync();

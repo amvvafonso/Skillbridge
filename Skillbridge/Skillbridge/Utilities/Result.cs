@@ -4,6 +4,9 @@ using Skillbridge.Models;
 
 namespace Skillbridge.Utilities;
 
+/// <summary>
+/// Resultado dos serviços
+/// </summary>
 public class Result
 {
     public bool Success { get; }

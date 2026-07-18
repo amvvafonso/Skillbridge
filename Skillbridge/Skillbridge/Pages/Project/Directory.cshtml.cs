@@ -147,6 +147,13 @@ public class Directory(ApplicationDbContext context, IS3Api is3Api, IProjectServ
         }
     }
 
+    /// <summary>
+    /// Cria uma pasta/bucket
+    /// </summary>
+    /// <param name="bucket"></param>
+    /// <param name="prefix"></param>
+    /// <param name="folderName"></param>
+    /// <returns></returns>
     public async Task<IActionResult> OnPostCreateFolderAsync([FromForm] string bucket, [FromForm] string prefix,[FromForm] string folderName) {
 
         var user = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -164,6 +171,12 @@ public class Directory(ApplicationDbContext context, IS3Api is3Api, IProjectServ
         return RedirectToPage("Directory", new { bucket, prefix });
     }
 
+    /// <summary>
+    /// Elimina o ficheiro
+    /// </summary>
+    /// <param name="bucket"></param>
+    /// <param name="key"></param>
+    /// <returns></returns>
     public async Task<IActionResult> OnPostDeleteFileAsync([FromForm] string bucket, [FromForm] string key) {
 
         var user =  User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -183,7 +196,12 @@ public class Directory(ApplicationDbContext context, IS3Api is3Api, IProjectServ
 
     }
 
-    // Done
+    /// <summary>
+    /// Elimina a pasta
+    /// </summary>
+    /// <param name="bucket"></param>
+    /// <param name="folderPath"></param>
+    /// <returns></returns>
     public async Task<IActionResult> OnPostDeleteFolderAsync( [FromForm] string bucket, [FromForm] string folderPath) {
         var user =  User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         if (user == null) return RedirectToPage("/Account/Login");
@@ -200,7 +218,16 @@ public class Directory(ApplicationDbContext context, IS3Api is3Api, IProjectServ
         return RedirectToPage("Directory", new { bucket });
     }
 
-    //Done
+    /// <summary>
+    /// Cria a sessão do ficheiro
+    /// </summary>
+    /// <param name="bucket"></param>
+    /// <param name="prefix"></param>
+    /// <param name="key"></param>
+    /// <param name="title"></param>
+    /// <param name="description"></param>
+    /// <param name="isPublic"></param>
+    /// <returns></returns>
     public async Task<IActionResult> OnPostCreateSessionAsync([FromForm] string bucket, [FromForm] string prefix, [FromForm] string key, [FromForm] string title, [FromForm] string description, [FromForm] bool isPublic)
     {
  
@@ -219,20 +246,28 @@ public class Directory(ApplicationDbContext context, IS3Api is3Api, IProjectServ
         return Page();
     }
     
+    
     [BindProperty]
     public IFormFile uploadedFile { get; set; }
+    /// <summary>
+    /// Da upload ao ficheiro
+    /// </summary>
+    /// <param name="bucket"></param>
+    /// <param name="prefix"></param>
+    /// <param name="project"></param>
+    /// <returns></returns>
     public async Task<IActionResult> OnPostUploadAsync([FromForm] string bucket, [FromForm] string prefix, [FromForm] int project)
     {
         try
         {
             Console.WriteLine("Bucket -->" + bucket);
-            if (uploadedFile == null || uploadedFile.Length == 0)
+            if (uploadedFile.Length == 0)
             {
                 TempData["Message"] = "Ficheiro inválido!";
                 return RedirectToPage("Directory", new { bucket });
             }
-            
-            using var stream = uploadedFile.OpenReadStream();
+
+            await using var stream = uploadedFile.OpenReadStream();
 
             var transferUtility = new TransferUtility(is3Api.GetS3Client());
 
@@ -282,6 +317,11 @@ public class Directory(ApplicationDbContext context, IS3Api is3Api, IProjectServ
 
     // ── Helpers exposed to the Razor view ──
 
+    /// <summary>
+    /// Obtem o icon (para ser implementado)
+    /// </summary>
+    /// <param name="ext"></param>
+    /// <returns></returns>
     public static string GetIconClass(string ext) => ext switch
     {
         "cs" or "cshtml" or "csproj" => "fe-type-icon-code",
@@ -296,6 +336,11 @@ public class Directory(ApplicationDbContext context, IS3Api is3Api, IProjectServ
         _ => "fe-type-icon-default"
     };
 
+    /// <summary>
+    /// Tipo do icon (para ser implementado)
+    /// </summary>
+    /// <param name="ext"></param>
+    /// <returns></returns>
     public static string GetTypeIcon(string ext) => ext switch
     {
         "cs" or "cshtml" or "csproj" or "js" or "ts" or "jsx" or "tsx" or "html" or "htm" or "css" or "scss" => "bi-file-earmark-code",
@@ -307,6 +352,11 @@ public class Directory(ApplicationDbContext context, IS3Api is3Api, IProjectServ
         _ => "bi-file-earmark"
     };
 
+    /// <summary>
+    /// Otem o tipo da cor ()para ser implementado
+    /// </summary>
+    /// <param name="ext"></param>
+    /// <returns></returns>
     public static string GetTypeColorClass(string ext) => ext switch
     {
         "cs" or "cshtml" => "fe-color-blue",
@@ -321,6 +371,11 @@ public class Directory(ApplicationDbContext context, IS3Api is3Api, IProjectServ
         _ => "fe-color-gray"
     };
 
+    /// <summary>
+    /// Formata o tamanho
+    /// </summary>
+    /// <param name="bytes"></param>
+    /// <returns></returns>
     public static string FormatSize(long? bytes)
     {
         var b = bytes ?? 0;
@@ -333,6 +388,12 @@ public class Directory(ApplicationDbContext context, IS3Api is3Api, IProjectServ
         };
     }
 
+    /// <summary>
+    /// Cria o breadcrumb
+    /// </summary>
+    /// <param name="fullPrefix"></param>
+    /// <param name="segment"></param>
+    /// <returns></returns>
     public static string GetBreadcrumbPath(string fullPrefix, string segment)
     {
         var parts = fullPrefix.TrimEnd('/').Split('/');

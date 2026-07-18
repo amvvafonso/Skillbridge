@@ -24,8 +24,11 @@ public interface IOrganizationMemberService
     /// <returns>Lista de <see cref="OrganizationMember"/> da organização</returns>
     Task<List<OrganizationMember>> GetMembersAsync(string organizationId);
 
+
+    /// <inheritdoc />
     public class OrganizationMemberService(ApplicationDbContext context, IOrganizationService organizationService) : IOrganizationMemberService
     {
+        /// <inheritdoc />
         public Task<OrganizationMember?> GetMemberAsync(string organizationId, string userId)
         {
             var member = context.OrganizationMembers
@@ -35,6 +38,7 @@ public interface IOrganizationMemberService
             return member;
         }
 
+        /// <inheritdoc />
         public async Task<List<OrganizationMember>> GetMembersAsync(string organizationId)
         {
             var members = await context.OrganizationMembers
