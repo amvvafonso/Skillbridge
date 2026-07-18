@@ -21,10 +21,6 @@ jobs:
       - name: Install npm packages
         working-directory: Skillbridge/Skillbridge
         run: npm ci
-
-      - name: Build frontend
-        working-directory: Skillbridge/Skillbridge
-        run: npm run build
         
       - name: Restore dependencies
         run: dotnet restore ${{ env.PROJECT_PATH }}
