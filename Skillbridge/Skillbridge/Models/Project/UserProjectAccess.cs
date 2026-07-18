@@ -38,10 +38,13 @@ public class UserProjectAccess
     [DeleteBehavior(DeleteBehavior.Restrict)]
     public virtual Project? Project { get; set; }
 
+    
     public UserProjectAccess(Role projectRole, string? userId, int projectId)
     {
         ProjectRole = projectRole;
         UserId = userId;
         ProjectId = projectId;
     }
+
+
 }

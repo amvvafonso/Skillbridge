@@ -4,6 +4,7 @@ using Skillbridge.Data;
 using Skillbridge.Hubs;
 using Skillbridge.Models;
 using Skillbridge.Models.Client;
+using Skillbridge.Models.Project;
 using Skillbridge.Utilities;
 
 namespace Skillbridge.Services;
@@ -116,6 +117,17 @@ public interface INotificationService
             if (!alreadyMember)
             {
                 await context.OrganizationMembers.AddAsync(new OrganizationMember(Guid.NewGuid().ToString(),param, userId, Role.Apprentice));
+                
+                var projectIds = await context.Project
+                    .Where(p => p.OrganizationId == param)
+                    .Select(p => p.ProjectId)
+                    .ToListAsync();
+
+                var accesses = projectIds.Select(projectId => new UserProjectAccess(Role.Apprentice, userId, projectId));
+                
+                await context.UserProjectAccesses.AddRangeAsync(accesses);
+                
+                await context.SaveChangesAsync();
             }
                     
             notif.Hidden = true;

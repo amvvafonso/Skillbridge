@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Skillbridge.Data;
 using Skillbridge.Models;
 using Skillbridge.Models.Client;
+using Skillbridge.Models.Project;
 using Skillbridge.Utilities;
 
 namespace Skillbridge.Services;
@@ -244,7 +245,20 @@ public class OrganizationService(ApplicationDbContext context, IS3Api iS3Api, IN
                 .Where(p => p.User == memberId && p.Organization == organizationId)
                 .ToList()
         );
-            
+
+
+        var projects = await context.Project
+            .Where(p => p.OrganizationId == organizationId)
+            .Select(p => p.ProjectId)
+            .ToListAsync();
+        
+        context.UserProjectAccesses.RemoveRange(
+            context.UserProjectAccesses
+                .Where(p => p.UserId == memberId && projects.Contains(p.ProjectId))
+                .ToList()
+            );
+        
+        
         await context.SaveChangesAsync();
         
         return Result.Ok(message: "Membro removido com sucesso!");

@@ -62,12 +62,12 @@
                                     <small class="d-block text-color">@notificacao.Date.ToString("dd/MM HH:mm")</small>
                                     <span class="text-wrap d-block small text-color">@notificacao.Body</span>
                                     <div class="w-100 d-flex gap-1">
-                                        <form asp-controller="Notification" asp-action="AcceptInvite" method="post">
+                                        <form asp-area="" asp-controller="Notification" asp-action="AcceptInvite" method="post">
                                             <input type="hidden" name="notificationId" value="@notificacao.NotificationId" />
                                             <input type="hidden" name="returnUrl" value="@ViewContext.HttpContext.Request.Path" />
                                             <button type="submit" class="notification-button">Aceitar</button>
                                         </form>
-                                        <form asp-controller="Notification" asp-action="Decline" method="post">
+                                        <form asp-area="" asp-controller="Notification" asp-action="Decline" method="post">
                                             <input type="hidden" name="notificationId" value="@notificacao.NotificationId" />
                                             <button type="submit" class="notification-button">Recusar</button>
                                         </form>
