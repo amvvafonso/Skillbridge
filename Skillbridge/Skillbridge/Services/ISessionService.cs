@@ -183,7 +183,7 @@ public interface ISessionService
             if (await organizationService.MemberBelongsToOrganization(project.OrganizationId, userId) == null) 
                 return Result.Fail("O utilizador não pertence à organização");
             
-            if (await AlreadyHasAcessAsync(sessionId, userId)) return Result.Fail("O utilizador já tem acesso!");
+            if (await AlreadyHasAcessAsync(sessionId, userInvited.Id)) return Result.Fail("O utilizador já tem acesso!");
 
 
             if (session.Id != null)
@@ -201,7 +201,7 @@ public interface ISessionService
 
             await context.SaveChangesAsync();
 
-            await notificationHub.NotifyAsync(userEmail, $"Foste adicionado à sessão {session.Title}");
+            await notificationHub.NotifyAsync(userInvited.Id, $"Foste adicionado à sessão {session.Title}");
             
             return Result.Ok(message: $"{userInvited.Name} foi adicionado com sucesso!");
         }
@@ -228,12 +228,12 @@ public interface ISessionService
 
         private async Task<bool> FileAlreadyUsedAsync(File file)
         {
-            return await context.Sessions.AnyAsync(s => s.fileId == file.FileId); 
+            return await context.Sessions.AnyAsync(s => s.fileId == file.FileId && s.Active); 
         }
 
         private async Task<bool> AlreadyHasAcessAsync(string sessionId, string userId)
         {
-            return await context.SessionAccesses .AnyAsync(sa => sa.SessionId == sessionId && sa.UserId == userId);
+            return await context.SessionAccesses.AnyAsync(sa => sa.SessionId == sessionId && sa.UserId == userId);
         }
 
         private async Task<Role> GetRoleAsync(string sessionId, string userId)

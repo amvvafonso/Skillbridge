@@ -59,22 +59,22 @@ Layout = "_Layout";
                                     <small>PNG, JPG até 2MB</small>
                                 </div>
                             </div>
-                            <input name="logoInput" type="file" accept="image/png,image/jpeg,image/webp" id="logoInput" class="hidden-input"/>
+                            <input required name="logoInput" type="file" accept="image/png,image/jpeg,image/webp" id="logoInput" class="hidden-input"/>
                         </div>
 
                         <div class="org-form-group">
                             <label for="organizationName" class="org-form-label">Nome</label>
-                            <input name="organizationName" id="organizationName" class="org-form-input" maxlength="100"/>
+                            <input required name="organizationName" id="organizationName" class="org-form-input" maxlength="100"/>
                         </div>
 
                         <div class="org-form-group">
                             <label for="organizationAddress" class="org-form-label">Endereço</label>
-                            <input id="organizationAddress" name="organizationAddress" class="org-form-input" maxlength="200"/>
+                            <input required id="organizationAddress" name="organizationAddress" class="org-form-input" maxlength="200"/>
                         </div>
 
                         <div class="org-form-group">
-                            <label for="organizationDescription" class="org-form-label">Descrição (opcional)</label>
-                            <textarea id="organizationDescription" name="organizationDescription" class="org-form-input org-textarea" maxlength="1000" rows="3"></textarea>
+                            <label for="organizationDescription" class="org-form-label">Descrição</label>
+                            <textarea required id="organizationDescription" name="organizationDescription" class="org-form-input org-textarea" maxlength="1000" rows="3"></textarea>
                         </div>
                     </div>
                     <div class="org-modal-footer">
